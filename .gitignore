@@ -1,0 +1,44 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Node / JS
+node_modules/
+dist/
+.next/
+coverage/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Dart / Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+build/
+**/android/.gradle/
+**/android/local.properties
+**/ios/Pods/
+
+# Generated
+tmp/
+temp/
+
