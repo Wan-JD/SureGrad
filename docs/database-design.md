@@ -590,6 +590,7 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 
 1. 若产品 later 改为“对比会话”模式，可再拆 `comparison_groups`
 2. MVP 先以“用户当前对比池”处理即可
+3. 表结构保留 `school/program` 两种目标类型以兼容后续演进，但 MVP 前台流程默认以 `program` 粒度发起对比
 
 ## 9.5 `user_targets`
 
@@ -613,6 +614,7 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 索引建议：
 
 1. `idx_user_targets_user_id_status`
+2. `uq_user_targets_user_id_active`（部分唯一索引）
 
 说明：
 
@@ -797,6 +799,7 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 
 1. 每个用户每日仅一条主打卡
 2. 补充修改通过更新记录完成
+3. `completed_todo_count` 作为打卡时的系统聚合快照保存，MVP 前台默认不允许手动改写
 
 ## 11.2 `reminders`
 
@@ -824,6 +827,11 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 1. `idx_reminders_user_id_remind_at`
 2. `idx_reminders_type_enabled`
 
+说明：
+
+1. `system` 与 `exam_node` 类型主要用于系统下发或预置提醒
+2. MVP 用户自定义提醒以前台 `study`、`todo` 两类为主
+
 ## 12. 建议约束与通用字段
 
 ### 12.1 通用审计字段
@@ -848,6 +856,12 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 2. 同专业同年份招生记录唯一
 3. 同用户同日期打卡唯一
 4. 同用户同目标收藏唯一
+5. 同用户同时仅允许一个 `active` 状态的目标记录
+
+补充实现说明：
+
+1. 对带 `deleted_at` 的表，若唯一性只针对有效数据生效，推荐使用部分唯一索引（如 `WHERE deleted_at IS NULL`）
+2. 对参与唯一约束且允许为空的字段，推荐在 PostgreSQL 中使用表达式唯一索引处理 `NULL` 值语义，例如对 `research_direction`、`code` 使用 `coalesce`
 
 ## 13. 推荐枚举值
 
@@ -985,4 +999,3 @@ MVP 阶段先不强制拆出，避免模型过重。
 建议你下一次新开对话时，直接复制类似提示：
 
 `请基于 docs/database-design.md，为 SureGrad 输出 PostgreSQL 建表 SQL，包含主键、外键、唯一约束、索引和必要的检查约束，输出到 docs/schema.sql。`
-
