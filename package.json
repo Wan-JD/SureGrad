@@ -1,0 +1,12 @@
+{
+  "name": "suregrad",
+  "private": true,
+  "packageManager": "pnpm@9.14.4",
+  "scripts": {
+    "dev:api": "pnpm --filter @suregrad/api start:dev",
+    "build:api": "pnpm --filter @suregrad/api build",
+    "lint:api": "pnpm --filter @suregrad/api lint",
+    "test:api": "pnpm --filter @suregrad/api test",
+    "test:api:e2e": "pnpm --filter @suregrad/api test:e2e"
+  }
+}

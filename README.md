@@ -49,6 +49,26 @@ tools/data-import/  数据导入与处理脚本
 - `docs/schema.sql`：PostgreSQL 建表 SQL
 - `docs/api-spec.md`：MVP 接口设计文档
 - `docs/ux-flow.md`：页面流程与信息架构文档
+- `docs/backend-architecture.md`：后端骨架架构说明
+- `docs/mobile-architecture.md`：移动端骨架与路由说明
+- `docs/data-import-plan.md`：院校数据导入方案
+
+## 当前工程启动顺序
+
+建议按下面顺序启动，便于三端联调：
+
+1. 根目录执行 `pnpm install`
+2. 启动后端：`pnpm dev:api`
+3. 启动后台：`pnpm --filter admin dev`
+4. 启动移动端：
+   `cd apps/mobile`
+   `flutter pub get`
+   `flutter run`
+
+说明：
+
+- 当前 `services/api` 处于骨架阶段，数据库连接是手动初始化策略，没有 PostgreSQL 也能先启动。
+- `apps/mobile` 目前以 Android-first Flutter 骨架为主，适合先联通登录、择校、规划、收藏、对比、提醒占位流程。
 
 ## 协作建议
 
