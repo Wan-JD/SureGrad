@@ -4,7 +4,7 @@
 
 日期：`2026-05-16`
 
-关联文档：[project-plan.md](C:/Users/hp/Documents/一研为定/docs/project-plan.md)
+关联文档：[project-plan.md](C:/Users/hp/Documents/SureGrad/docs/project-plan.md)
 
 适用范围：`Android MVP`
 
@@ -20,8 +20,8 @@
 
 ### 2.1 产品名称
 
-- 中文名：`一研为定`
-- 英文名：`SureGrad`
+- 主名称：`SureGrad`
+- 中文品牌名：`一研为定`
 
 ### 2.2 产品定位
 

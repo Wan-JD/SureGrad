@@ -5,8 +5,8 @@
 日期：`2026-05-16`
 
 关联文档：
-- [project-plan.md](C:/Users/hp/Documents/一研为定/docs/project-plan.md)
-- [prd.md](C:/Users/hp/Documents/一研为定/docs/prd.md)
+- [project-plan.md](C:/Users/hp/Documents/SureGrad/docs/project-plan.md)
+- [prd.md](C:/Users/hp/Documents/SureGrad/docs/prd.md)
 
 适用范围：`Android MVP`
 
@@ -329,7 +329,7 @@ Todo / 打卡流程说明：
 
 ## 9. 与 PRD 的最小澄清
 
-本次对 [prd.md](C:/Users/hp/Documents/一研为定/docs/prd.md) 做了最小修改，只补充首次引导分叉的路由澄清：
+本次对 [prd.md](C:/Users/hp/Documents/SureGrad/docs/prd.md) 做了最小修改，只补充首次引导分叉的路由澄清：
 
 1. 首次登录后先完成基础档案，目标院校允许为空。
 2. 若未确定目标院校，则继续进入择校流程。

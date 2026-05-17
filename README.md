@@ -1,4 +1,6 @@
-# SureGrad（中文名：一研为定）
+# SureGrad
+
+中文品牌名可选：`一研为定`
 
 SureGrad 是一款以 Android 为优先平台的考研备考 App，核心聚焦以下方向：
 
@@ -29,6 +31,14 @@ packages/shared/    共享常量、类型或工具
 tools/data-import/  数据导入与处理脚本
 ```
 
+## 工作区路径
+
+后续所有 Codex 会话、脚本路径、文档链接和协作提示词，统一使用英文工作区路径：
+
+`C:\Users\hp\Documents\SureGrad`
+
+请不要在新的会话提示词里再使用 `C:\Users\hp\Documents\一研为定`。
+
 ## 当前文档基线
 
 当前仓库已经完成以下基础文档：
@@ -50,6 +60,8 @@ tools/data-import/  数据导入与处理脚本
 4. 后端线程负责 API 与服务骨架
 5. 移动端线程负责 Flutter 工程与页面主流程
 6. 后台线程负责管理后台与运营能力
+
+后续提示词模板见：[docs/codex-session-prompts.md](C:/Users/hp/Documents/SureGrad/docs/codex-session-prompts.md)
 
 ## 后续推荐顺序
 

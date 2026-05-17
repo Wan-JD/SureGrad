@@ -6,8 +6,8 @@
 
 关联文档：
 
-- [project-plan.md](C:/Users/hp/Documents/一研为定/docs/project-plan.md)
-- [prd.md](C:/Users/hp/Documents/一研为定/docs/prd.md)
+- [project-plan.md](C:/Users/hp/Documents/SureGrad/docs/project-plan.md)
+- [prd.md](C:/Users/hp/Documents/SureGrad/docs/prd.md)
 
 适用范围：`MVP 数据模型设计 / PostgreSQL`
 
