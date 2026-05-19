@@ -16,6 +16,7 @@ describe('RemindersController', () => {
     items: Array<{
       reminderId: string;
       reminderType: ReminderRecord['reminderType'];
+      isEnabled: boolean;
     }>;
     pagination: {
       page: number;
@@ -24,6 +25,11 @@ describe('RemindersController', () => {
       hasMore: boolean;
     };
   };
+  type ReminderUpdateBody = {
+    reminderId: string;
+    isEnabled: boolean;
+  };
+
   const getHttpServer = (app: { getHttpServer: () => unknown }): HttpServer =>
     app.getHttpServer() as HttpServer;
 
@@ -71,13 +77,15 @@ describe('RemindersController', () => {
     },
   ];
 
-  const createRepositoryMock = (items: ReminderRecord[] = reminders) =>
-    ({
+  const createRepositoryMock = (items: ReminderRecord[] = reminders) => {
+    const mutableItems = items.map((item) => ({ ...item }));
+
+    return {
       findReminders: jest
         .fn<RemindersRepository['findReminders']>()
         .mockImplementation(
           (params: Parameters<RemindersRepository['findReminders']>[0]) => {
-            const filtered = items
+            const filtered = mutableItems
               .filter((item) => item.userId === params.userId)
               .filter((item) =>
                 params.reminderType
@@ -106,7 +114,38 @@ describe('RemindersController', () => {
             });
           },
         ),
-    }) as unknown as jest.Mocked<RemindersRepository>;
+      findReminderByIdForUser: jest
+        .fn<RemindersRepository['findReminderByIdForUser']>()
+        .mockImplementation((reminderId: string, ownerId: string) =>
+          Promise.resolve(
+            mutableItems.find(
+              (item) =>
+                item.reminderId === reminderId && item.userId === ownerId,
+            ) ?? null,
+          ),
+        ),
+      updateReminderEnabled: jest
+        .fn<RemindersRepository['updateReminderEnabled']>()
+        .mockImplementation(
+          (
+            params: Parameters<RemindersRepository['updateReminderEnabled']>[0],
+          ) => {
+            const index = mutableItems.findIndex(
+              (item) =>
+                item.reminderId === params.reminderId &&
+                item.userId === params.userId,
+            );
+            if (index >= 0) {
+              mutableItems[index] = {
+                ...mutableItems[index],
+                isEnabled: params.isEnabled,
+              };
+            }
+            return Promise.resolve();
+          },
+        ),
+    } as unknown as jest.Mocked<RemindersRepository>;
+  };
 
   const createApp = async (repository = createRepositoryMock()) => {
     const moduleRef = await Test.createTestingModule({
@@ -183,10 +222,12 @@ describe('RemindersController', () => {
         expect(body.items[0]).toMatchObject({
           reminderId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
           reminderType: 'study',
+          isEnabled: true,
         });
         expect(body.items[1]).toMatchObject({
           reminderId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
           reminderType: 'system',
+          isEnabled: true,
         });
       });
 
@@ -202,6 +243,45 @@ describe('RemindersController', () => {
         '/api/v1/reminders?dateFrom=2026-05-20T00:00:00.000Z&dateTo=2026-05-18T00:00:00.000Z',
       )
       .set('Authorization', `Bearer ${token}`)
+      .expect(400);
+
+    await app.close();
+  });
+
+  it('updates reminder enabled state for the current user', async () => {
+    const repository = createRepositoryMock();
+    const { app, tokenService } = await createApp(repository);
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .patch('/api/v1/reminders/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ isEnabled: false })
+      .expect(200)
+      .expect(({ body }: { body: ReminderUpdateBody }) => {
+        expect(body).toMatchObject({
+          reminderId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          isEnabled: false,
+        });
+      });
+
+    expect(repository.updateReminderEnabled).toHaveBeenCalledWith({
+      userId,
+      reminderId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      isEnabled: false,
+    });
+
+    await app.close();
+  });
+
+  it('rejects reminder update without supported fields', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .patch('/api/v1/reminders/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
       .expect(400);
 
     await app.close();

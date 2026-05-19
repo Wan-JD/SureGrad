@@ -1,7 +1,7 @@
-import '../../../core/models/feature_list_item.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/api_result.dart';
+import 'reminder_models.dart';
 
 class RemindersRepository {
   const RemindersRepository({required this.client});
@@ -10,19 +10,12 @@ class RemindersRepository {
 
   String get path => '/reminders';
 
-  Future<List<FeatureListItem>> fetchReminders() async {
+  Future<List<ReminderItem>> fetchReminders() async {
     final json = _unwrap(await client.get(path));
     final items = json['items'] as List<dynamic>? ?? const [];
     return items
         .whereType<Map<String, dynamic>>()
-        .map(
-          (item) => FeatureListItem(
-            id: item['reminderId'] as String? ?? item['id'] as String? ?? '',
-            title: item['title'] as String? ?? '未命名提醒',
-            subtitle: item['content'] as String? ?? '',
-            footnote: item['reminderType'] as String?,
-          ),
-        )
+        .map(ReminderItem.fromJson)
         .toList(growable: false);
   }
 

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { buildSkeletonResponse } from '../../common/utils/build-skeleton-response';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { QueryRemindersDto } from './dto/query-reminders.dto';
@@ -70,22 +74,36 @@ export class RemindersService {
     });
   }
 
-  update(userId: string, reminderId: string, dto: UpdateReminderDto) {
-    return buildSkeletonResponse({
-      domain: 'reminders',
-      action: 'update',
-      message:
-        'Reminder update is scaffolded, but ownership checks and rescheduling are still pending.',
-      nextSteps: [
-        'Load reminder ownership for the current user.',
-        'Apply edits and refresh scheduler state.',
-      ],
-      payload: {
-        userId,
-        reminderId,
-        ...dto,
-      },
+  async update(userId: string, reminderId: string, dto: UpdateReminderDto) {
+    if (dto.isEnabled === undefined) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    const reminder = await this.remindersRepository.findReminderByIdForUser(
+      reminderId,
+      userId,
+    );
+    if (!reminder) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    await this.remindersRepository.updateReminderEnabled({
+      userId,
+      reminderId,
+      isEnabled: dto.isEnabled,
     });
+
+    return {
+      reminderId: reminder.reminderId,
+      reminderType: reminder.reminderType,
+      title: reminder.title,
+      content: reminder.content,
+      remindAt: reminder.remindAt,
+      isEnabled: dto.isEnabled,
+      isSystemDefault: reminder.isSystemDefault,
+      relatedTargetType: reminder.relatedTargetType,
+      relatedTargetId: reminder.relatedTargetId,
+    };
   }
 
   remove(userId: string, reminderId: string) {

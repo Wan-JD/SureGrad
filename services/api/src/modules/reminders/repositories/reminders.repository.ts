@@ -27,9 +27,40 @@ export interface ReminderRecord {
   createdAt: string;
 }
 
+export interface UpdateReminderEnabledParams {
+  userId: string;
+  reminderId: string;
+  isEnabled: boolean;
+}
+
 @Injectable()
 export class RemindersRepository {
   constructor(private readonly dataSource: DataSource) {}
+
+  findReminderByIdForUser(
+    reminderId: string,
+    userId: string,
+  ): Promise<ReminderRecord | null> {
+    return this.dataSource
+      .createQueryBuilder()
+      .from('reminders', 'reminder')
+      .select([
+        'reminder.id AS "reminderId"',
+        'reminder.user_id AS "userId"',
+        'reminder.reminder_type AS "reminderType"',
+        'reminder.title AS "title"',
+        'reminder.content AS "content"',
+        'reminder.remind_at AS "remindAt"',
+        'reminder.is_enabled AS "isEnabled"',
+        'reminder.is_system_default AS "isSystemDefault"',
+        'reminder.related_target_type AS "relatedTargetType"',
+        'reminder.related_target_id AS "relatedTargetId"',
+        'reminder.created_at AS "createdAt"',
+      ])
+      .where('reminder.id = :reminderId', { reminderId })
+      .andWhere('reminder.user_id = :userId', { userId })
+      .getRawOne<ReminderRecord | null>();
+  }
 
   async findReminders(
     params: ReminderQueryParams,
@@ -91,6 +122,20 @@ export class RemindersRepository {
       items,
       total: Number(totalRow?.total ?? 0),
     };
+  }
+
+  async updateReminderEnabled(
+    params: UpdateReminderEnabledParams,
+  ): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .update('reminders')
+      .set({
+        is_enabled: params.isEnabled,
+      })
+      .where('id = :reminderId', { reminderId: params.reminderId })
+      .andWhere('user_id = :userId', { userId: params.userId })
+      .execute();
   }
 
   private applySort(
