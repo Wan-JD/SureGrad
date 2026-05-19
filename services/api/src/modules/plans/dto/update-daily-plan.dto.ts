@@ -1,15 +1,22 @@
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class UpdateDailyPlanDto {
   @IsOptional()
   @IsString()
-  focusSummary?: string;
+  title?: string;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 1 })
   @Min(0)
-  @Max(1440)
-  plannedMinutes?: number;
+  @Max(24)
+  expectedHours?: number;
 
   @IsOptional()
   @IsString()

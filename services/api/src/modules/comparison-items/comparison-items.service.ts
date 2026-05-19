@@ -1,52 +1,141 @@
-import { Injectable } from '@nestjs/common';
-import { buildSkeletonResponse } from '../../common/utils/build-skeleton-response';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateComparisonItemDto } from './dto/create-comparison-item.dto';
 import { QueryComparisonResultDto } from './dto/query-comparison-result.dto';
+import { ComparisonItemsRepository } from './repositories/comparison-items.repository';
+
+const COMPARISON_POOL_LIMIT = 4;
+
+const COMPARISON_RESULT_DIMENSIONS = [
+  {
+    key: 'totalScore',
+    label: '分数线',
+    unit: '分',
+  },
+  {
+    key: 'applicationRatio',
+    label: '报录比',
+    unit: '比值',
+  },
+  {
+    key: 'interviewRatio',
+    label: '复录比',
+    unit: '比值',
+  },
+  {
+    key: 'plannedEnrollment',
+    label: '招生人数',
+    unit: '人',
+  },
+  {
+    key: 'tuitionPerYear',
+    label: '学费',
+    unit: '元/年',
+  },
+  {
+    key: 'city',
+    label: '城市',
+    unit: null,
+  },
+  {
+    key: 'examSubjects',
+    label: '初试科目',
+    unit: null,
+  },
+] as const;
 
 @Injectable()
 export class ComparisonItemsService {
-  create(dto: CreateComparisonItemDto) {
-    return buildSkeletonResponse({
-      domain: 'comparisonItems',
-      action: 'create',
-      message:
-        'Comparison-pool insertion is scaffolded, but duplicate and max-count enforcement are still pending.',
-      nextSteps: [
-        'Validate the target program exists.',
-        'Enforce the per-user comparison pool size limit declared in docs/api-spec.md.',
-      ],
-      payload: dto,
-    });
+  constructor(
+    private readonly comparisonItemsRepository: ComparisonItemsRepository,
+  ) {}
+
+  async create(userId: string, dto: CreateComparisonItemDto) {
+    const existingItem =
+      await this.comparisonItemsRepository.findComparisonItemByUserAndTarget(
+        userId,
+        dto.targetType,
+        dto.targetId,
+      );
+    if (existingItem) {
+      throw new ConflictException('COMPARE_ITEM_DUPLICATED');
+    }
+
+    const currentCount =
+      await this.comparisonItemsRepository.countComparisonItemsByUser(userId);
+    if (currentCount >= COMPARISON_POOL_LIMIT) {
+      throw new BadRequestException('COMPARE_LIMIT_EXCEEDED');
+    }
+
+    const program = await this.comparisonItemsRepository.findProgramById(
+      dto.targetId,
+    );
+    if (!program) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    try {
+      const item = this.comparisonItemsRepository.createComparisonItem({
+        userId,
+        targetType: dto.targetType,
+        targetId: dto.targetId,
+      });
+      const savedItem =
+        await this.comparisonItemsRepository.saveComparisonItem(item);
+
+      return {
+        comparisonItemId: savedItem.id,
+        currentCount: currentCount + 1,
+        maxCount: COMPARISON_POOL_LIMIT,
+      };
+    } catch (error) {
+      if (this.isUniqueViolation(error)) {
+        throw new ConflictException('COMPARE_ITEM_DUPLICATED');
+      }
+
+      throw error;
+    }
   }
 
-  remove(targetType: string, targetId: string) {
-    return buildSkeletonResponse({
-      domain: 'comparisonItems',
-      action: 'remove',
-      message:
-        'Comparison-item removal is scaffolded, but ownership checks are still pending.',
-      nextSteps: [
-        'Resolve the comparison item for the current user.',
-        'Remove it while preserving insertion order for the remaining items.',
-      ],
-      payload: {
+  async remove(userId: string, targetType: 'program', targetId: string) {
+    const comparisonItem =
+      await this.comparisonItemsRepository.findComparisonItemByUserAndTarget(
+        userId,
         targetType,
         targetId,
-      },
-    });
+      );
+    if (!comparisonItem) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    await this.comparisonItemsRepository.removeComparisonItem(comparisonItem);
   }
 
-  getResult(query: QueryComparisonResultDto) {
-    return buildSkeletonResponse({
-      domain: 'comparisonItems',
-      action: 'getResult',
-      message:
-        'Comparison result aggregation is scaffolded, but year-scoped metrics and dimensions are still pending.',
-      nextSteps: [
-        'Load the current pool items in insertion order.',
-        'Aggregate score lines, ratios, and admissions metrics by exam year.',
-      ],
-      payload: query,
-    });
+  async getResult(userId: string, query: QueryComparisonResultDto) {
+    const items = await this.comparisonItemsRepository.getComparisonResultItems(
+      userId,
+      query.examYear,
+    );
+    if (items.length === 0) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    return {
+      items,
+      dimensions: COMPARISON_RESULT_DIMENSIONS,
+    };
+  }
+
+  private isUniqueViolation(error: unknown) {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === '23505'
+    );
   }
 }

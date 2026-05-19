@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CommonAuthModule } from './common/auth/common-auth.module';
 import { appConfig } from './common/config/app.config';
 import { databaseConfig } from './common/config/database.config';
 import { validateEnv } from './common/config/env.validation';
@@ -26,6 +27,7 @@ import { UsersModule } from './modules/users/users.module';
       load: [appConfig, databaseConfig],
       validate: validateEnv,
     }),
+    CommonAuthModule,
     DatabaseModule,
     AuthModule,
     UsersModule,

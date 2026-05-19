@@ -1,4 +1,11 @@
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class UpdateWeeklyPlanDto {
   @IsOptional()
@@ -10,7 +17,7 @@ export class UpdateWeeklyPlanDto {
   goals?: string;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 1 })
   @Min(0)
   @Max(168)
   expectedHours?: number;

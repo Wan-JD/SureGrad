@@ -1,37 +1,89 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_tab.dart';
+import '../../../core/models/feature_list_item.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
 import '../../../core/widgets/empty_state_card.dart';
 import '../../../core/widgets/section_card.dart';
 
-class FavoritesPage extends StatelessWidget {
+class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
 
   @override
+  State<FavoritesPage> createState() => _FavoritesPageState();
+}
+
+class _FavoritesPageState extends State<FavoritesPage> {
+  @override
   Widget build(BuildContext context) {
+    final repository = AppScope.of(context).favoritesRepository;
+
     return AppNavigationScaffold(
       currentTab: AppTab.profile,
       title: '我的收藏',
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          SectionCard(
-            title: '收藏模块骨架',
-            subtitle: '覆盖院校收藏、专业收藏和资料收藏三类对象，和 PRD、API 设计保持一致。',
+      child: FutureBuilder<List<FeatureListItem>>(
+        future: repository.fetchFavorites(),
+        builder: (context, snapshot) {
+          return ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              Text('• 支持按 targetType 分组展示'),
-              SizedBox(height: 6),
-              Text('• 后续接入 GET /favorites'),
-              SizedBox(height: 6),
-              Text('• 详情页收藏按钮统一回写到这里'),
+              if (snapshot.hasError)
+                EmptyStateCard(
+                  title: '收藏中心不可用',
+                  message: _errorMessage(snapshot.error),
+                  actionLabel: '重试',
+                  onAction: () => setState(() {}),
+                )
+              else if (!snapshot.hasData)
+                const _PageLoading()
+              else if (snapshot.data!.isEmpty)
+                const EmptyStateCard(
+                  title: '还没有收藏内容',
+                  message: '真实接口已经接上，只是当前没有返回任何收藏项。',
+                )
+              else
+                SectionCard(
+                  title: '真实收藏列表',
+                  children: snapshot.data!
+                      .map(
+                        (item) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(item.title),
+                          subtitle: Text(item.subtitle),
+                          trailing: item.footnote == null
+                              ? null
+                              : Text(item.footnote!),
+                        ),
+                      )
+                      .toList(),
+                ),
             ],
-          ),
-          EmptyStateCard(
-            title: '收藏数据待接入',
-            message: '当前仅保留页面结构、空态和后续联调边界，等后端 favorites 模块接通后再补真实列表。',
-          ),
-        ],
+          );
+        },
+      ),
+    );
+  }
+
+  String _errorMessage(Object? error) {
+    if (error is FeatureUnavailableException) {
+      return '${error.message}\n${error.nextSteps.join('\n')}';
+    }
+    return '$error';
+  }
+}
+
+class _PageLoading extends StatelessWidget {
+  const _PageLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDE7DB),
+        borderRadius: BorderRadius.circular(24),
       ),
     );
   }

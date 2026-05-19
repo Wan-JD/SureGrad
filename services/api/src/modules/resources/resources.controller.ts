@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { QueryResourcesDto } from './dto/query-resources.dto';
 import { ResourcesService } from './resources.service';
 
@@ -12,7 +12,7 @@ export class ResourcesController {
   }
 
   @Get(':resourceId')
-  findOne(@Param('resourceId') resourceId: string) {
+  findOne(@Param('resourceId', ParseUUIDPipe) resourceId: string) {
     return this.resourcesService.findOne(resourceId);
   }
 }

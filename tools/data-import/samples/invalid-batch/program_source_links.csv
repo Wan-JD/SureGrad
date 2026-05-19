@@ -1,0 +1,2 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,source_type,title,url,publisher_name,published_at,last_verified_at,status,source_confidence,notes
+示例大学,计算机学院,081200,计算机科学与技术,人工智能,2026,catalog,2026年硕士招生专业目录,https://grad.example.edu.cn/catalog,示例大学研究生院,03-15-2026,2026-03-15 10:30:00,stale,guessed,日期/状态/可信度都故意填错

@@ -5,10 +5,9 @@ class PlanningApi {
 
   final ApiClient client;
 
+  String get currentTargetPath => '/user-targets/current';
   String get currentPlanPath => '/study-plans/current';
   String get generatePlanPath => '/study-plans/generate';
   String get weeklyPlanPath => '/weekly-plans';
   String get dailyPlanPath => '/daily-plans';
-
-  Uri currentPlanUri() => client.resolve(currentPlanPath);
 }

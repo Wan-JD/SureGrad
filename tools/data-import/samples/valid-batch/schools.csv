@@ -1,0 +1,2 @@
+name,short_name,code,province,city,school_type,school_level,has_graduate_school,official_website,graduate_website,description,sort_order,status
+示例大学,示大,10001,北京,北京,综合,985/211,TRUE,https://www.example.edu.cn/?utm_source=wechat,https://grad.example.edu.cn/?from=share,  国家重点大学  ,0,active

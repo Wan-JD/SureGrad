@@ -1,0 +1,2 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,sequence_no,subject_role,subject_code_text,subject_name_text,subject_code,notes
+示例大学,计算机学院,081200,计算机科学与技术,人工智能,2026,1,politics,101,思想政治理论,101,subjects.csv 中的 category 故意写错

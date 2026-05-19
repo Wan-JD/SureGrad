@@ -1,0 +1,2 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,subject_role,book_title,book_author,book_publisher,book_isbn,is_required,notes
+示例大学,计算机学院,081200,计算机科学与技术,人工智能,2026,major_2,不存在的参考书,佚名,未知出版社,,TRUE,同时触发 books 与 subject_role 关联错误

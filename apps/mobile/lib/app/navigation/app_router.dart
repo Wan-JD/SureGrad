@@ -86,7 +86,10 @@ class AppRouter {
   Route<dynamic> _redirectToLogin(RouteSettings settings) {
     return _page(
       LoginPage(
-        args: LoginRouteArgs(redirectTo: settings.name ?? AppRoutes.home),
+        args: LoginRouteArgs(
+          redirectTo: settings.name ?? AppRoutes.home,
+          redirectArguments: settings.arguments,
+        ),
       ),
       settings,
     );

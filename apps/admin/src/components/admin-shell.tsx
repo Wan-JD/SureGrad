@@ -15,11 +15,11 @@ export function AdminShell({ children }: AdminShellProps) {
             <p className="eyebrow">MVP Console</p>
             <h1 className="topbar-title">SureGrad 管理后台</h1>
             <p className="topbar-copy">
-              面向 SureGrad MVP 数据维护场景的后台骨架。当前仅提供导航、布局和模块占位，
-              便于后续分阶段接入学校、专业、年份数据和资料治理能力。
+              面向 SureGrad MVP 数据治理场景的运营工作台。当前聚焦学校、院系、专业、年份数据与来源链接
+              五类核心页面，先把筛选、列表、详情和导入修订入口统一起来，方便后续接入真实 API。
             </p>
           </div>
-          <div className="topbar-tag">当前状态：骨架已就位</div>
+          <div className="topbar-tag">当前状态：首批运营页开发中</div>
         </header>
         <main className="admin-content">{children}</main>
       </div>

@@ -14,7 +14,7 @@ export function AdminSidebar() {
         <div>
           <p className="brand-title">SureGrad Admin</p>
           <p className="brand-subtitle">
-            围绕学校、专业、年份数据与资料来源的 MVP 后台工作台。
+            围绕学校、专业、年份数据与来源治理搭建的 MVP 运营工作台。
           </p>
         </div>
       </div>
@@ -43,8 +43,8 @@ export function AdminSidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <p>优先支持数据录入和治理，暂不进入复杂业务流程。</p>
-        <p>后续可继续接入登录、权限、表格、检索与表单能力。</p>
+        <p>当前优先支持数据录入与治理，不进入复杂业务流程。</p>
+        <p>后续可以继续接入登录、权限、服务端分页、表单校验与修订日志。</p>
       </div>
     </aside>
   );

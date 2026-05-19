@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "input_dir": "./samples/valid-batch",
+  "normalized_dir": "./.out/valid-batch-normalized",
+  "report_dir": "./.out/reports",
+  "validation": {
+    "strict_header_order": true,
+    "require_all_templates": true,
+    "allow_utf8_bom": true
+  },
+  "execution": {
+    "dry_run": true,
+    "stop_on_error": true,
+    "normalize_before_validate": true
+  },
+  "files": [
+    "schools.csv",
+    "departments.csv",
+    "subjects.csv",
+    "books.csv",
+    "programs.csv",
+    "program_admissions.csv",
+    "program_score_lines.csv",
+    "program_application_stats.csv",
+    "program_interview_stats.csv",
+    "program_exam_subjects.csv",
+    "program_reference_books.csv",
+    "program_source_links.csv"
+  ]
+}

@@ -14,7 +14,12 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFE4DDD2)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -23,7 +28,7 @@ class SectionCard extends StatelessWidget {
             Text(title, style: Theme.of(context).textTheme.titleMedium),
             if (subtitle != null) ...[
               const SizedBox(height: 6),
-              Text(subtitle!),
+              Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
             ],
             const SizedBox(height: 16),
             ...children,

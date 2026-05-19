@@ -1,35 +1,76 @@
-import { Injectable } from '@nestjs/common';
-import { buildSkeletonResponse } from '../../common/utils/build-skeleton-response';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { maskPhone } from '../../common/utils/mask-phone.util';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
+import { UsersRepository } from './repositories/users.repository';
 
 @Injectable()
 export class UsersService {
-  getMe() {
-    return buildSkeletonResponse({
-      domain: 'users',
-      action: 'getMe',
-      message:
-        'Current-user lookup is scaffolded, but auth guards and persistence are not connected yet.',
-      nextSteps: [
-        'Resolve current user from JWT auth guard.',
-        'Join profile, active target, and active plan aggregates.',
-        'Mask sensitive account fields before returning them.',
-      ],
-    });
+  constructor(private readonly usersRepository: UsersRepository) {}
+
+  async getMe(userId: string) {
+    const snapshot = await this.usersRepository.getUserSnapshot(userId);
+    if (!snapshot.user) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    return {
+      userId: snapshot.user.id,
+      phoneMasked: maskPhone(snapshot.user.phone),
+      nickname: snapshot.user.nickname,
+      avatarUrl: snapshot.user.avatarUrl,
+      profileCompleted: Boolean(snapshot.profile?.onboardingCompleted),
+      hasActiveTarget: snapshot.hasActiveTarget,
+      hasActivePlan: snapshot.hasActivePlan,
+    };
   }
 
-  upsertProfile(dto: UpdateUserProfileDto) {
-    return buildSkeletonResponse({
-      domain: 'users',
-      action: 'upsertProfile',
-      message:
-        'Profile creation/update contract is ready, but repository logic is still pending.',
-      nextSteps: [
-        'Map DTO fields into users and user_profiles tables.',
-        'Handle first-time onboarding completion state.',
-        'Add ownership checks once auth is enabled.',
-      ],
-      payload: dto,
-    });
+  async upsertProfile(userId: string, dto: UpdateUserProfileDto) {
+    if (dto.dailyStudyHours <= 0) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    const user = await this.usersRepository.findUserById(userId);
+    if (!user) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    if (dto.nickname !== undefined) {
+      user.nickname = dto.nickname;
+    }
+
+    if (dto.avatarUrl !== undefined) {
+      user.avatarUrl = dto.avatarUrl;
+    }
+
+    await this.usersRepository.saveUser(user);
+
+    let profile = await this.usersRepository.findProfileByUserId(userId);
+    if (!profile) {
+      profile = this.usersRepository.createProfile({
+        userId,
+      });
+    }
+
+    profile.examYear = dto.examYear;
+    profile.identityType = dto.identityType;
+    profile.undergraduateMajor = dto.undergraduateMajor;
+    profile.intendedDiscipline = dto.intendedDiscipline;
+    profile.dailyStudyHours = dto.dailyStudyHours;
+    profile.examMathRequired = dto.examMathRequired;
+    profile.onboardingCompleted = dto.onboardingCompleted ?? false;
+
+    const savedProfile = await this.usersRepository.saveProfile(profile);
+
+    return {
+      userProfileId: savedProfile.id,
+      examYear: savedProfile.examYear,
+      identityType: savedProfile.identityType,
+      dailyStudyHours: savedProfile.dailyStudyHours,
+      onboardingCompleted: savedProfile.onboardingCompleted,
+    };
   }
 }

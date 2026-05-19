@@ -1,0 +1,2 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,retest_candidate_count,final_admitted_count,interview_ratio,retest_weight,initial_exam_weight,notes,source_confidence
+示例大学,计算机学院,081200,计算机科学与技术,人工智能,2026,30,20,1.50,50,50,正常示例,official

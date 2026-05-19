@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:suregrad_mobile/app/app.dart';
@@ -8,6 +9,7 @@ void main() {
     await tester.pumpWidget(SureGradApp(bootstrap: AppBootstrap.create()));
 
     expect(find.text('SureGrad'), findsOneWidget);
-    expect(find.text('手机号登录'), findsOneWidget);
+    expect(find.byType(FilledButton), findsOneWidget);
+    expect(find.byType(OutlinedButton), findsOneWidget);
   });
 }

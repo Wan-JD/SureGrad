@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Noto_Sans_SC } from "next/font/google";
 import { AdminShell } from "@/components/admin-shell";
 import "./globals.css";
@@ -17,7 +17,13 @@ const headingFont = DM_Sans({
 
 export const metadata: Metadata = {
   title: "SureGrad 管理后台",
-  description: "SureGrad MVP 管理后台骨架",
+  description: "SureGrad MVP 运营管理后台",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

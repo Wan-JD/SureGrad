@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 
 export class UpdateCurrentTargetDto {
   @IsUUID()
@@ -17,8 +17,4 @@ export class UpdateCurrentTargetDto {
   @Min(0)
   @Max(500)
   targetScore?: number;
-
-  @IsOptional()
-  @IsIn(['active', 'archived'])
-  targetStatus?: 'active' | 'archived';
 }

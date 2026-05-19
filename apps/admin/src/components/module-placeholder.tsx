@@ -22,7 +22,7 @@ export function ModulePlaceholder({
             <h1>{title}</h1>
             <p className="placeholder-copy">{description}</p>
           </div>
-          <div className="placeholder-status">当前阶段：占位页</div>
+          <div className="placeholder-status placeholder-warning">本轮不交付</div>
         </div>
 
         <div className="placeholder-grid">
@@ -64,8 +64,8 @@ export function ModulePlaceholder({
         </div>
 
         <p className="placeholder-note">
-          说明：当前页面只承担导航落点和模块边界说明，不包含接口请求、表格分页、筛选器、
-          表单校验或权限控制。
+          当前页面仍是预留模块，只承担导航落点与结构边界说明。本轮不会把它与已交付运营页混写，后续再接入表格、
+          筛选、表单、校验与权限能力。
         </p>
       </section>
     </div>

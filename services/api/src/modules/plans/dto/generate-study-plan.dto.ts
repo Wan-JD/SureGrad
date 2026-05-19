@@ -1,18 +1,16 @@
-import { IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { IsBoolean, IsDateString, IsIn, IsOptional } from 'class-validator';
 
 export class GenerateStudyPlanDto {
-  @IsOptional()
-  @IsUUID()
-  userTargetId?: string;
-
   @IsIn(['standard', 'weak_foundation', 'cross_major', 'working'])
   templateType!: 'standard' | 'weak_foundation' | 'cross_major' | 'working';
 
-  @IsOptional()
   @IsDateString()
-  startDate?: string;
+  startDate!: string;
+
+  @IsDateString()
+  endDate!: string;
 
   @IsOptional()
-  @IsDateString()
-  endDate?: string;
+  @IsBoolean()
+  forceRegenerate?: boolean;
 }

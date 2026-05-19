@@ -1,35 +1,99 @@
-import { Injectable } from '@nestjs/common';
-import { buildSkeletonResponse } from '../../common/utils/build-skeleton-response';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { QueryResourcesDto } from './dto/query-resources.dto';
+import { ResourcesRepository } from './repositories/resources.repository';
 
 @Injectable()
 export class ResourcesService {
-  findAll(query: QueryResourcesDto) {
-    return buildSkeletonResponse({
-      domain: 'resources',
-      action: 'findAll',
-      message:
-        'Resource listing endpoint is scaffolded, but filtering and legal-resource curation are not implemented yet.',
-      nextSteps: [
-        'Load study_resources with subject and stage filters.',
-        'Default to public and legal resources in read queries.',
-        'Attach favorite-state decoration after auth is ready.',
-      ],
-      payload: query,
+  constructor(private readonly resourcesRepository: ResourcesRepository) {}
+
+  async findAll(query: QueryResourcesDto) {
+    this.assertAllowedSort(query.sortBy);
+
+    if (query.subjectId) {
+      const subject = await this.resourcesRepository.findSubjectById(
+        query.subjectId,
+      );
+      if (!subject) {
+        throw new BadRequestException('INVALID_PARAMS');
+      }
+    }
+
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const { items, total } = await this.resourcesRepository.findResources({
+      resourceType: query.resourceType,
+      subjectId: query.subjectId,
+      stageTag: query.stageTag,
+      isPublicLegal: query.isPublicLegal ?? true,
+      sortBy: query.sortBy as
+        | 'recommended'
+        | 'updated_at'
+        | 'created_at'
+        | undefined,
+      sortOrder: query.sortOrder,
+      page,
+      pageSize,
     });
+
+    return {
+      items: items.map((item) => this.toResourceListItem(item)),
+      pagination: {
+        page,
+        pageSize,
+        total,
+        hasMore: page * pageSize < total,
+      },
+    };
   }
 
-  findOne(resourceId: string) {
-    return buildSkeletonResponse({
-      domain: 'resources',
-      action: 'findOne',
-      message:
-        'Resource detail endpoint is reserved, but persistence is not connected yet.',
-      nextSteps: [
-        'Load the resource by ID from study_resources.',
-        'Return subject metadata and usage advice.',
-      ],
-      payload: { resourceId },
-    });
+  async findOne(resourceId: string) {
+    const resource =
+      await this.resourcesRepository.findResourceById(resourceId);
+    if (!resource) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    return {
+      ...this.toResourceListItem(resource),
+      usageAdvice: resource.usageAdvice,
+    };
+  }
+
+  private assertAllowedSort(sortBy?: string) {
+    const allowedSorts = ['recommended', 'updated_at', 'created_at', undefined];
+    if (!allowedSorts.includes(sortBy)) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+  }
+
+  private toResourceListItem(resource: {
+    resourceId: string;
+    title: string;
+    resourceType: string;
+    subjectId: string | null;
+    subjectName: string | null;
+    stageTag: string;
+    providerName: string | null;
+    summary: string | null;
+    sourceUrl: string;
+    isPublicLegal: boolean;
+  }) {
+    return {
+      resourceId: resource.resourceId,
+      title: resource.title,
+      resourceType: resource.resourceType,
+      subjectId: resource.subjectId,
+      subjectName: resource.subjectName,
+      stageTag: resource.stageTag,
+      providerName: resource.providerName,
+      summary: resource.summary,
+      sourceUrl: resource.sourceUrl,
+      isPublicLegal: resource.isPublicLegal,
+      isFavorited: false,
+    };
   }
 }

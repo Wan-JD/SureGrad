@@ -8,7 +8,7 @@ class SchoolsApi {
   String get listPath => '/schools';
   String get detailPathPattern => '/schools/{schoolId}';
   String get programsPathPattern => '/schools/{schoolId}/programs';
-
-  Uri listUri() => client.resolve(listPath);
-  Uri detailUri(String schoolId) => client.resolve('/schools/$schoolId');
+  String get favoritesPath => '/favorites';
+  String get comparisonItemsPath => '/comparison-items';
+  String get currentTargetPath => '/user-targets/current';
 }

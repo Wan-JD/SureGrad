@@ -41,4 +41,8 @@ build/
 # Generated
 tmp/
 temp/
-
+output/
+.playwright-cli/
+tools/data-import/.out/
+tools/data-import/__pycache__/
+apps/admin/.tmp-admin-tests/

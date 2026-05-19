@@ -1,0 +1,3 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,score_line_type,total_score,politics_score,english_score,subject_one_score,subject_two_score,notes,source_confidence
+示例大学,计算机学院,081200,计算机科学与技术,人工智能,2026,school,345,55,55,90,90,第一条,official
+示例大学,计算机学院,081200,计算机科学与技术,人工智能,2026,school,350,56,56,91,91,重复主键,official

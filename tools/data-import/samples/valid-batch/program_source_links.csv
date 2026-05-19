@@ -1,0 +1,4 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,source_type,title,url,publisher_name,published_at,last_verified_at,status,source_confidence,notes
+示例大学,计算机学院,081200,计算机科学与技术, 人工智能 ,2026,catalog,2026年硕士招生专业目录,https://grad.example.edu.cn/catalog?utm_source=wechat,示例大学研究生院,2025/09/20,2026-03-15 10:30:00,active,official,官方目录
+示例大学,计算机学院,081200,计算机科学与技术, 人工智能 ,2026,retest_rule,2026年复试录取办法,https://cs.example.edu.cn/retest#section,示例大学计算机学院,2026/03/10,2026-03-20 09:00:00,active,official,学院复试办法
+示例大学,计算机学院,085404,计算机技术,,2026,official_notice,2026年拟录取名单,https://grad.example.edu.cn/admit?from=timeline,示例大学研究生院,2026/04/08,2026-04-10 08:45:00,active,official,拟录取公告

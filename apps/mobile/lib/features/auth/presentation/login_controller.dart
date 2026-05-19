@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_result.dart';
+import '../data/auth_models.dart';
 import '../data/auth_repository.dart';
 
 class LoginController extends ChangeNotifier {
@@ -9,16 +10,53 @@ class LoginController extends ChangeNotifier {
   final AuthRepository repository;
 
   bool _isSubmitting = false;
+  bool _isSendingOtp = false;
   String? _errorText;
+  String? _otpFeedbackText;
 
   bool get isSubmitting => _isSubmitting;
+  bool get isSendingOtp => _isSendingOtp;
   String? get errorText => _errorText;
+  String? get otpFeedbackText => _otpFeedbackText;
 
-  Future<bool> submit({required String phone, required String otpCode}) async {
+  Future<bool> sendOtp(String phone) async {
+    if (phone.trim().isEmpty) {
+      _errorText = '请输入手机号。';
+      _otpFeedbackText = null;
+      notifyListeners();
+      return false;
+    }
+
+    _isSendingOtp = true;
+    _errorText = null;
+    _otpFeedbackText = null;
+    notifyListeners();
+
+    final result = await repository.sendOtp(phone: phone.trim());
+    _isSendingOtp = false;
+
+    if (result is ApiFailure<OtpSendResult>) {
+      _errorText = result.message;
+      notifyListeners();
+      return false;
+    }
+
+    final payload = (result as ApiSuccess<OtpSendResult>).data;
+    _otpFeedbackText = payload.sent
+        ? '验证码已通过真实接口发送。当前后端演示验证码仍为 123456。'
+        : '验证码发送失败，请稍后重试。';
+    notifyListeners();
+    return payload.sent;
+  }
+
+  Future<AuthSession?> submit({
+    required String phone,
+    required String otpCode,
+  }) async {
     if (phone.trim().isEmpty || otpCode.trim().isEmpty) {
       _errorText = '请输入手机号和验证码。';
       notifyListeners();
-      return false;
+      return null;
     }
 
     _isSubmitting = true;
@@ -32,13 +70,13 @@ class LoginController extends ChangeNotifier {
 
     _isSubmitting = false;
 
-    if (result is ApiFailure<void>) {
+    if (result is ApiFailure<AuthSession>) {
       _errorText = result.message;
       notifyListeners();
-      return false;
+      return null;
     }
 
     notifyListeners();
-    return true;
+    return (result as ApiSuccess<AuthSession>).data;
   }
 }

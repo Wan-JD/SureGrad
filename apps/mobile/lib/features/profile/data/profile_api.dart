@@ -7,6 +7,4 @@ class ProfileApi {
 
   String get mePath => '/users/me';
   String get currentTargetPath => '/user-targets/current';
-
-  Uri meUri() => client.resolve(mePath);
 }

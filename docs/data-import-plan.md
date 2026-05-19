@@ -374,11 +374,11 @@ school_name,department_name,program_code,program_name,research_direction,exam_ye
 ### 8.10 `program_exam_subjects.csv`
 
 ```csv
-school_name,department_name,program_code,program_name,research_direction,exam_year,sequence_no,subject_role,subject_code_text,subject_name_text,subject_dict_code,notes
+school_name,department_name,program_code,program_name,research_direction,exam_year,sequence_no,subject_role,subject_code_text,subject_name_text,subject_code,notes
 ```
 
 说明：
-`subject_dict_code` 用于映射 `subjects` 主表，可为空；为空时由脚本按名称匹配。
+`subject_code` 用于映射 `subjects` 主表，可为空；为空时由脚本按名称匹配。
 
 ### 8.11 `program_reference_books.csv`
 
@@ -392,7 +392,7 @@ school_name,department_name,program_code,program_name,research_direction,exam_ye
 ### 8.12 `program_source_links.csv`
 
 ```csv
-school_name,department_name,program_code,program_name,research_direction,exam_year,source_type,title,url,publisher_name,published_at,last_verified_at,status,notes
+school_name,department_name,program_code,program_name,research_direction,exam_year,source_type,title,url,publisher_name,published_at,last_verified_at,status,source_confidence,notes
 ```
 
 ## 9. 可选 JSON 模板
@@ -467,6 +467,13 @@ school_name,department_name,program_code,program_name,research_direction,exam_ye
 18. `run_import.ps1`
     Windows 一键串行执行脚本，适合当前环境。
 
+当前骨架的实际进度：
+
+1. `validate_csv.py` 已覆盖单文件校验、批次级跨文件关联校验、`program_source_links` 强约束校验，并支持 `--report-file` 输出 JSON 报告。
+2. `normalize_text.py` 已支持 `--report-file` 输出 JSON 报告。
+3. `run_import.ps1` 当前会串行执行“源文件校验 -> 规范化 -> 规范化后复校验”，并输出 `.out/reports/dry-run-report.json`。
+4. `generate_import_report.py`、正式入库脚本、来源巡检脚本仍未实现。
+
 如果后续增加更完整的中间层，也可再补：
 
 1. `staging_schema.sql`
@@ -487,6 +494,8 @@ school_name,department_name,program_code,program_name,research_direction,exam_ye
 8. 运行 `check_ratios.py` 与 `check_source_links.py`
 9. 输出 `generate_import_report.py`
 10. 人工确认异常后再正式导入生产库
+
+当前骨架能直接执行的是第 3、4 步，以及一个 dry-run 版的第 9 步：通过 `run_import.ps1` 生成 JSON 汇总报告，而不是正式导入报告。
 
 ### 11.2 试运行建议
 

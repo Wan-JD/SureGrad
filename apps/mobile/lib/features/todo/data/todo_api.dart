@@ -6,7 +6,6 @@ class TodoApi {
   final ApiClient client;
 
   String get listPath => '/todo-items';
-  String get completePathPattern => '/todo-items/{todoItemId}/complete';
 
-  Uri listUri() => client.resolve(listPath);
+  String completePath(String todoItemId) => '/todo-items/$todoItemId/complete';
 }

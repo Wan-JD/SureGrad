@@ -1,0 +1,2 @@
+school_name,department_name,program_name,program_code,degree_type,discipline_category,research_direction,exam_math_required,duration_years,tuition_per_year,notes,status
+示例大学,计算机学院,计算机科学与技术,081200,academic,工学,人工智能,TRUE,3.0,8000.00,程序主表有效，用于触发下游跨表错误,active

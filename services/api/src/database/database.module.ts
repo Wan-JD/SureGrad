@@ -25,7 +25,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           ),
           logging: configService.get<boolean>('database.logging', false),
           ssl: sslEnabled ? { rejectUnauthorized: false } : false,
-          manualInitialization: true,
           retryAttempts: 3,
           retryDelay: 3000,
           keepConnectionAlive: true,
