@@ -247,7 +247,7 @@ describe('ComparisonItemsService', () => {
     );
   });
 
-  it('throws invalid params when the comparison pool is empty', async () => {
+  it('returns an empty comparison payload when the comparison pool is empty', async () => {
     const comparisonItemsRepository = createComparisonItemsRepositoryMock();
     comparisonItemsRepository.getComparisonResultItems.mockResolvedValue([]);
 
@@ -255,10 +255,14 @@ describe('ComparisonItemsService', () => {
       asComparisonItemsRepository(comparisonItemsRepository),
     );
 
-    await expect(
-      service.getResult('user-1', {}),
-    ).rejects.toMatchObject<BadRequestException>({
-      message: 'INVALID_PARAMS',
+    await expect(service.getResult('user-1', {})).resolves.toEqual({
+      items: [],
+      dimensions: expect.any(Array),
+      pool: {
+        currentCount: 0,
+        maxCount: 4,
+        isEmpty: true,
+      },
     });
   });
 

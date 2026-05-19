@@ -120,13 +120,15 @@ export class ComparisonItemsService {
       userId,
       query.examYear,
     );
-    if (items.length === 0) {
-      throw new BadRequestException('INVALID_PARAMS');
-    }
 
     return {
       items,
       dimensions: COMPARISON_RESULT_DIMENSIONS,
+      pool: {
+        currentCount: items.length,
+        maxCount: COMPARISON_POOL_LIMIT,
+        isEmpty: items.length === 0,
+      },
     };
   }
 

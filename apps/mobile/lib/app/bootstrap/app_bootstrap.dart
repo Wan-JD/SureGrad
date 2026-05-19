@@ -8,6 +8,8 @@ import '../../core/state/app_session_store.dart';
 import '../../core/state/current_target_store.dart';
 import '../../features/auth/data/auth_api.dart';
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/checkins/data/checkins_api.dart';
+import '../../features/checkins/data/checkins_repository.dart';
 import '../../features/comparison/data/comparison_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
 import '../../features/planning/data/planning_api.dart';
@@ -32,6 +34,7 @@ class AppBootstrap {
     required this.schoolsRepository,
     required this.planningRepository,
     required this.todoRepository,
+    required this.checkinsRepository,
     required this.profileRepository,
     required this.favoritesRepository,
     required this.comparisonRepository,
@@ -77,6 +80,10 @@ class AppBootstrap {
         api: TodoApi(client: apiClient),
         refreshStore: refreshStore,
       ),
+      checkinsRepository: CheckinsRepository(
+        api: CheckinsApi(client: apiClient),
+        refreshStore: refreshStore,
+      ),
       profileRepository: ProfileRepository(
         api: ProfileApi(client: apiClient),
         currentTargetStore: currentTargetStore,
@@ -97,6 +104,7 @@ class AppBootstrap {
   final SchoolsRepository schoolsRepository;
   final PlanningRepository planningRepository;
   final TodoRepository todoRepository;
+  final CheckinsRepository checkinsRepository;
   final ProfileRepository profileRepository;
   final FavoritesRepository favoritesRepository;
   final ComparisonRepository comparisonRepository;

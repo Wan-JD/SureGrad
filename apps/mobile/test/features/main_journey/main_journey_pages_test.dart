@@ -9,6 +9,8 @@ import 'package:suregrad_mobile/core/state/app_session_store.dart';
 import 'package:suregrad_mobile/core/state/current_target_store.dart';
 import 'package:suregrad_mobile/features/auth/data/auth_api.dart';
 import 'package:suregrad_mobile/features/auth/data/auth_repository.dart';
+import 'package:suregrad_mobile/features/checkins/data/checkins_api.dart';
+import 'package:suregrad_mobile/features/checkins/data/checkins_repository.dart';
 import 'package:suregrad_mobile/features/comparison/data/comparison_repository.dart';
 import 'package:suregrad_mobile/features/favorites/data/favorites_repository.dart';
 import 'package:suregrad_mobile/features/home/presentation/home_page.dart';
@@ -271,6 +273,10 @@ AppBootstrap _createBootstrap({
     ),
     todoRepository: TodoRepository(
       api: TodoApi(client: client),
+      refreshStore: refreshStore,
+    ),
+    checkinsRepository: CheckinsRepository(
+      api: CheckinsApi(client: client),
       refreshStore: refreshStore,
     ),
     profileRepository: ProfileRepository(
