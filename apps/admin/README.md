@@ -1,6 +1,6 @@
 # SureGrad 管理后台
 
-`apps/admin` 是 SureGrad 的管理后台骨架工程，当前阶段只完成后台壳、导航结构和模块占位，不进入复杂业务实现。
+`apps/admin` 是 SureGrad 的管理后台工程，当前已经具备后台壳、模块导航、静态运营工作台以及学校 / 专业真实数据页的基础联调能力。
 
 ## 本次目标
 
@@ -79,10 +79,10 @@ apps/admin
 
 ## 当前未实现
 
-以下内容本次都没有进入：
+以下内容仍待继续补齐：
 
 - 登录与权限控制
-- 接口联调
+- 院系、年份数据、来源链接等管理 API 联调
 - 列表分页、搜索和筛选
 - 表单录入、校验和提交
 - 数据表格、详情抽屉、批量操作
@@ -91,24 +91,40 @@ apps/admin
 
 ## 启动方式
 
+推荐先启动 API，再启动后台。
+
 在仓库根目录执行：
 
 ```bash
+pnpm install
+pnpm dev:api
+```
+
+再新开一个终端执行：
+
+```bash
 cd apps/admin
-npm install
-npm run dev
+pnpm dev
 ```
 
 默认访问：
 
 ```text
-http://localhost:3000
+http://localhost:3001
 ```
 
-如果本机 3000 端口已被占用，可以改用：
+默认 API 地址：
+
+```text
+http://localhost:3000/api/v1
+```
+
+如需改后台指向的 API，可复制 `.env.example` 为 `.env.local` 后覆盖 `NEXT_PUBLIC_ADMIN_API_BASE_URL`。
+
+如果本机 3001 端口已被占用，可以改用：
 
 ```bash
-npm run dev -- --port 3001
+pnpm dev -- --port 3002
 ```
 
 ## 后续建议

@@ -30,6 +30,7 @@
 ```text
 tools/data-import/
 |-- README.md
+|-- collected/
 |-- config.example.yaml
 |-- config.valid-batch.yaml
 |-- csv_specs.py
@@ -42,6 +43,8 @@ tools/data-import/
 |   `-- invalid-batch/
 `-- .out/                # 运行输出目录，默认不提交
 ```
+
+`collected/` 用于存放已经人工核验过的真实采集批次。每个批次单独建目录，并附带一份 `README.md` 说明来源、范围和人工假设。
 
 ## 3. 模板列表
 
