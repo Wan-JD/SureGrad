@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { adminNavigation } from "@/config/admin-navigation";
+import { getCollectedImportBatches } from "@/lib/collected-import-batches";
 
 const focusAreas = [
   {
@@ -43,7 +44,32 @@ const workflowSteps = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const collectedBatches = await getCollectedImportBatches();
+  const collectedStats = collectedBatches.reduce(
+    (summary, batch) => {
+      summary.batches += 1;
+      summary.schools += batch.counts.schools;
+      summary.programs += batch.counts.programs;
+      summary.sourceLinks += batch.counts.sourceLinks;
+      summary.scoreLines += batch.counts.scoreLines;
+
+      for (const year of batch.years) {
+        summary.years.add(year);
+      }
+
+      return summary;
+    },
+    {
+      batches: 0,
+      schools: 0,
+      programs: 0,
+      sourceLinks: 0,
+      scoreLines: 0,
+      years: new Set<number>(),
+    },
+  );
+
   return (
     <div className="page-stack">
       <section className="hero-card home-hero">
@@ -92,6 +118,75 @@ export default function Home() {
               <h3>{item.label}</h3>
               <p>{item.description}</p>
             </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="section-card">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Collected</span>
+            <h2>真实采集批次概览</h2>
+          </div>
+          <p>首页直接读取 `tools/data-import/collected`，让后台能看见当前已经人工核验的真实批次，而不是只看演示列表。</p>
+        </div>
+        <div className="summary-strip">
+          <article className="summary-chip">
+            <strong>{collectedStats.batches}</strong>
+            <span>采集批次</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.schools}</strong>
+            <span>学校条目</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.programs}</strong>
+            <span>专业条目</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.sourceLinks}</strong>
+            <span>来源链接</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.scoreLines}</strong>
+            <span>分数线记录</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.years.size}</strong>
+            <span>覆盖年份</span>
+          </article>
+        </div>
+        <div className="collected-grid">
+          {collectedBatches.map((batch) => (
+            <article key={batch.id} className="collected-card">
+              <div className="collected-card-top">
+                <div>
+                  <span className="eyebrow">Batch</span>
+                  <h3>{batch.title}</h3>
+                </div>
+                <span className="status-pill">{batch.collectedAt ?? "未标注日期"}</span>
+              </div>
+              <p className="collected-copy">
+                学校 {batch.counts.schools} 条，专业 {batch.counts.programs} 条，来源链接 {batch.counts.sourceLinks} 条，分数线
+                {batch.counts.scoreLines} 条。
+              </p>
+              <div className="hero-chip-row">
+                <span className="hero-chip">年份: {batch.years.join(" / ") || "待补"}</span>
+                <span className="hero-chip">CSV: {batch.csvFiles.length}</span>
+                <span className="hero-chip">缺口: {batch.missingTemplates.length}</span>
+              </div>
+              <p className="collected-copy muted-copy">
+                缺失模板: {batch.missingTemplates.join(", ") || "已覆盖当前追踪模板"}
+              </p>
+              <div className="collected-actions">
+                <Link href="/source-links" className="module-card collected-action">
+                  查看来源治理
+                </Link>
+                <Link href="/yearly-data" className="module-card collected-action">
+                  查看年份数据
+                </Link>
+              </div>
+            </article>
           ))}
         </div>
       </section>
