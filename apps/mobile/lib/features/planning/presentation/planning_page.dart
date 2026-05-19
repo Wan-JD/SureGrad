@@ -220,6 +220,9 @@ class _PlanningPageState extends State<PlanningPage> {
         return;
       }
       await _refresh();
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('已触发真实计划生成请求。')));

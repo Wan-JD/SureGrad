@@ -207,7 +207,7 @@ class _TodoPageState extends State<TodoPage> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _selectedMoodTag,
+                    initialValue: _selectedMoodTag,
                     decoration: const InputDecoration(labelText: '今日状态'),
                     items: const [
                       DropdownMenuItem(value: 'focused', child: Text('专注')),
@@ -259,7 +259,7 @@ class _TodoPageState extends State<TodoPage> {
       },
     );
 
-    if (submitted != true) {
+    if (!mounted || submitted != true) {
       return;
     }
 
