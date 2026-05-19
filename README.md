@@ -1,92 +1,149 @@
 # SureGrad
 
-中文品牌名可选：`一研为定`
+中文品牌名可用于产品展示：`一研为定`
 
-SureGrad 是一款以 Android 为优先平台的考研备考 App，核心聚焦以下方向：
-
-- 院校与专业信息分析
-- 分数线、报录比、复录比等择校数据
-- 学习规划、Todo、打卡与执行闭环
-- 合法公开的学习资料推荐
-
-## 项目目标
-
-本项目希望解决考研用户在备考过程中的两类关键问题：
-
-1. 择校信息分散，难以高效对比和决策
-2. 学习规划与日常执行容易断裂，缺少持续推进工具
-
-MVP 当前聚焦的核心闭环为：
+SureGrad 是一个 Android-first 的考研备考产品，当前 MVP 核心闭环是：
 
 `查院校 -> 收藏对比 -> 设定目标 -> 生成学习计划 -> 执行 Todo -> 打卡复盘`
+
+## 先读这里
+
+如果你是新开的对话、刚接手的主控线程，或者准备分发子任务，先读：
+
+1. `docs/start-here.md`
+2. `docs/project-plan.md`
+3. `docs/prd.md`
+
+`docs/start-here.md` 已经整理了当前仓库的阅读顺序、真实数据采集状态、后台现状和下一步建议，优先级高于聊天记录。
+
+## 工作区规则
+
+所有本地路径、脚本说明、文档链接和提示词统一使用：
+
+`C:\Users\hp\Documents\SureGrad`
 
 ## 仓库结构
 
 ```text
-docs/               产品、需求、流程与数据库设计文档
-apps/mobile/        Flutter 移动端应用
-apps/admin/         管理后台
-services/api/       后端 API 服务
-packages/shared/    共享常量、类型或工具
-tools/data-import/  数据导入与处理脚本
+docs/               产品、需求、流程、架构与接班入口
+apps/mobile/        Flutter Android-first 移动端
+apps/admin/         Next.js 管理后台
+services/api/       NestJS 后端 API
+packages/shared/    共享类型与工具
+tools/data-import/  数据采集、校验、规范化与 dry-run 工具链
 ```
 
-## 工作区路径
+## 当前状态概览
 
-后续所有 Codex 会话、脚本路径、文档链接和协作提示词，统一使用英文工作区路径：
+### 文档
 
-`C:\Users\hp\Documents\SureGrad`
+以下基线文档已在仓库内维护：
 
-请不要在新的会话提示词里再使用 `C:\Users\hp\Documents\一研为定`。
+1. `docs/project-plan.md`
+2. `docs/prd.md`
+3. `docs/ux-flow.md`
+4. `docs/database-design.md`
+5. `docs/schema.sql`
+6. `docs/api-spec.md`
+7. `docs/backend-architecture.md`
+8. `docs/mobile-architecture.md`
+9. `docs/data-import-plan.md`
+10. `docs/codex-session-prompts.md`
+11. `docs/start-here.md`
 
-## 当前文档基线
+### 后端
 
-当前仓库已经完成以下基础文档：
+`services/api` 已经不只是纯骨架，正沿着 `docs/api-spec.md` 继续把部分接口从 skeleton 推进到真实实现。
 
-- `docs/project-plan.md`：项目计划书
-- `docs/prd.md`：MVP 产品需求文档
-- `docs/database-design.md`：数据库设计文档
-- `docs/schema.sql`：PostgreSQL 建表 SQL
-- `docs/api-spec.md`：MVP 接口设计文档
-- `docs/ux-flow.md`：页面流程与信息架构文档
-- `docs/backend-architecture.md`：后端骨架架构说明
-- `docs/mobile-architecture.md`：移动端骨架与路由说明
-- `docs/data-import-plan.md`：院校数据导入方案
+### 移动端
 
-## 当前工程启动顺序
+`apps/mobile` 已经具备主流程级页面和状态串联，当前阶段重点是继续提高真实联调占比与视觉验收质量。
 
-建议按下面顺序启动，便于三端联调：
+### 后台
 
-1. 根目录执行 `pnpm install`
-2. 启动后端：`pnpm dev:api`
-3. 启动后台：`pnpm --filter admin dev`
-4. 启动移动端：
-   `cd apps/mobile`
-   `flutter pub get`
-   `flutter run`
+`apps/admin` 已经从偏开发者式样板收口到运营工作台表达，并且首页、来源链接页、年份数据页已经能看见仓库里的部分真实采集批次。
 
-说明：
+### 数据采集
 
-- 当前 `services/api` 处于骨架阶段，数据库连接是手动初始化策略，没有 PostgreSQL 也能先启动。
-- `apps/mobile` 目前以 Android-first Flutter 骨架为主，适合先联通登录、择校、规划、收藏、对比、提醒占位流程。
+`tools/data-import` 已有可验收的校验、规范化、批次报告和 dry-run 工具链，同时已经落地第一批真实采集样例：
 
-## 协作建议
+`tools/data-import/collected/ecust-cs-2024`
 
-建议在 Codex 中采用“主控窗口 + 多线程分工”的方式推进：
+## 快速启动
 
-1. 主控窗口负责审阅、统一口径、提交与推送
-2. 产品线程负责 PRD、流程和路线图文档
-3. 数据线程负责建模、DDL 和导入方案
-4. 后端线程负责 API 与服务骨架
-5. 移动端线程负责 Flutter 工程与页面主流程
-6. 后台线程负责管理后台与运营能力
+在仓库根目录执行：
 
-后续提示词模板见：[docs/codex-session-prompts.md](C:/Users/hp/Documents/SureGrad/docs/codex-session-prompts.md)
+```bash
+pnpm install
+pnpm dev:api
+```
 
-## 后续推荐顺序
+启动后台：
 
-1. 完善数据导入方案
-2. 初始化 `services/api` 后端骨架
-3. 初始化 `apps/mobile` 移动端骨架
-4. 初始化 `apps/admin` 管理后台骨架
-5. 进入 MVP 第一批功能开发与联调
+```bash
+cd apps/admin
+pnpm dev
+```
+
+后台默认访问地址：
+
+```text
+http://localhost:3001
+```
+
+后台默认 API 地址：
+
+```text
+http://localhost:3000/api/v1
+```
+
+启动移动端：
+
+```bash
+cd apps/mobile
+flutter pub get
+flutter run
+```
+
+## 模块文档入口
+
+### 主控 / 接班
+
+1. `docs/start-here.md`
+2. `docs/codex-session-prompts.md`
+
+### 后端
+
+1. `docs/api-spec.md`
+2. `docs/database-design.md`
+3. `docs/schema.sql`
+4. `docs/backend-architecture.md`
+
+### 移动端
+
+1. `docs/prd.md`
+2. `docs/ux-flow.md`
+3. `docs/api-spec.md`
+4. `docs/mobile-architecture.md`
+
+### 后台
+
+1. `docs/database-design.md`
+2. `docs/schema.sql`
+3. `docs/data-import-plan.md`
+4. `apps/admin/README.md`
+
+### 数据采集
+
+1. `docs/data-import-plan.md`
+2. `docs/database-design.md`
+3. `docs/schema.sql`
+4. `tools/data-import/README.md`
+
+## 协作约定
+
+1. 新对话先读文档，再看 `git status`，不要只依赖聊天记录。
+2. 主控线程优先负责审阅、验收、统一口径、文档同步和推送时机。
+3. 详细实现尽量分发给子线程，主控不要把所有细节工作都自己做完。
+4. 涉及后台或移动端页面的改动，验收时必须补视觉检查。
+5. 每一轮迭代结束后，把“当前状态、已知缺口、下一步建议”写回仓库文档。

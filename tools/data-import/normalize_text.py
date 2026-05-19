@@ -58,19 +58,30 @@ SPACE_RE = re.compile(r"\s+")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Normalize SureGrad import CSV files.")
-    parser.add_argument("--input", required=True, help="Input CSV file or directory.")
+    parser.add_argument(
+        "--input",
+        action="append",
+        required=True,
+        help="Input CSV file or directory. Repeat this flag to normalize multiple files.",
+    )
     parser.add_argument("--output-dir", required=True, help="Directory for normalized CSV files.")
     parser.add_argument("--report-file", help="Optional path to write a machine-readable JSON normalization report.")
     return parser.parse_args()
 
 
-def resolve_input_files(raw_input: str) -> list[Path]:
-    path = Path(raw_input).resolve()
-    if path.is_dir():
-        return sorted(path.glob("*.csv"))
-    if path.is_file():
-        return [path]
-    raise FileNotFoundError(f"Input path not found: {path}")
+def resolve_input_files(raw_inputs: list[str]) -> list[Path]:
+    files_by_path: dict[str, Path] = {}
+    for raw_input in raw_inputs:
+        path = Path(raw_input).resolve()
+        if path.is_dir():
+            for file_path in sorted(path.glob("*.csv")):
+                files_by_path[str(file_path)] = file_path
+            continue
+        if path.is_file():
+            files_by_path[str(path)] = path
+            continue
+        raise FileNotFoundError(f"Input path not found: {path}")
+    return list(files_by_path.values())
 
 
 def decode_utf8(path: Path) -> str:

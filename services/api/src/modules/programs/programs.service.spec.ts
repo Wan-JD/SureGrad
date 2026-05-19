@@ -184,6 +184,7 @@ describe('ProgramsService', () => {
         publishedAt: new Date('2025-09-01T00:00:00.000Z'),
         lastVerifiedAt: new Date('2026-05-12T00:00:00.000Z'),
         status: 'active',
+        sourceConfidence: 'official',
         notes: null,
         updatedAt: new Date('2026-05-12T00:00:00.000Z'),
       },
@@ -197,6 +198,7 @@ describe('ProgramsService', () => {
         publishedAt: null,
         lastVerifiedAt: new Date('2026-05-11T00:00:00.000Z'),
         status: 'active',
+        sourceConfidence: 'official',
         notes: null,
         updatedAt: new Date('2026-05-11T00:00:00.000Z'),
       },
@@ -275,10 +277,12 @@ describe('ProgramsService', () => {
         {
           sourceLinkId: 'source-1',
           examYear: 2025,
+          sourceConfidence: 'official',
         },
         {
           sourceLinkId: 'source-2',
           examYear: null,
+          sourceConfidence: 'official',
         },
       ],
       dataUpdatedAt: '2026-05-12T00:00:00.000Z',

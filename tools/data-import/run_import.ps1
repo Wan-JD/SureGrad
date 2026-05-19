@@ -34,6 +34,33 @@ function Resolve-ConfigPathValue {
     return [System.IO.Path]::GetFullPath((Join-Path $BaseDirectory $Value))
 }
 
+function Resolve-ConfigFileTargets {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BaseDirectory,
+        [object[]]$Files
+    )
+
+    if (-not $Files -or $Files.Count -eq 0) {
+        return @()
+    }
+
+    $targets = @()
+    foreach ($file in $Files) {
+        if (-not $file) {
+            continue
+        }
+
+        if ([System.IO.Path]::IsPathRooted([string]$file)) {
+            $targets += [System.IO.Path]::GetFullPath([string]$file)
+        } else {
+            $targets += [System.IO.Path]::GetFullPath((Join-Path $BaseDirectory ([string]$file)))
+        }
+    }
+
+    return $targets
+}
+
 function Invoke-PythonStep {
     param(
         [Parameter(Mandatory = $true)]
@@ -72,11 +99,12 @@ New-Item -ItemType Directory -Force -Path $reportDir | Out-Null
 $sourceValidateReportPath = Join-Path $reportDir "validate-source.json"
 $normalizeReportPath = Join-Path $reportDir "normalize.json"
 $normalizedValidateReportPath = Join-Path $reportDir "validate-normalized.json"
+$importReportJsonPath = Join-Path $reportDir "import-report.json"
+$importReportMarkdownPath = Join-Path $reportDir "import-report.md"
 $finalReportPath = Join-Path $reportDir "dry-run-report.json"
 
 $validateArgs = @(
-    (Join-Path $PSScriptRoot "validate_csv.py"),
-    $inputDir
+    (Join-Path $PSScriptRoot "validate_csv.py")
 )
 
 if (-not $config.validation.strict_header_order) {
@@ -87,30 +115,54 @@ if ($config.validation.require_all_templates) {
     $validateArgs += "--require-all-templates"
 }
 
+$normalizeEnabled = [bool]$config.execution.normalize_before_validate
+$totalSteps = if ($normalizeEnabled) { 4 } else { 2 }
+$configuredFiles = if ($config.PSObject.Properties.Name -contains "files") { @($config.files) } else { @() }
+$configuredInputTargets = Resolve-ConfigFileTargets -BaseDirectory $inputDir -Files $configuredFiles
+
+if ($configuredInputTargets.Count -gt 0) {
+    $validateArgs += $configuredInputTargets
+} else {
+    $validateArgs += $inputDir
+}
+
 $validateArgs += @("--report-file", $sourceValidateReportPath)
 
-Write-Host "Step 1/3: validating source CSV files from $inputDir"
+Write-Host "Step 1/${totalSteps}: validating source CSV files from $inputDir"
 Invoke-PythonStep -Name "validate-source" -Arguments $validateArgs
 
-$normalizeEnabled = [bool]$config.execution.normalize_before_validate
-$stepCount = if ($normalizeEnabled) { 3 } else { 1 }
-
 if ($normalizeEnabled) {
-    Write-Host "Step 2/3: normalizing CSV files into $normalizedDir"
-    Invoke-PythonStep -Name "normalize" -Arguments @(
-        (Join-Path $PSScriptRoot "normalize_text.py"),
-        "--input",
-        $inputDir,
+    Write-Host "Step 2/${totalSteps}: normalizing CSV files into $normalizedDir"
+    $normalizeArgs = @((Join-Path $PSScriptRoot "normalize_text.py"))
+
+    if ($configuredInputTargets.Count -gt 0) {
+        foreach ($target in $configuredInputTargets) {
+            $normalizeArgs += @("--input", $target)
+        }
+    } else {
+        $normalizeArgs += @("--input", $inputDir)
+    }
+
+    $normalizeArgs += @(
         "--output-dir",
         $normalizedDir,
         "--report-file",
         $normalizeReportPath
     )
 
+    Invoke-PythonStep -Name "normalize" -Arguments $normalizeArgs
+
     $normalizedValidateArgs = @(
-        (Join-Path $PSScriptRoot "validate_csv.py"),
-        $normalizedDir
+        (Join-Path $PSScriptRoot "validate_csv.py")
     )
+
+    if ($configuredFiles.Count -gt 0) {
+        foreach ($file in $configuredFiles) {
+            $normalizedValidateArgs += (Join-Path $normalizedDir ([string]$file))
+        }
+    } else {
+        $normalizedValidateArgs += $normalizedDir
+    }
 
     if (-not $config.validation.strict_header_order) {
         $normalizedValidateArgs += "--allow-header-reorder"
@@ -122,13 +174,40 @@ if ($normalizeEnabled) {
 
     $normalizedValidateArgs += @("--report-file", $normalizedValidateReportPath)
 
-    Write-Host "Step 3/3: validating normalized CSV files"
+    Write-Host "Step 3/${totalSteps}: validating normalized CSV files"
     Invoke-PythonStep -Name "validate-normalized" -Arguments $normalizedValidateArgs
 }
+
+$generateReportArgs = @(
+    (Join-Path $PSScriptRoot "generate_import_report.py"),
+    "--input-dir",
+    $inputDir,
+    "--validate-source-report",
+    $sourceValidateReportPath,
+    "--output-json",
+    $importReportJsonPath,
+    "--output-markdown",
+    $importReportMarkdownPath
+)
+
+if ($normalizeEnabled) {
+    $generateReportArgs += @(
+        "--normalize-report",
+        $normalizeReportPath,
+        "--validate-normalized-report",
+        $normalizedValidateReportPath
+    )
+}
+
+$reportStepNumber = if ($normalizeEnabled) { 4 } else { 2 }
+
+Write-Host "Step ${reportStepNumber}/${totalSteps}: generating batch import report"
+Invoke-PythonStep -Name "generate-import-report" -Arguments $generateReportArgs
 
 $sourceValidateReport = Get-Content -LiteralPath $sourceValidateReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $normalizeReport = $null
 $normalizedValidateReport = $null
+$importReport = Get-Content -LiteralPath $importReportJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
 if ($normalizeEnabled) {
     $normalizeReport = Get-Content -LiteralPath $normalizeReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -147,6 +226,7 @@ $finalReport = [ordered]@{
         validate_source = $sourceValidateReport
         normalize = $normalizeReport
         validate_normalized = $normalizedValidateReport
+        generate_import_report = $importReport
     }
     summary = [ordered]@{
         source_files = [int]$sourceValidateReport.summary.files
@@ -158,6 +238,10 @@ $finalReport = [ordered]@{
         changed_cells = if ($normalizeReport) { [int]$normalizeReport.summary.changed_cells } else { 0 }
         normalized_errors = if ($normalizedValidateReport) { [int]$normalizedValidateReport.summary.errors } else { 0 }
         normalized_warnings = if ($normalizedValidateReport) { [int]$normalizedValidateReport.summary.warnings } else { 0 }
+        import_report_manual_review_items = [int]$importReport.quality_gate.manual_review_item_count
+        import_report_blocking_issues = [int]$importReport.quality_gate.blocking_issue_count
+        import_report_json = $importReportJsonPath
+        import_report_markdown = $importReportMarkdownPath
     }
 }
 

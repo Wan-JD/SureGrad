@@ -141,6 +141,7 @@ export class ProgramsService {
         publishedAt: item.publishedAt,
         lastVerifiedAt: item.lastVerifiedAt?.toISOString() ?? null,
         status: item.status,
+        sourceConfidence: item.sourceConfidence,
         notes: item.notes,
       })),
       dataUpdatedAt: this.pickLatestUpdatedAt([

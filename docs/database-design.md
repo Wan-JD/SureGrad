@@ -461,6 +461,7 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 | published_at | date | 发布时间，可为空 |
 | last_verified_at | timestamptz | 最后校验时间 |
 | status | varchar(20) | active/invalid/pending |
+| source_confidence | varchar(20) | official/estimated/manual |
 | notes | text | 备注 |
 | created_at | timestamptz | 创建时间 |
 | updated_at | timestamptz | 更新时间 |
@@ -469,6 +470,8 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 
 1. `idx_program_source_links_program_year`
 2. `idx_program_source_links_status`
+3. `uq_program_source_links_program_year_url`
+4. `uq_program_source_links_program_url_when_year_null`
 
 ## 8.6 `study_resources`
 

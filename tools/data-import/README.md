@@ -6,9 +6,45 @@
 2. 编码、字段、枚举、格式校验
 3. 文本规范化
 4. 批次级跨文件关联校验
-5. Windows dry-run 串行执行和 JSON 报告
+5. 批次级导入报告生成
+6. Windows dry-run 串行执行和 JSON / Markdown 报告
 
-当前还不包含数据库写入、映射表落库、正式导入报告生成。
+当前还不包含数据库写入和映射表落库。
+
+在继续改这一条线之前，先读：
+
+1. `docs/start-here.md`
+2. `docs/data-import-plan.md`
+3. `docs/database-design.md`
+4. `docs/schema.sql`
+
+## 0. 当前真实采集状态
+
+当前仓库已经落地一批人工核验过的真实采集样例：
+
+`tools/data-import/collected/ecust-cs-2024`
+
+当前批次包含：
+
+1. `schools.csv`
+2. `departments.csv`
+3. `programs.csv`
+4. `program_score_lines.csv`
+5. `program_source_links.csv`
+
+覆盖范围：
+
+1. 学校：华东理工大学
+2. 年份：`2024`
+3. 专业：`081200 计算机科学与技术`
+
+当前批次说明：
+
+1. 已附带批次级 `README.md`，记录官方来源与人工假设。
+2. 这一轮优先保证真源、来源追溯和模板链路跑通，不先猜测缺失数字。
+3. 当前仍缺少 `program_admissions`、`program_application_stats`、`program_interview_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板内容。
+
+因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 
 ## 1. 真源与口径
 
@@ -31,9 +67,11 @@
 tools/data-import/
 |-- README.md
 |-- collected/
+|-- config.collected-ecust-cs-2024.yaml
 |-- config.example.yaml
 |-- config.valid-batch.yaml
 |-- csv_specs.py
+|-- generate_import_report.py
 |-- normalize_text.py
 |-- run_import.ps1
 |-- validate_csv.py
@@ -126,9 +164,15 @@ tools/data-import/
 1. 校验原始 CSV
 2. 规范化到 `.out/...`
 3. 再校验规范化结果
-4. 汇总写出 `.out/reports/*.json`
+4. 生成批次级 `import-report.json` 和 `import-report.md`
+5. 汇总写出 `.out/reports/*.json`
 
 当前不会执行数据库写入；`dry_run=false` 也只会提示骨架尚未实现导入器。
+
+补充说明：
+
+1. 如果配置里提供了 `files` 列表，`run_import.ps1` 会只处理这些 CSV，而不是盲扫整个目录。
+2. `config.collected-ecust-cs-2024.yaml` 就是一个“部分批次 + 指定文件列表”的真实示例。
 
 ## 5. Dry-Run 用法
 
@@ -154,11 +198,23 @@ powershell -ExecutionPolicy Bypass -File tools/data-import/run_import.ps1 -Confi
 预期结果：
 
 1. `valid-batch` 校验通过
-2. `run_import.ps1` 三步通过
+2. `run_import.ps1` 四步通过
 3. `.out/reports/` 下生成：
-   `validate-source.json`、`normalize.json`、`validate-normalized.json`、`dry-run-report.json`
+   `validate-source.json`、`normalize.json`、`validate-normalized.json`、`import-report.json`、`import-report.md`、`dry-run-report.json`
 
-### 5.3 无效样例批次
+### 5.3 真实采集批次 dry-run
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/data-import/run_import.ps1 -ConfigPath tools/data-import/config.collected-ecust-cs-2024.yaml
+```
+
+预期结果：
+
+1. `ecust-cs-2024` 在部分模板模式下校验通过
+2. `.out/reports/ecust-cs-2024/` 下生成完整批次报告
+3. `import-report.json` 能直接看见学校、年份、模板覆盖和人工复核项
+
+### 5.4 无效样例批次
 
 ```powershell
 python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch --require-all-templates
@@ -207,6 +263,15 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 7. 年度数据入库脚本
 8. 考试科目与参考书关系入库脚本
 9. 来源链接巡检脚本
-10. 正式导入报告与人工复核清单导出
+10. 正式数据库导入执行器
 
-所以这里现在是“可验收的前置工具链”，还不是“可入库的完整导入器”。
+所以这里现在是“可验收的前置工具链 + 批次报告层”，还不是“可入库的完整导入器”。
+
+## 8. 下一步建议
+
+推荐按以下顺序继续：
+
+1. 继续采第二个真实批次，或者补齐 `ecust-cs-2024` 缺失模板。
+2. 每个批次都要保留来源链接、核验时间和批次 README。
+3. 采集完成后至少跑一次 `run_import.ps1`，让 `import-report.json` 和 `import-report.md` 一起沉淀下来。
+4. 后续补正式导入器时，保持 `schema.sql` 作为字段与约束的事实来源。

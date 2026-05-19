@@ -1,6 +1,13 @@
 # SureGrad 管理后台
 
-`apps/admin` 是 SureGrad 的管理后台工程，当前已经具备后台壳、模块导航、静态运营工作台以及学校 / 专业真实数据页的基础联调能力。
+`apps/admin` 是 SureGrad 的运营后台工程，目标是给运营同学提供学校、院系、专业、年份数据、资料推荐、来源链接这 6 条主数据治理入口。
+
+在继续修改后台之前，先读：
+
+1. `docs/start-here.md`
+2. `docs/database-design.md`
+3. `docs/schema.sql`
+4. `docs/data-import-plan.md`
 
 ## 本次目标
 
@@ -38,40 +45,43 @@ apps/admin
 │  │  ├─ layout.tsx
 │  │  └─ page.tsx
 │  ├─ components/
-│  │  ├─ admin-shell.tsx
-│  │  ├─ admin-sidebar.tsx
-│  │  └─ module-placeholder.tsx
-│  └─ config/
-│     └─ admin-navigation.ts
+│  ├─ config/
+│  └─ lib/
+├─ .env.example
 ├─ eslint.config.mjs
 ├─ next.config.mjs
 ├─ package.json
 └─ tsconfig.json
 ```
 
-## 页面说明
+## 当前联调状态
 
 - `/`
-  后台首页，用于展示骨架说明、模块入口和当前实现边界。
+  首页已经会直接读取 `tools/data-import/collected`，展示真实采集批次数、学校数、专业数、来源链接数、分数线记录数和覆盖年份。
 - `/schools`
-  学校管理占位页。
+  学校管理页已按真实 API 工作台思路搭建，默认请求 `NEXT_PUBLIC_ADMIN_API_BASE_URL`。
 - `/departments`
-  院系管理占位页。
+  院系管理页当前仍以工作台骨架与运营视角文案为主。
 - `/programs`
-  专业管理占位页。
+  专业管理页已按真实 API 工作台思路搭建，默认请求 `NEXT_PUBLIC_ADMIN_API_BASE_URL`。
 - `/yearly-data`
-  年份数据管理占位页，后续可拆分到分数线、报录比、复录比等子模块。
+  年份数据页会优先展示 `tools/data-import/collected` 里已采集的真实年度表；当前真实接入最明确的是分数线页签。
 - `/resources`
-  资料推荐管理占位页。
+  资料推荐页仍以运营结构、列表与详情布局为主，后续继续接真实数据。
 - `/source-links`
-  来源链接管理占位页。
+  来源链接页会优先展示已采集真实批次里的来源链接，便于运营核对批次覆盖、年份和复核时间。
+
+补充说明：
+
+1. 后台文案已经在向运营表达收口，后续不要把原始 `id`、表名、工程枚举重新当成主信息展示。
+2. 如果本地 API 没有把 `/api/v1/schools` 等接口跑通，学校页和专业页可能展示空态或错误态，这属于联调缺口，不代表后台结构未完成。
 
 ## 与文档的对应关系
 
 - `schools -> departments -> programs`
   对应学校、院系、专业 3 个后台主模块。
 - `program_admissions / program_score_lines / program_application_stats / program_interview_stats`
-  统一归入“年份数据管理”入口，先保留聚合落点。
+  统一归入“年份数据管理”入口。
 - `study_resources`
   对应“资料推荐管理”。
 - `program_source_links`
@@ -85,7 +95,7 @@ apps/admin
 - 院系、年份数据、来源链接等管理 API 联调
 - 列表分页、搜索和筛选
 - 表单录入、校验和提交
-- 数据表格、详情抽屉、批量操作
+- 数据表格、详情区、批量操作
 - 上传、导入导出
 - 业务状态流转
 
@@ -131,7 +141,7 @@ pnpm dev -- --port 3002
 
 推荐按以下顺序继续往下做：
 
-1. 接入后台登录与基础权限壳
-2. 为 6 个模块补充列表页与筛选区
-3. 按数据库设计文档逐步接入表单和 API
-4. 拆出年份数据子页面与来源追踪能力
+1. 继续打通 `schools`、`programs` 的真实接口，减少学校页和专业页对空态的依赖。
+2. 为 6 个模块补充更完整的列表筛选、表单录入和导入修订流程。
+3. 让年份数据页不只展示“当前有什么”，也能清楚暴露“还缺什么模板、什么年份、什么字段”。
+4. 后续所有后台迭代都保持运营视角，避免退回开发者控制台式表达。

@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--require-all-templates",
         action="store_true",
-        help="Fail if any expected template file is missing in the provided directories.",
+        help="Fail if any expected template file is missing in the provided inputs.",
     )
     parser.add_argument(
         "--allow-header-reorder",
@@ -409,11 +409,12 @@ def validate_file(path: Path, allow_header_reorder: bool) -> FileReport:
     return report
 
 
-def validate_required_templates(directories: list[Path]) -> list[str]:
+def validate_required_templates(directories: list[Path], files: list[Path]) -> list[str]:
     missing: list[str] = []
     available = set()
     for directory in directories:
         available.update(path.name for path in directory.glob("*.csv"))
+    available.update(path.name for path in files)
     for filename in DEFAULT_TEMPLATE_FILES:
         if filename not in available:
             missing.append(filename)
@@ -710,7 +711,7 @@ def main() -> int:
 
     missing_templates: list[str] = []
     if args.require_all_templates:
-        missing_templates = validate_required_templates(directories)
+        missing_templates = validate_required_templates(directories, files)
         for filename in missing_templates:
             print(f"ERROR: missing required template file `{filename}`", file=sys.stderr)
 

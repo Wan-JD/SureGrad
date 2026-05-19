@@ -1,8 +1,24 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { TimestampedEntity } from './base/timestamped.entity';
 import { ProgramEntity } from './program.entity';
 
 @Entity({ name: 'program_source_links' })
+@Index(
+  'uq_program_source_links_program_year_url',
+  ['programId', 'examYear', 'url'],
+  {
+    unique: true,
+    where: '"exam_year" IS NOT NULL',
+  },
+)
+@Index(
+  'uq_program_source_links_program_url_when_year_null',
+  ['programId', 'url'],
+  {
+    unique: true,
+    where: '"exam_year" IS NULL',
+  },
+)
 export class ProgramSourceLinkEntity extends TimestampedEntity {
   @Column({
     name: 'program_id',
@@ -68,6 +84,13 @@ export class ProgramSourceLinkEntity extends TimestampedEntity {
     default: 'active',
   })
   status!: 'active' | 'invalid' | 'pending';
+
+  @Column({
+    name: 'source_confidence',
+    type: 'varchar',
+    length: 20,
+  })
+  sourceConfidence!: 'official' | 'estimated' | 'manual';
 
   @Column({
     type: 'text',

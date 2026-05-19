@@ -270,13 +270,15 @@ CREATE TABLE program_source_links (
     published_at DATE,
     last_verified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     status VARCHAR(20) NOT NULL DEFAULT 'active',
+    source_confidence VARCHAR(20) NOT NULL,
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_program_source_links_program_id FOREIGN KEY (program_id) REFERENCES programs (id) ON DELETE CASCADE,
     CONSTRAINT chk_program_source_links_exam_year CHECK (exam_year IS NULL OR exam_year >= 2000),
     CONSTRAINT chk_program_source_links_type CHECK (source_type IN ('brochure', 'catalog', 'retest_rule', 'official_notice', 'other')),
-    CONSTRAINT chk_program_source_links_status CHECK (status IN ('active', 'invalid', 'pending'))
+    CONSTRAINT chk_program_source_links_status CHECK (status IN ('active', 'invalid', 'pending')),
+    CONSTRAINT chk_program_source_links_source_confidence CHECK (source_confidence IN ('official', 'estimated', 'manual'))
 );
 
 CREATE TABLE study_resources (
@@ -554,6 +556,14 @@ CREATE INDEX idx_program_source_links_program_year
 
 CREATE INDEX idx_program_source_links_status
     ON program_source_links (status);
+
+CREATE UNIQUE INDEX uq_program_source_links_program_year_url
+    ON program_source_links (program_id, exam_year, url)
+    WHERE exam_year IS NOT NULL;
+
+CREATE UNIQUE INDEX uq_program_source_links_program_url_when_year_null
+    ON program_source_links (program_id, url)
+    WHERE exam_year IS NULL;
 
 CREATE INDEX idx_study_resources_type_stage
     ON study_resources (resource_type, stage_tag);
