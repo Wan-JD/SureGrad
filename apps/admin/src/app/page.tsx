@@ -5,14 +5,14 @@ const focusAreas = [
   {
     title: "主数据链路",
     description:
-      "围绕 schools、departments、programs 和四张年份子表组织运营流程，让学校到专业的链路在同一后台里连续可查。",
-    points: ["schools", "departments", "programs", "program_* 年份表"],
+      "围绕学校、院系、专业和年度数据组织运营流程，让从院校到专业的数据链路在同一后台里连续可查。",
+    points: ["学校档案", "院系归属", "专业信息", "年度数据"],
   },
   {
     title: "推荐与追溯",
     description:
       "把资料推荐和来源链接同时纳入运营工作台，既能维护推荐清单，也能给前台内容保留明确的出处与复核节奏。",
-    points: ["study_resources", "program_source_links", "subjects", "resource tags"],
+    points: ["资料推荐", "来源链接", "科目标记", "阶段标签"],
   },
   {
     title: "交付形态",
@@ -52,19 +52,19 @@ export default function Home() {
           <h1>SureGrad 运营后台工作台</h1>
           <p className="hero-copy">
             当前首页不只承接导航，也把六类核心运营页面放到同一张地图里。学校、院系、专业、年份数据、资料推荐和来源链接
-            共享统一的工作台骨架，方便运营同学按同一种方式查看列表、理解字段和继续接入真实数据。
+            共享统一的工作台骨架，方便运营同学按同一种方式查看列表、理解信息并逐步接入真实数据。
           </p>
           <div className="hero-chip-row">
             <span className="hero-chip">工作台页面: 6</span>
-            <span className="hero-chip">主链路: schools -&gt; departments -&gt; programs</span>
-            <span className="hero-chip">年份子表: 4</span>
+            <span className="hero-chip">主链路: 学校 -&gt; 院系 -&gt; 专业</span>
+            <span className="hero-chip">年份页签: 4</span>
           </div>
         </div>
         <div className="home-hero-side">
           <div className="home-hero-card">
             <span className="eyebrow">Operations</span>
             <h3>统一列表、筛选与详情</h3>
-            <p>每个模块都沿用相同的筛选栏、样例列表和只读详情布局，演示时可以稳定说明字段边界与后续接入方式。</p>
+            <p>每个模块都沿用相同的筛选栏、列表和只读详情布局，演示时可以稳定说明运营动作与后续接入方式。</p>
           </div>
           <div className="home-hero-card muted">
             <span className="eyebrow">Coverage</span>

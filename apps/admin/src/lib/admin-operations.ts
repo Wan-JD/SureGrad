@@ -72,7 +72,7 @@ function getSharedActions(tableName: string, templateName: string): Pick<
       },
       {
         label: "原始资料映射",
-        description: `保留 ${tableName} 与原始表头的字段映射说明，方便按 docs/data-import-plan.md 接 CSV。`,
+        description: `保留当前模块与原始表头的字段映射说明，方便按 docs/data-import-plan.md 接 CSV。`,
         tone: "neutral",
       },
     ],
@@ -677,8 +677,8 @@ const resourceRecords: AdminRecord[] = [
 
 const schoolsDataset: AdminDataset = {
   id: "schools",
-  title: "schools",
-  description: "以 schools 表字段为唯一编辑口径，先提供学校列表、地区筛选、状态筛选与只读详情表单结构。",
+  title: "学校档案",
+  description: "先提供学校列表、地区筛选、状态筛选与只读详情结构，方便运营维护学校基础档案。",
   tableName: "schools",
   templateName: "schools.csv",
   ...getSharedActions("schools", "schools.csv"),
@@ -747,8 +747,8 @@ const schoolsDataset: AdminDataset = {
 
 const departmentsDataset: AdminDataset = {
   id: "departments",
-  title: "departments",
-  description: "围绕 departments 表整理院系清单、学校归属和官网链接，让学校到院系的运营链路在同一视图里连续可查。",
+  title: "院系列表",
+  description: "围绕院系清单、学校归属和官网链接组织运营视图，让学校到院系的链路连续可查。",
   tableName: "departments",
   templateName: "departments.csv",
   ...getSharedActions("departments", "departments.csv"),
@@ -804,8 +804,8 @@ const departmentsDataset: AdminDataset = {
 
 const programsDataset: AdminDataset = {
   id: "programs",
-  title: "programs",
-  description: "聚焦 programs 表，先交付专业列表、学位类型筛选、院校外键位与详情表单结构。",
+  title: "专业清单",
+  description: "先交付专业列表、学位类型筛选和详情结构，保证后续能继续承接年度数据与来源链接。",
   tableName: "programs",
   templateName: "programs.csv",
   ...getSharedActions("programs", "programs.csv"),
@@ -875,8 +875,8 @@ const programsDataset: AdminDataset = {
 
 const resourcesDataset: AdminDataset = {
   id: "resources",
-  title: "study_resources",
-  description: "资料推荐页围绕 study_resources 组织推荐清单、科目标签、学习阶段和前台可见状态。",
+  title: "资料推荐",
+  description: "围绕推荐清单、科目标签、学习阶段和前台可见状态组织运营视图。",
   tableName: "study_resources",
   templateName: "study_resources.csv",
   ...getSharedActions("study_resources", "study_resources.csv"),
@@ -948,8 +948,8 @@ const resourcesDataset: AdminDataset = {
 
 const sourceLinksDataset: AdminDataset = {
   id: "source-links",
-  title: "program_source_links",
-  description: "来源链接页直接承接 program_source_links 的状态治理、年份筛选和失效链接复核，让前台内容保持可追溯。",
+  title: "来源链接",
+  description: "围绕来源状态、年份筛选和失效链接复核组织运营视图，让前台内容保持可追溯。",
   tableName: "program_source_links",
   templateName: "program_source_links.csv",
   ...getSharedActions("program_source_links", "program_source_links.csv"),
@@ -1022,8 +1022,8 @@ const yearlySharedActions = getSharedActions(
 const yearlyDatasets: AdminDataset[] = [
   {
     id: "program-admissions",
-    title: "program_admissions",
-    description: "招生计划、推免人数和跨考许可统一从 program_admissions 管理。",
+    title: "招生计划",
+    description: "统一管理招生计划、推免人数和跨考许可。",
     tableName: "program_admissions",
     templateName: "program_admissions.csv",
     ...yearlySharedActions,
@@ -1093,8 +1093,8 @@ const yearlyDatasets: AdminDataset[] = [
   },
   {
     id: "program-score-lines",
-    title: "program_score_lines",
-    description: "分数线子表先覆盖国家线、院校线和复试线结构。",
+    title: "分数线",
+    description: "统一管理国家线、院校线和复试线结构。",
     tableName: "program_score_lines",
     templateName: "program_score_lines.csv",
     ...yearlySharedActions,
@@ -1164,8 +1164,8 @@ const yearlyDatasets: AdminDataset[] = [
   },
   {
     id: "program-application-stats",
-    title: "program_application_stats",
-    description: "报录比子表承接报名人数、实考人数和录取人数。",
+    title: "报录比",
+    description: "统一管理报名人数、实考人数和录取人数。",
     tableName: "program_application_stats",
     templateName: "program_application_stats.csv",
     ...yearlySharedActions,
@@ -1225,8 +1225,8 @@ const yearlyDatasets: AdminDataset[] = [
   },
   {
     id: "program-interview-stats",
-    title: "program_interview_stats",
-    description: "复录比子表承接复试人数、录取人数与复试权重结构。",
+    title: "复录比",
+    description: "统一管理复试人数、录取人数与复试权重结构。",
     tableName: "program_interview_stats",
     templateName: "program_interview_stats.csv",
     ...yearlySharedActions,
@@ -1288,37 +1288,37 @@ const yearlyDatasets: AdminDataset[] = [
 
 export const adminOperationsPages: Record<string, AdminOperationsPage> = {
   schools: {
-    eyebrow: "Schools",
+    eyebrow: "学校",
     title: "学校管理",
-    description: "首批先把 schools 的列表、筛选、详情字段和导入入口搭起来，作为运营维护学校基础档案的主入口。",
+    description: "首批先把学校列表、筛选、详情和导入入口搭起来，作为运营维护学校档案的主入口。",
     relatedTables: ["schools"],
     datasets: [schoolsDataset],
   },
   departments: {
-    eyebrow: "Departments",
+    eyebrow: "院系",
     title: "院系管理",
-    description: "围绕 departments 与 schools 的从属关系整理院系清单、学校归属和官网入口，让学校链路继续向下延伸到院系层。",
+    description: "围绕院系与学校的归属关系整理运营清单，让学校链路继续向下延伸到院系层。",
     relatedTables: ["departments", "schools"],
     datasets: [departmentsDataset],
   },
   programs: {
-    eyebrow: "Programs",
+    eyebrow: "专业",
     title: "专业管理",
-    description: "先交付 programs 的筛选与详情结构，保证专业主表能承接后续年份数据、来源链接和人工修订。",
+    description: "先交付专业筛选与详情结构，保证后续能继续承接年度数据、来源链接和人工修订。",
     relatedTables: ["programs", "departments", "schools"],
     datasets: [programsDataset],
   },
   resources: {
-    eyebrow: "Resources",
+    eyebrow: "资料",
     title: "资料推荐管理",
-    description: "基于 study_resources 搭建资料推荐工作台，统一维护推荐标题、科目标签、学习阶段、可见状态和跳转链接。",
+    description: "围绕资料推荐搭建工作台，统一维护推荐标题、科目标签、学习阶段、可见状态和跳转链接。",
     relatedTables: ["study_resources", "subjects"],
     datasets: [resourcesDataset],
   },
   "yearly-data": {
-    eyebrow: "Yearly Data",
+    eyebrow: "年份",
     title: "年份数据管理",
-    description: "把四张 program_* 年份子表收进同一个工作台，按年份、可信度和子表类型切换，方便运营逐批核对招生规模、分数线和报录统计。",
+    description: "把四类年度数据收进同一个工作台，按年份和可信度切换，方便逐批核对招生规模、分数线和报录统计。",
     relatedTables: [
       "program_admissions",
       "program_score_lines",
@@ -1328,9 +1328,9 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
     datasets: yearlyDatasets,
   },
   "source-links": {
-    eyebrow: "Source Links",
+    eyebrow: "来源",
     title: "来源链接管理",
-    description: "直接承接 program_source_links 的状态治理、校验节奏和失效链接修订流程，让前台展示始终能回溯到原始来源。",
+    description: "直接承接来源状态治理、校验节奏和失效链接修订流程，让前台展示始终能回溯到原始来源。",
     relatedTables: ["program_source_links", "programs"],
     datasets: [sourceLinksDataset],
   },

@@ -187,11 +187,11 @@ export function ProgramsLiveWorkspace() {
   }, [filteredRecords, selectedId]);
 
   const selectedSchoolName =
-    schools.find((school) => school.schoolId === query.schoolId)?.schoolName ?? "Selected school";
+    schools.find((school) => school.schoolId === query.schoolId)?.schoolName ?? "当前院校";
 
   const schoolOptions = useMemo(
     () => [
-      { label: "Select a school", value: "" },
+      { label: "请选择学校", value: "" },
       ...schools.map((school) => ({
         label: school.schoolName,
         value: school.schoolId,
@@ -201,14 +201,14 @@ export function ProgramsLiveWorkspace() {
   );
 
   const degreeOptions = useMemo(
-    () => buildOptionList("All degrees", toSelectOptions(listState.rawItems.map((item) => item.degreeType))),
+    () => buildOptionList("全部学位类型", toSelectOptions(listState.rawItems.map((item) => item.degreeType))),
     [listState.rawItems],
   );
 
   const disciplineOptions = useMemo(
     () =>
       buildOptionList(
-        "All disciplines",
+        "全部学科门类",
         toSelectOptions(listState.rawItems.map((item) => item.disciplineCategory)),
       ),
     [listState.rawItems],
@@ -216,9 +216,9 @@ export function ProgramsLiveWorkspace() {
 
   const examMathOptions = useMemo(
     () => [
-      { label: "All math requirements", value: "" },
-      { label: "math required = true", value: "true" },
-      { label: "math required = false", value: "false" },
+      { label: "全部数学要求", value: "" },
+      { label: "要求考数学", value: "true" },
+      { label: "不要求考数学", value: "false" },
     ],
     [],
   );
@@ -227,7 +227,7 @@ export function ProgramsLiveWorkspace() {
     () => [
       {
         key: "schoolId",
-        label: "school",
+        label: "学校",
         value: query.schoolId,
         options: schoolOptions,
         onChange: (value) =>
@@ -243,7 +243,7 @@ export function ProgramsLiveWorkspace() {
       },
       {
         key: "degreeType",
-        label: "degree",
+        label: "学位",
         value: query.degreeType,
         options: degreeOptions,
         onChange: (value) => setQuery((current) => ({ ...current, degreeType: value })),
@@ -251,7 +251,7 @@ export function ProgramsLiveWorkspace() {
       },
       {
         key: "disciplineCategory",
-        label: "discipline",
+        label: "学科",
         value: query.disciplineCategory,
         options: disciplineOptions,
         onChange: (value) => setQuery((current) => ({ ...current, disciplineCategory: value })),
@@ -259,7 +259,7 @@ export function ProgramsLiveWorkspace() {
       },
       {
         key: "examMathRequired",
-        label: "math",
+        label: "数学要求",
         value: query.examMathRequired,
         options: examMathOptions,
         onChange: (value) => setQuery((current) => ({ ...current, examMathRequired: value })),
@@ -301,12 +301,12 @@ export function ProgramsLiveWorkspace() {
       }}
       search={{
         value: query.search,
-        placeholder: "Search current school results",
+        placeholder: "在当前学校结果内搜索专业",
         onChange: (value) => setQuery((current) => ({ ...current, search: value })),
         disabled: !query.schoolId || listLoading,
         helpText: query.schoolId
-          ? `Search is local to the currently loaded ${selectedSchoolName} program list.`
-          : "Pick a school first, then search within its program list.",
+          ? `当前只会在 ${selectedSchoolName} 的已加载专业列表内搜索。`
+          : "请先选择学校，再在该校专业列表内搜索。",
       }}
       filters={filters}
       records={filteredRecords}
@@ -326,22 +326,22 @@ export function ProgramsLiveWorkspace() {
       listError={listError}
       listLoadingCopy={
         schoolsLoading
-          ? "Loading school selector from the live backend."
-          : "Loading programs for the selected school."
+          ? "正在从后端加载学校选项。"
+          : "正在加载该校专业列表。"
       }
       listEmptyCopy={
         query.schoolId
           ? query.search
-            ? "No programs matched the current school search."
-            : "This school returned no programs for the current filters."
-          : "Select a school to load program data."
+            ? "当前搜索条件下没有匹配的专业。"
+            : "这所学校在当前筛选条件下没有返回专业数据。"
+          : "请先选择学校，再加载专业数据。"
       }
       onRetryList={() => setReloadToken((value) => value + 1)}
       detailRecord={detailRecord}
       detailLoading={false}
-      detailLoadingCopy="Program detail is assembled from the selected live list row."
-      detailEmptyCopy="Pick a school and a program row to inspect its live data."
-      listScopeCopy="Programs are fetched only after a school is selected."
+      detailLoadingCopy="专业详情来自当前已选中的真实列表行。"
+      detailEmptyCopy="请选择学校和专业后查看详情。"
+      listScopeCopy="专业列表会在选择学校后按需加载。"
     />
   );
 }

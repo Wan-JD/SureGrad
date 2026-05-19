@@ -12,7 +12,7 @@ export function AdminShell({ children }: AdminShellProps) {
       <div className="admin-main">
         <header className="admin-topbar">
           <div>
-            <p className="eyebrow">MVP Console</p>
+            <p className="eyebrow">运营总览</p>
             <h1 className="topbar-title">SureGrad 管理后台</h1>
             <p className="topbar-copy">
               面向 SureGrad MVP 数据治理场景的运营工作台。当前覆盖学校、院系、专业、年份数据、资料推荐与来源链接

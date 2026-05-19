@@ -20,7 +20,7 @@ export function AdminSidebar() {
       </div>
 
       <div className="sidebar-group">
-        <p className="sidebar-label">Navigation</p>
+        <p className="sidebar-label">业务导航</p>
         <nav className="sidebar-nav" aria-label="后台模块导航">
           {adminNavigation.map((item) => {
             const isActive = pathname === item.href;
@@ -43,8 +43,8 @@ export function AdminSidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <p>当前优先支持数据录入与治理，不进入复杂业务流程。</p>
-        <p>后续可以继续接入登录、权限、服务端分页、表单校验与修订日志。</p>
+        <p>当前优先支持数据录入、核对与治理，不进入复杂流程审批。</p>
+        <p>后续可以继续接入登录权限、服务端分页、表单校验与修订日志。</p>
       </div>
     </aside>
   );

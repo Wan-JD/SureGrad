@@ -180,7 +180,7 @@ export function SchoolsLiveWorkspace() {
   }, [detailReloadToken, selectedId]);
 
   const provinceOptions = useMemo(
-    () => buildOptionList("All provinces", toSelectOptions(optionSource.map((item) => item.province))),
+    () => buildOptionList("全部省份", toSelectOptions(optionSource.map((item) => item.province))),
     [optionSource],
   );
 
@@ -189,16 +189,16 @@ export function SchoolsLiveWorkspace() {
       .filter((item) => !query.province || item.province === query.province)
       .map((item) => item.city);
 
-    return buildOptionList("All cities", toSelectOptions(visibleCities));
+    return buildOptionList("全部城市", toSelectOptions(visibleCities));
   }, [optionSource, query.province]);
 
   const levelOptions = useMemo(
-    () => buildOptionList("All levels", toSelectOptions(optionSource.map((item) => item.schoolLevel))),
+    () => buildOptionList("全部层级", toSelectOptions(optionSource.map((item) => item.schoolLevel))),
     [optionSource],
   );
 
   const typeOptions = useMemo(
-    () => buildOptionList("All types", toSelectOptions(optionSource.map((item) => item.schoolType))),
+    () => buildOptionList("全部类型", toSelectOptions(optionSource.map((item) => item.schoolType))),
     [optionSource],
   );
 
@@ -206,7 +206,7 @@ export function SchoolsLiveWorkspace() {
     () => [
       {
         key: "province",
-        label: "province",
+        label: "省份",
         value: query.province,
         options: provinceOptions,
         onChange: (value) => {
@@ -219,21 +219,21 @@ export function SchoolsLiveWorkspace() {
       },
       {
         key: "city",
-        label: "city",
+        label: "城市",
         value: query.city,
         options: cityOptions,
         onChange: (value) => setQuery((current) => ({ ...current, city: value })),
       },
       {
         key: "schoolLevel",
-        label: "level",
+        label: "层级",
         value: query.schoolLevel,
         options: levelOptions,
         onChange: (value) => setQuery((current) => ({ ...current, schoolLevel: value })),
       },
       {
         key: "schoolType",
-        label: "type",
+        label: "类型",
         value: query.schoolType,
         options: typeOptions,
         onChange: (value) => setQuery((current) => ({ ...current, schoolType: value })),
@@ -258,9 +258,9 @@ export function SchoolsLiveWorkspace() {
       }}
       search={{
         value: query.q,
-        placeholder: "Search schools by name or matched program",
+        placeholder: "按学校名称或关联专业搜索",
         onChange: (value) => setQuery((current) => ({ ...current, q: value })),
-        helpText: "Search runs against the live /schools endpoint.",
+        helpText: "搜索会直接命中后端学校列表接口。",
       }}
       filters={filters}
       records={listState.records}
@@ -278,16 +278,16 @@ export function SchoolsLiveWorkspace() {
       }
       listLoading={listState.loading}
       listError={listState.error}
-      listLoadingCopy="Fetching schools from the live backend."
-      listEmptyCopy="No schools matched the current filters."
+      listLoadingCopy="正在从后端加载学校数据。"
+      listEmptyCopy="当前筛选条件下没有匹配的学校。"
       onRetryList={() => setReloadToken((value) => value + 1)}
       detailRecord={detailState.record}
       detailLoading={detailState.loading}
       detailError={detailState.error}
-      detailLoadingCopy="Fetching school detail from the live backend."
-      detailEmptyCopy="Pick a school row to inspect its live detail payload."
+      detailLoadingCopy="正在从后端加载学校详情。"
+      detailEmptyCopy="请选择一所学校查看详情。"
       onRetryDetail={() => setDetailReloadToken((value) => value + 1)}
-      listScopeCopy="The table no longer renders static sample rows from admin-operations.ts."
+      listScopeCopy="当前列表已切换为真实后端返回，不再展示静态样例数据。"
     />
   );
 }

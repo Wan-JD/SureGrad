@@ -406,14 +406,37 @@ function formatMissingFlags(flags: string[]): string | null {
 
 export function formatAdminValue(value: AdminScalar | undefined): string {
   if (value === null || value === undefined) {
-    return "N/A";
+    return "未提供";
   }
 
   if (typeof value === "boolean") {
-    return value ? "true" : "false";
+    return value ? "是" : "否";
   }
 
-  return String(value);
+  const text = String(value);
+
+  if (text === "active") return "启用中";
+  if (text === "inactive") return "未启用";
+  if (text === "pending") return "待复核";
+  if (text === "invalid") return "已失效";
+  if (text === "draft") return "草稿";
+  if (text === "archived") return "已归档";
+  if (text === "official") return "官方";
+  if (text === "estimated") return "估算";
+  if (text === "manual") return "人工补录";
+  if (text === "academic") return "学硕";
+  if (text === "professional") return "专硕";
+  if (text === "foundation") return "基础阶段";
+  if (text === "intensive") return "强化阶段";
+  if (text === "sprint") return "冲刺阶段";
+  if (text === "brochure") return "招生简章";
+  if (text === "official_notice") return "官方通知";
+  if (text === "retest_rule") return "复试细则";
+  if (text === "national_a") return "国家线 A 类";
+  if (text === "school") return "院校线";
+  if (text === "retest") return "复试线";
+
+  return text;
 }
 
 export function getAdminTone(key: string, value: AdminScalar | undefined): string {

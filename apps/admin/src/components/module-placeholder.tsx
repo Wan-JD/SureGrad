@@ -18,7 +18,7 @@ export function ModulePlaceholder({
       <section className="placeholder-card">
         <div className="placeholder-heading">
           <div>
-            <span className="eyebrow">Module Placeholder</span>
+            <span className="eyebrow">Coming Next</span>
             <h1>{title}</h1>
             <p className="placeholder-copy">{description}</p>
           </div>
@@ -40,9 +40,9 @@ export function ModulePlaceholder({
 
           <section className="placeholder-panel">
             <div className="placeholder-chip-row">
-              <span className="placeholder-icon">表</span>
+              <span className="placeholder-icon">数据</span>
             </div>
-            <h2>对应数据模型</h2>
+            <h2>关联数据内容</h2>
             <ul className="placeholder-list">
               {relatedTables.map((item) => (
                 <li key={item}>{item}</li>
@@ -64,7 +64,7 @@ export function ModulePlaceholder({
         </div>
 
         <p className="placeholder-note">
-          当前页面仍是预留模块，只承担导航落点与结构边界说明。本轮不会把它与已交付运营页混写，后续再接入表格、
+          当前页面仍是预留模块，只承担导航落点与结构边界说明。本轮不会把它与已交付运营页混写，后续再接入列表、
           筛选、表单、校验与权限能力。
         </p>
       </section>
