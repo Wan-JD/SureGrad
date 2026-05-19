@@ -236,7 +236,7 @@ export function OperationsWorkspace({ page }: OperationsWorkspaceProps) {
 
         <article className="insight-card">
           <span className="eyebrow">Import</span>
-          <h3>批量导入预留</h3>
+          <h3>批量导入流程</h3>
           <div className="action-list">
             {activeDataset.importActions.map((action) => (
               <button
@@ -253,7 +253,7 @@ export function OperationsWorkspace({ page }: OperationsWorkspaceProps) {
 
         <article className="insight-card">
           <span className="eyebrow">Revision</span>
-          <h3>人工修订预留</h3>
+          <h3>人工修订流程</h3>
           <div className="action-list">
             {activeDataset.revisionActions.map((action) => (
               <button
@@ -275,7 +275,7 @@ export function OperationsWorkspace({ page }: OperationsWorkspaceProps) {
             <span className="eyebrow">Filters</span>
             <h2>列表与筛选</h2>
           </div>
-          <p>先提供搜索、精确枚举筛选和样例结果数，后续可接分页、排序和服务端查询。</p>
+          <p>搜索、枚举筛选和样例结果数已经按当前表结构对齐，便于运营先定位记录，再决定导入、核验或人工修订动作。</p>
         </div>
 
         <div className="filter-toolbar">
@@ -389,7 +389,7 @@ export function OperationsWorkspace({ page }: OperationsWorkspaceProps) {
                   </div>
                 ) : null}
                 <p>
-                  详情区先以只读表单承接 schema 字段，后续接入编辑态、校验态和提交态时不用再重排布局。
+                  详情区用统一表单承接 schema 字段，方便运营对照主键、来源、状态和备注信息完成核验，再进入后续编辑或提交流程。
                 </p>
               </div>
               <div className="detail-action-row">

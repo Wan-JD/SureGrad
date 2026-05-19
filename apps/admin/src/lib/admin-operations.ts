@@ -67,7 +67,7 @@ function getSharedActions(tableName: string, templateName: string): Pick<
     importActions: [
       {
         label: "批量导入入口",
-        description: `预留 ${templateName} 模板、导入队列与校验结果挂载位，后续可接入 import_jobs。`,
+        description: `围绕 ${templateName} 模板组织导入入口、批次校验和结果回看，让运营先在同一工作台完成批量上新。`,
         tone: "accent",
       },
       {
@@ -84,7 +84,7 @@ function getSharedActions(tableName: string, templateName: string): Pick<
       },
       {
         label: "修订留痕面板",
-        description: "预留审核结果、责任人、修订理由与二次校验动作，后续可接日志与权限控制。",
+        description: "集中展示审核结果、责任人、修订理由与二次校验动作，便于串起追踪记录和权限边界。",
         tone: "neutral",
       },
     ],
@@ -748,7 +748,7 @@ const schoolsDataset: AdminDataset = {
 const departmentsDataset: AdminDataset = {
   id: "departments",
   title: "departments",
-  description: "围绕 departments 表建立院系列表与学校维度筛选，保留 school_id 的外键编辑位。",
+  description: "围绕 departments 表整理院系清单、学校归属和官网链接，让学校到院系的运营链路在同一视图里连续可查。",
   tableName: "departments",
   templateName: "departments.csv",
   ...getSharedActions("departments", "departments.csv"),
@@ -785,17 +785,17 @@ const departmentsDataset: AdminDataset = {
   detailSections: [
     {
       title: "外键与标识",
-      description: "先保留 school_id 原值输入框，后续可接学校联动选择器。",
+      description: "集中核对院系主键、所属学校和启用状态，先把 schools -> departments 的挂接关系看清楚。",
       fields: ["id", "school_id", "name", "code", "status"],
     },
     {
       title: "站点信息",
-      description: "承接院系官网与运营跳转校验。",
+      description: "直接查看院系官网地址，方便运营核对学校下的院系入口是否可访问、是否需要补链。",
       fields: ["website"],
     },
     {
       title: "审计字段",
-      description: "为导入回滚和软删除恢复保留时间字段。",
+      description: "用时间字段串起导入批次、最近更新时间和软删除恢复判断。",
       fields: ["created_at", "updated_at", "deleted_at"],
     },
   ],
@@ -949,7 +949,7 @@ const resourcesDataset: AdminDataset = {
 const sourceLinksDataset: AdminDataset = {
   id: "source-links",
   title: "program_source_links",
-  description: "来源链接页直接对 program_source_links 表建模，保留状态治理、年份筛选与失效链接人工复核入口。",
+  description: "来源链接页直接承接 program_source_links 的状态治理、年份筛选和失效链接复核，让前台内容保持可追溯。",
   tableName: "program_source_links",
   templateName: "program_source_links.csv",
   ...getSharedActions("program_source_links", "program_source_links.csv"),
@@ -997,17 +997,17 @@ const sourceLinksDataset: AdminDataset = {
   detailSections: [
     {
       title: "关联与来源标识",
-      description: "来源链接统一挂在专业下，并允许 exam_year 为空。",
+      description: "先确认链接挂在哪个专业、对应哪一年度以及当前治理状态，便于安排复核节奏。",
       fields: ["id", "program_id", "exam_year", "source_type", "status"],
     },
     {
       title: "链接信息",
-      description: "标题、URL、发布主体与发布时间决定前台可追溯性。",
+      description: "标题、URL、发布主体和发布时间一起构成追溯证据，便于判断链接是否还能作为前台来源。",
       fields: ["title", "url", "publisher_name", "published_at", "last_verified_at"],
     },
     {
       title: "备注与审计",
-      description: "用于记录失效原因、替换进度和后续复核动作。",
+      description: "记录失效原因、替换进度和后续复核动作，让链接修订过程在工作台里留痕。",
       fields: ["notes", "created_at", "updated_at"],
     },
   ],
@@ -1297,7 +1297,7 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
   departments: {
     eyebrow: "Departments",
     title: "院系管理",
-    description: "围绕 departments 与 schools 的从属关系建立院系工作台，后续可在此接入学校联动与批量导入。",
+    description: "围绕 departments 与 schools 的从属关系整理院系清单、学校归属和官网入口，让学校链路继续向下延伸到院系层。",
     relatedTables: ["departments", "schools"],
     datasets: [departmentsDataset],
   },
@@ -1318,7 +1318,7 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
   "yearly-data": {
     eyebrow: "Yearly Data",
     title: "年份数据管理",
-    description: "把四张 program_* 年份表并入同一个入口，按年份、可信度和子表类型切换，方便运营逐批维护。",
+    description: "把四张 program_* 年份子表收进同一个工作台，按年份、可信度和子表类型切换，方便运营逐批核对招生规模、分数线和报录统计。",
     relatedTables: [
       "program_admissions",
       "program_score_lines",
@@ -1330,7 +1330,7 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
   "source-links": {
     eyebrow: "Source Links",
     title: "来源链接管理",
-    description: "直接承接 program_source_links 的状态治理、校验节奏和失效链接修订流程，保证前台数据可追溯。",
+    description: "直接承接 program_source_links 的状态治理、校验节奏和失效链接修订流程，让前台展示始终能回溯到原始来源。",
     relatedTables: ["program_source_links", "programs"],
     datasets: [sourceLinksDataset],
   },

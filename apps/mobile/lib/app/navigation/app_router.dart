@@ -39,8 +39,8 @@ class AppRouter {
         final args = settings.arguments is SchoolDetailRouteArgs
             ? settings.arguments as SchoolDetailRouteArgs
             : const SchoolDetailRouteArgs(
-                schoolId: 'preview-school',
-                schoolName: '预览院校',
+                schoolId: 'school-unavailable',
+                schoolName: '院校详情',
               );
         return _page(SchoolDetailPage(args: args), settings);
       case AppRoutes.planning:

@@ -1,16 +1,22 @@
 # SureGrad API
 
-SureGrad 后端服务骨架，基于 NestJS，目录位于 `services/api`。
+SureGrad 后端服务位于 `services/api`，基于 NestJS，当前已经承接三端联调所需的核心业务入口。
 
 ## 当前状态
 
-- 已完成 NestJS 工程初始化
-- 已完成按领域拆分的模块骨架
-- 已接入环境变量管理与基础校验
-- 已落下 PostgreSQL + TypeORM 的接入方案配置
-- 已预留核心 REST 路由入口
+- 已完成 NestJS 工程初始化、模块拆分和环境配置接入
+- 已接入 PostgreSQL + TypeORM 的配置方案与 schema 基线
+- 已落地学校、专业、目标、计划、Todo、打卡、资料等核心 REST 路由
+- 当前重点不再是“只搭骨架”，而是持续把剩余占位模块补成真实读写和可验收链路
 
-当前阶段目标是“先把底座搭起来”，所以大部分业务接口仍返回骨架占位响应，方便后续逐模块补实现。
+当前这套 API 已经可以支撑以下主流程：
+
+- 登录后读取用户快照与当前目标
+- 围绕学校、专业与年份数据完成前台查询
+- 生成并读取当前学习计划、周计划、日计划
+- 创建 Todo、完成 Todo，并回读当日执行状态
+- 执行每日打卡，并保持 overview 摘要一致
+- 拉取学习资料列表
 
 ## 技术栈
 
@@ -28,6 +34,7 @@ SureGrad 后端服务骨架，基于 NestJS，目录位于 `services/api`。
 services/api
 ├─ src
 │  ├─ common
+│  │  ├─ auth
 │  │  ├─ config
 │  │  ├─ dto
 │  │  └─ utils
@@ -40,12 +47,15 @@ services/api
 │     ├─ plans
 │     ├─ todos
 │     ├─ checkins
-│     └─ resources
+│     ├─ resources
+│     ├─ favorites
+│     ├─ comparison-items
+│     └─ reminders
 ├─ test
 └─ .env.example
 ```
 
-## 已创建模块
+## 已建模块
 
 - `auth`
 - `users`
@@ -55,6 +65,9 @@ services/api
 - `todos`
 - `checkins`
 - `resources`
+- `favorites`
+- `comparison-items`
+- `reminders`
 
 ## 环境变量
 
@@ -64,7 +77,7 @@ services/api
 Copy-Item .env.example .env
 ```
 
-示例文件：
+示例内容：
 
 ```env
 NODE_ENV=development
@@ -92,19 +105,21 @@ pnpm install
 pnpm dev:api
 ```
 
-或只在服务目录执行：
+或在 `services/api` 目录执行：
 
 ```powershell
 pnpm install
 pnpm start:dev
 ```
 
-默认启动地址：
+默认地址：
 
 - API: `http://localhost:3000/api/v1`
 - Health Check: `http://localhost:3000/api/v1/health`
 
 ## 常用命令
+
+在仓库根目录：
 
 ```powershell
 pnpm build:api
@@ -113,7 +128,7 @@ pnpm test:api
 pnpm test:api:e2e
 ```
 
-如果当前目录在 `services/api`：
+在 `services/api` 目录：
 
 ```powershell
 pnpm build
@@ -122,7 +137,7 @@ pnpm test
 pnpm test:e2e
 ```
 
-## 数据库接入方案
+## 数据库接入
 
 当前后端采用：
 
@@ -132,21 +147,21 @@ pnpm test:e2e
 - 环境配置：`src/common/config/database.config.ts`
 - DDL 基线：`docs/schema.sql`
 
-当前为了先完成骨架并避免本地没有数据库时无法启动，TypeORM 配置为 `manualInitialization: true`。这意味着：
+为了避免本地未起库时阻塞应用启动，当前 TypeORM 仍使用 `manualInitialization: true`。这意味着：
 
-- 应用可以先启动起来
-- 当前不会在启动时自动连库
-- 后续进入实体/仓储实现阶段时，可以切换为自动初始化，或在启动流程里显式初始化 DataSource
+- 应用可以先启动
+- 当前不会在启动阶段自动连库
+- 后续接入完整实体与迁移策略后，可以切换为自动初始化或显式初始化 `DataSource`
 
-建议后续演进方式：
+建议后续演进顺序：
 
-1. 以 `docs/schema.sql` 作为当前表结构基线。
-2. 补齐实体、仓储和 migrations 管理策略。
-3. 打开真实数据库初始化与健康检查。
+1. 继续以 `docs/schema.sql` 作为表结构基线。
+2. 逐模块补齐实体、Repository 和迁移策略。
+3. 打开真实数据库初始化、健康检查和运行时监控。
 
-## 已预留的接口方向
+## 核心接口覆盖
 
-已按 `docs/api-spec.md` 预留主要路由入口，例如：
+当前已经围绕 `docs/api-spec.md` 落下主要接口，重点包括：
 
 - `POST /auth/otp/send`
 - `POST /auth/login/otp`
@@ -162,22 +177,24 @@ pnpm test:e2e
 - `GET /daily-plans`
 - `GET /todo-items`
 - `POST /todo-items`
+- `PATCH /todo-items/:todoId/complete`
 - `GET /study-checkins/today`
 - `POST /study-checkins`
 - `GET /study-stats/overview`
 - `GET /study-resources`
 
-## 当前未完成边界
+其中，学校/专业查询、目标设置、计划读取、Todo 执行、打卡写入与资料读取已经进入可联调状态。
 
-以下内容仍未实现，仅保留了结构和入口：
+## 仍待补齐的边界
 
-- JWT 鉴权与用户会话
-- OTP 短信发送与校验
-- 实体定义、Repository、Service 真实读写逻辑
-- 收藏、对比、提醒等非本次必做模块
-- 数据导入、迁移脚本与种子数据
-- Swagger / OpenAPI 自动文档
-- 统一异常模型、统一响应封装、中间件审计链路
+以下能力仍然是后续迭代重点，但不再适合描述为“全站骨架占位”：
+
+- JWT 鉴权、真实短信 OTP 与正式会话策略
+- 收藏、对比、提醒等模块的更完整业务闭环
+- 更细的统一异常模型、响应封装与审计链路
+- Swagger / OpenAPI 自动化文档
+- 数据导入、迁移脚本与种子数据工具链
+- 与真实数据库初始化策略配套的实体和 migration 收口
 
 ## 参考文档
 
