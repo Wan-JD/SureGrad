@@ -79,7 +79,7 @@ function getSharedActions(tableName: string, templateName: string): Pick<
     revisionActions: [
       {
         label: "人工修订入口",
-        description: "保留运营手动核录、字段覆写与备注追加位，便于处理 estimated 或 manual 来源。",
+        description: "保留运营手动核录、字段覆写与备注追加位，便于处理估算来源或人工补录场景。",
         tone: "accent",
       },
       {
@@ -105,7 +105,7 @@ const schoolFields: AdminField[] = [
   { key: "graduate_website", label: "graduate_website", type: "text", description: "研究生院官网。" },
   { key: "description", label: "description", type: "text", description: "学校简介与运营备注。" },
   { key: "sort_order", label: "sort_order", type: "int", required: true, description: "运营排序，需大于等于 0。" },
-  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态仅允许 active 或 inactive。" },
+  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态可设为启用中或未启用。" },
   { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
   { key: "updated_at", label: "updated_at", type: "timestamptz", required: true, description: "更新时间。" },
   { key: "deleted_at", label: "deleted_at", type: "timestamptz", description: "软删除时间，可为空。" },
@@ -173,11 +173,11 @@ const schoolRecords: AdminRecord[] = [
 
 const departmentFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "院系主键 ID。" },
-  { key: "school_id", label: "school_id", type: "uuid", required: true, description: "所属学校 ID，外键引用 schools.id。" },
+  { key: "school_id", label: "school_id", type: "uuid", required: true, description: "所属学校的内部关联标识。" },
   { key: "name", label: "name", type: "varchar(200)", required: true, description: "院系名称。" },
   { key: "code", label: "code", type: "varchar(50)", description: "院系编码，可为空。" },
   { key: "website", label: "website", type: "text", description: "院系官网，可为空。" },
-  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态仅允许 active 或 inactive。" },
+  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态可设为启用中或未启用。" },
   { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
   { key: "updated_at", label: "updated_at", type: "timestamptz", required: true, description: "更新时间。" },
   { key: "deleted_at", label: "deleted_at", type: "timestamptz", description: "软删除时间，可为空。" },
@@ -221,18 +221,18 @@ const departmentRecords: AdminRecord[] = [
 
 const programFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "专业主键 ID。" },
-  { key: "school_id", label: "school_id", type: "uuid", required: true, description: "所属学校 ID。" },
-  { key: "department_id", label: "department_id", type: "uuid", required: true, description: "所属院系 ID。" },
+  { key: "school_id", label: "school_id", type: "uuid", required: true, description: "所属学校的内部关联标识。" },
+  { key: "department_id", label: "department_id", type: "uuid", required: true, description: "所属院系的内部关联标识。" },
   { key: "name", label: "name", type: "varchar(200)", required: true, description: "具体招生专业名称。" },
   { key: "code", label: "code", type: "varchar(50)", required: true, description: "招生专业代码。" },
-  { key: "degree_type", label: "degree_type", type: "varchar(20)", required: true, description: "仅允许 academic 或 professional。" },
+  { key: "degree_type", label: "degree_type", type: "varchar(20)", required: true, description: "学位类型可设为学硕或专硕。" },
   { key: "discipline_category", label: "discipline_category", type: "varchar(100)", required: true, description: "学科门类。" },
   { key: "research_direction", label: "research_direction", type: "varchar(255)", description: "研究方向，可为空。" },
   { key: "exam_math_required", label: "exam_math_required", type: "boolean", required: true, description: "是否考数学。" },
   { key: "duration_years", label: "duration_years", type: "numeric(3,1)", required: true, description: "学制年限，必须大于 0。" },
   { key: "tuition_per_year", label: "tuition_per_year", type: "numeric(10,2)", required: true, description: "年学费，不得小于 0。" },
   { key: "notes", label: "notes", type: "text", description: "招生说明与运营备注。" },
-  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态仅允许 active 或 inactive。" },
+  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态可设为启用中或未启用。" },
   { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
   { key: "updated_at", label: "updated_at", type: "timestamptz", required: true, description: "更新时间。" },
   { key: "deleted_at", label: "deleted_at", type: "timestamptz", description: "软删除时间，可为空。" },
@@ -297,7 +297,7 @@ const programRecords: AdminRecord[] = [
 
 const admissionsFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "年度招生计划主键 ID。" },
-  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "所属专业 ID。" },
+  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "关联专业的内部标识。" },
   { key: "exam_year", label: "exam_year", type: "int", required: true, description: "考试年份，需大于等于 2000。" },
   { key: "planned_enrollment", label: "planned_enrollment", type: "int", required: true, description: "计划招生人数。" },
   { key: "recommended_exemption_count", label: "recommended_exemption_count", type: "int", required: true, description: "推免人数，默认 0。" },
@@ -305,7 +305,7 @@ const admissionsFields: AdminField[] = [
   { key: "actual_enrollment", label: "actual_enrollment", type: "int", description: "实际录取人数，可为空。" },
   { key: "is_cross_major_allowed", label: "is_cross_major_allowed", type: "boolean", required: true, description: "是否允许跨专业。" },
   { key: "memo", label: "memo", type: "text", description: "年度招生说明。" },
-  { key: "source_confidence", label: "source_confidence", type: "varchar(20)", required: true, description: "仅允许 official、estimated、manual。" },
+  { key: "source_confidence", label: "source_confidence", type: "varchar(20)", required: true, description: "来源可信度可设为官方、估算或人工补录。" },
   { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
   { key: "updated_at", label: "updated_at", type: "timestamptz", required: true, description: "更新时间。" },
 ];
@@ -357,14 +357,14 @@ const admissionsRecords: AdminRecord[] = [
 
 const scoreLineFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "分数线主键 ID。" },
-  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "所属专业 ID。" },
+  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "关联专业的内部标识。" },
   { key: "exam_year", label: "exam_year", type: "int", required: true, description: "考试年份，需大于等于 2000。" },
   { key: "total_score", label: "total_score", type: "int", required: true, description: "总分线。" },
   { key: "politics_score", label: "politics_score", type: "int", required: true, description: "政治单科线。" },
   { key: "english_score", label: "english_score", type: "int", required: true, description: "英语单科线。" },
   { key: "subject_one_score", label: "subject_one_score", type: "int", required: true, description: "业务课一单科线。" },
   { key: "subject_two_score", label: "subject_two_score", type: "int", required: true, description: "业务课二单科线。" },
-  { key: "score_line_type", label: "score_line_type", type: "varchar(30)", required: true, description: "仅允许 national_a、national_b、school、retest。" },
+  { key: "score_line_type", label: "score_line_type", type: "varchar(30)", required: true, description: "可区分国家线、院校线和复试线等口径。" },
   { key: "notes", label: "notes", type: "text", description: "分数线备注。" },
   { key: "source_confidence", label: "source_confidence", type: "varchar(20)", required: true, description: "数据可信度。" },
   { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
@@ -421,7 +421,7 @@ const scoreLineRecords: AdminRecord[] = [
 
 const applicationFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "报录比主键 ID。" },
-  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "所属专业 ID。" },
+  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "关联专业的内部标识。" },
   { key: "exam_year", label: "exam_year", type: "int", required: true, description: "考试年份。" },
   { key: "applicant_count", label: "applicant_count", type: "int", required: true, description: "报名人数。" },
   { key: "actual_exam_count", label: "actual_exam_count", type: "int", description: "实考人数，可为空。" },
@@ -477,7 +477,7 @@ const applicationRecords: AdminRecord[] = [
 
 const interviewFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "复试统计主键 ID。" },
-  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "所属专业 ID。" },
+  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "关联专业的内部标识。" },
   { key: "exam_year", label: "exam_year", type: "int", required: true, description: "考试年份。" },
   { key: "retest_candidate_count", label: "retest_candidate_count", type: "int", required: true, description: "进入复试人数。" },
   { key: "final_admitted_count", label: "final_admitted_count", type: "int", required: true, description: "最终录取人数。" },
@@ -537,15 +537,15 @@ const interviewRecords: AdminRecord[] = [
 
 const sourceLinkFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "来源链接主键 ID。" },
-  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "所属专业 ID。" },
+  { key: "program_id", label: "program_id", type: "uuid", required: true, description: "关联专业的内部标识。" },
   { key: "exam_year", label: "exam_year", type: "int", description: "可为空；若有值需大于等于 2000。" },
-  { key: "source_type", label: "source_type", type: "varchar(50)", required: true, description: "仅允许 brochure、catalog、retest_rule、official_notice、other。" },
+  { key: "source_type", label: "source_type", type: "varchar(50)", required: true, description: "来源类型可区分招生简章、官方通知、复试细则等。" },
   { key: "title", label: "title", type: "varchar(255)", required: true, description: "来源标题。" },
-  { key: "url", label: "url", type: "text", required: true, description: "来源链接 URL。" },
+  { key: "url", label: "url", type: "text", required: true, description: "来源链接地址。" },
   { key: "publisher_name", label: "publisher_name", type: "varchar(255)", required: true, description: "发布主体。" },
   { key: "published_at", label: "published_at", type: "date", description: "发布日期，可为空。" },
   { key: "last_verified_at", label: "last_verified_at", type: "timestamptz", required: true, description: "最后校验时间。" },
-  { key: "status", label: "status", type: "varchar(20)", required: true, description: "仅允许 active、invalid、pending。" },
+  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态可设为启用中、待复核或已失效。" },
   { key: "notes", label: "notes", type: "text", description: "链接状态或抓取备注。" },
   { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
   { key: "updated_at", label: "updated_at", type: "timestamptz", required: true, description: "更新时间。" },
@@ -602,14 +602,14 @@ const sourceLinkRecords: AdminRecord[] = [
 const resourceFields: AdminField[] = [
   { key: "id", label: "id", type: "uuid", required: true, description: "资料主键 ID。" },
   { key: "title", label: "title", type: "varchar(255)", required: true, description: "资料标题。" },
-  { key: "resource_type", label: "resource_type", type: "varchar(50)", required: true, description: "资料类型，如 book、course、question_bank、article。" },
+  { key: "resource_type", label: "resource_type", type: "varchar(50)", required: true, description: "资料类型可区分图书、课程、题库或文章。" },
   { key: "subject", label: "subject", type: "varchar(100)", required: true, description: "适用科目，用于推荐与筛选。" },
-  { key: "stage_tag", label: "stage_tag", type: "varchar(50)", required: true, description: "学习阶段标签，如 foundation、intensive、sprint。" },
+  { key: "stage_tag", label: "stage_tag", type: "varchar(50)", required: true, description: "学习阶段可区分基础、强化和冲刺。" },
   { key: "difficulty_level", label: "difficulty_level", type: "varchar(20)", required: true, description: "资料难度等级。" },
-  { key: "format", label: "format", type: "varchar(30)", required: true, description: "内容形态，如 text、video、mixed。" },
+  { key: "format", label: "format", type: "varchar(30)", required: true, description: "内容形式可区分图文、视频或混合内容。" },
   { key: "provider_name", label: "provider_name", type: "varchar(255)", description: "资料提供方或作者。" },
-  { key: "price_type", label: "price_type", type: "varchar(20)", required: true, description: "价格类型，仅允许 free 或 paid。" },
-  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态仅允许 active、draft、archived。" },
+  { key: "price_type", label: "price_type", type: "varchar(20)", required: true, description: "价格类型可设为免费或付费。" },
+  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态可设为启用中、草稿或已归档。" },
   { key: "featured_rank", label: "featured_rank", type: "int", description: "推荐排序，数值越小越靠前。" },
   { key: "summary", label: "summary", type: "text", description: "资料推荐语与使用建议。" },
   { key: "notes", label: "notes", type: "text", description: "运营补充说明。" },
@@ -785,7 +785,7 @@ const departmentsDataset: AdminDataset = {
   detailSections: [
     {
       title: "外键与标识",
-      description: "集中核对院系主键、所属学校和启用状态，先把 schools -> departments 的挂接关系看清楚。",
+      description: "集中核对院系主键、所属学校和启用状态，先把学校到院系的归属关系看清楚。",
       fields: ["id", "school_id", "name", "code", "status"],
     },
     {
@@ -850,7 +850,7 @@ const programsDataset: AdminDataset = {
   detailSections: [
     {
       title: "主实体字段",
-      description: "专业唯一粒度依赖代码与研究方向口径，保持与 schema 一致。",
+      description: "专业唯一粒度依赖代码与研究方向口径，保持运营口径一致。",
       fields: ["id", "school_id", "department_id", "name", "code", "research_direction", "status"],
     },
     {
@@ -866,7 +866,7 @@ const programsDataset: AdminDataset = {
     },
     {
       title: "说明与审计",
-      description: "notes 承接人工修订信息，时间字段保留追溯能力。",
+      description: "备注字段承接人工修订信息，时间字段保留追溯能力。",
       fields: ["notes", "created_at", "updated_at", "deleted_at"],
     },
   ],
@@ -929,7 +929,7 @@ const resourcesDataset: AdminDataset = {
     },
     {
       title: "适用范围",
-      description: "用 subject、stage_tag 和 difficulty_level 维持推荐命中的运营口径。",
+      description: "用科目、学习阶段和难度等级维持推荐命中的运营口径。",
       fields: ["subject", "stage_tag", "difficulty_level", "format", "price_type"],
     },
     {
@@ -1015,7 +1015,7 @@ const sourceLinksDataset: AdminDataset = {
 };
 
 const yearlySharedActions = getSharedActions(
-  "program_*",
+  "年度数据",
   "program_admissions.csv / program_score_lines.csv / program_application_stats.csv / program_interview_stats.csv",
 );
 
@@ -1069,7 +1069,7 @@ const yearlyDatasets: AdminDataset[] = [
     detailSections: [
       {
         title: "年度主键",
-        description: "program_id + exam_year 是去重的核心组合。",
+        description: "关联专业与年份是去重的核心组合。",
         fields: ["id", "program_id", "exam_year", "source_confidence"],
       },
       {
@@ -1085,7 +1085,7 @@ const yearlyDatasets: AdminDataset[] = [
       },
       {
         title: "备注与审计",
-        description: "memo 用于记录年份数据特殊口径。",
+        description: "补充说明用于记录年份数据的特殊口径。",
         fields: ["memo", "created_at", "updated_at"],
       },
     ],
@@ -1140,7 +1140,7 @@ const yearlyDatasets: AdminDataset[] = [
     detailSections: [
       {
         title: "分数线标识",
-        description: "同一专业同一年允许多种 score_line_type 并存。",
+        description: "同一专业同一年允许保留多种分数线口径。",
         fields: ["id", "program_id", "exam_year", "score_line_type", "source_confidence"],
       },
       {
@@ -1202,7 +1202,7 @@ const yearlyDatasets: AdminDataset[] = [
     detailSections: [
       {
         title: "统计标识",
-        description: "报录比按 program_id + exam_year 维护唯一记录。",
+      description: "报录比按关联专业与年份维护唯一记录。",
         fields: ["id", "program_id", "exam_year", "source_confidence"],
       },
       {

@@ -157,6 +157,9 @@ const businessLabelMap: Record<string, string> = {
   mixed: "混合内容",
   free: "免费",
   paid: "付费",
+  beginner: "入门",
+  intermediate: "进阶",
+  advanced: "高阶",
   true: "是",
   false: "否",
   null: "未提供",
@@ -165,6 +168,10 @@ const businessLabelMap: Record<string, string> = {
 
 function getBusinessLabel(label: string): string {
   return businessLabelMap[label] ?? label;
+}
+
+function getDatasetListTitle(title: string): string {
+  return title.endsWith("列表") ? title : `${title}列表`;
 }
 
 type LiveOperationsWorkspaceProps = {
@@ -373,7 +380,7 @@ export function LiveOperationsWorkspace({
           <div className="record-list-panel">
             <div className="list-header">
               <div>
-                <h3>{getBusinessLabel(dataset.title)}列表</h3>
+                <h3>{getDatasetListTitle(getBusinessLabel(dataset.title))}</h3>
                 <p>
                   当前展示 {records.length} 条结果
                   {totalRecords > records.length ? `，后端共匹配 ${totalRecords} 条` : ""}。

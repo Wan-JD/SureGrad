@@ -432,6 +432,18 @@ export function formatAdminValue(value: AdminScalar | undefined): string {
   if (text === "brochure") return "招生简章";
   if (text === "official_notice") return "官方通知";
   if (text === "retest_rule") return "复试细则";
+  if (text === "book") return "图书";
+  if (text === "course") return "课程";
+  if (text === "question_bank") return "题库";
+  if (text === "article") return "文章";
+  if (text === "text") return "图文";
+  if (text === "video") return "视频";
+  if (text === "mixed") return "混合内容";
+  if (text === "free") return "免费";
+  if (text === "paid") return "付费";
+  if (text === "beginner") return "入门";
+  if (text === "intermediate") return "进阶";
+  if (text === "advanced") return "高阶";
   if (text === "national_a") return "国家线 A 类";
   if (text === "school") return "院校线";
   if (text === "retest") return "复试线";

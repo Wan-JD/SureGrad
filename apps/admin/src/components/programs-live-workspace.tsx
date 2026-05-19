@@ -78,7 +78,7 @@ export function ProgramsLiveWorkspace() {
 
         setSchools([]);
         setSchoolsLoading(false);
-        setSchoolsError(error instanceof Error ? error.message : "Failed to load schools.");
+        setSchoolsError(error instanceof Error ? error.message : "学校列表加载失败。");
       });
 
     return () => controller.abort();
@@ -112,7 +112,7 @@ export function ProgramsLiveWorkspace() {
 
     const controller = new AbortController();
     const selectedSchoolName =
-      schools.find((school) => school.schoolId === query.schoolId)?.schoolName ?? "Selected school";
+      schools.find((school) => school.schoolId === query.schoolId)?.schoolName ?? "当前院校";
 
     setListState((current) => ({
       ...current,
@@ -155,7 +155,7 @@ export function ProgramsLiveWorkspace() {
           records: [],
           total: 0,
           loading: false,
-          error: error instanceof Error ? error.message : "Failed to load programs.",
+          error: error instanceof Error ? error.message : "专业列表加载失败。",
         });
       });
 

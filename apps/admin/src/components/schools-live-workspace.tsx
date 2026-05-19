@@ -119,7 +119,7 @@ export function SchoolsLiveWorkspace() {
           records: [],
           total: 0,
           loading: false,
-          error: error instanceof Error ? error.message : "Failed to load schools.",
+          error: error instanceof Error ? error.message : "学校列表加载失败。",
         });
       });
 
@@ -172,7 +172,7 @@ export function SchoolsLiveWorkspace() {
         setDetailState({
           record: null,
           loading: false,
-          error: error instanceof Error ? error.message : "Failed to load school detail.",
+          error: error instanceof Error ? error.message : "学校详情加载失败。",
         });
       });
 

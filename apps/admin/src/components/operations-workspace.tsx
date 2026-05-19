@@ -117,6 +117,9 @@ const businessLabelMap: Record<string, string> = {
   mixed: "混合内容",
   free: "免费",
   paid: "付费",
+  beginner: "入门",
+  intermediate: "进阶",
+  advanced: "高阶",
   true: "是",
   false: "否",
   null: "未提供",
@@ -139,13 +142,17 @@ function getBusinessLabel(label: string): string {
   return businessLabelMap[label] ?? label;
 }
 
+function getDatasetListTitle(title: string): string {
+  return title.endsWith("列表") ? title : `${title}列表`;
+}
+
 function getPrimaryLabel(record: AdminRecord, fallback: string): string {
   const candidates = ["title", "name", "short_name", "code"];
 
   for (const key of candidates) {
     const value = record[key];
 
-    if (value !== undefined && value !== null && formatValue(value) !== "NULL") {
+    if (value !== undefined && value !== null && formatValue(value) !== "未提供") {
       return formatValue(value);
     }
   }
@@ -170,7 +177,7 @@ function getRecordMeta(record: AdminRecord): string[] {
 
   return metaKeys
     .map((key) => record[key])
-    .filter((value) => value !== undefined && value !== null && formatValue(value) !== "NULL")
+    .filter((value) => value !== undefined && value !== null && formatValue(value) !== "未提供")
     .slice(0, 4)
     .map((value) => formatValue(value));
 }
@@ -205,6 +212,18 @@ function formatValue(value: AdminScalar): string {
   if (text === "brochure") return "招生简章";
   if (text === "official_notice") return "官方通知";
   if (text === "retest_rule") return "复试细则";
+  if (text === "book") return "图书";
+  if (text === "course") return "课程";
+  if (text === "question_bank") return "题库";
+  if (text === "article") return "文章";
+  if (text === "text") return "图文";
+  if (text === "video") return "视频";
+  if (text === "mixed") return "混合内容";
+  if (text === "free") return "免费";
+  if (text === "paid") return "付费";
+  if (text === "beginner") return "入门";
+  if (text === "intermediate") return "进阶";
+  if (text === "advanced") return "高阶";
   if (text === "national_a") return "国家线 A 类";
   if (text === "school") return "院校线";
   if (text === "retest") return "复试线";
@@ -217,38 +236,38 @@ function getTone(key: string, value: AdminScalar): string {
     return "muted";
   }
 
-  const text = formatValue(value);
+  const rawText = String(value);
 
   if (key === "status") {
-    if (text === "active") {
+    if (rawText === "active") {
       return "success";
     }
 
-    if (text === "pending") {
+    if (rawText === "pending") {
       return "warning";
     }
 
-    if (text === "invalid" || text === "inactive") {
+    if (rawText === "invalid" || rawText === "inactive") {
       return "danger";
     }
   }
 
   if (key === "source_confidence") {
-    if (text === "official") {
+    if (rawText === "official") {
       return "success";
     }
 
-    if (text === "estimated") {
+    if (rawText === "estimated") {
       return "warning";
     }
 
-    if (text === "manual") {
+    if (rawText === "manual") {
       return "accent";
     }
   }
 
   if (key === "degree_type") {
-    return text === "academic" ? "success" : "accent";
+    return rawText === "academic" ? "success" : "accent";
   }
 
   return "default";
@@ -475,7 +494,7 @@ export function OperationsWorkspace({ page }: OperationsWorkspaceProps) {
           <div className="record-list-panel">
             <div className="list-header">
               <div>
-                <h3>{getBusinessLabel(activeDataset.title)}列表</h3>
+                <h3>{getDatasetListTitle(getBusinessLabel(activeDataset.title))}</h3>
                 <p>
                   筛选后共 {filteredRecords.length} 条样例记录，当前布局用于说明该模块的展示重点与后续录入方式。
                 </p>
