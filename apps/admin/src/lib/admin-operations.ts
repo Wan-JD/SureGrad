@@ -599,6 +599,82 @@ const sourceLinkRecords: AdminRecord[] = [
   },
 ];
 
+const resourceFields: AdminField[] = [
+  { key: "id", label: "id", type: "uuid", required: true, description: "资料主键 ID。" },
+  { key: "title", label: "title", type: "varchar(255)", required: true, description: "资料标题。" },
+  { key: "resource_type", label: "resource_type", type: "varchar(50)", required: true, description: "资料类型，如 book、course、question_bank、article。" },
+  { key: "subject", label: "subject", type: "varchar(100)", required: true, description: "适用科目，用于推荐与筛选。" },
+  { key: "stage_tag", label: "stage_tag", type: "varchar(50)", required: true, description: "学习阶段标签，如 foundation、intensive、sprint。" },
+  { key: "difficulty_level", label: "difficulty_level", type: "varchar(20)", required: true, description: "资料难度等级。" },
+  { key: "format", label: "format", type: "varchar(30)", required: true, description: "内容形态，如 text、video、mixed。" },
+  { key: "provider_name", label: "provider_name", type: "varchar(255)", description: "资料提供方或作者。" },
+  { key: "price_type", label: "price_type", type: "varchar(20)", required: true, description: "价格类型，仅允许 free 或 paid。" },
+  { key: "status", label: "status", type: "varchar(20)", required: true, description: "状态仅允许 active、draft、archived。" },
+  { key: "featured_rank", label: "featured_rank", type: "int", description: "推荐排序，数值越小越靠前。" },
+  { key: "summary", label: "summary", type: "text", description: "资料推荐语与使用建议。" },
+  { key: "notes", label: "notes", type: "text", description: "运营补充说明。" },
+  { key: "landing_url", label: "landing_url", type: "text", description: "前台跳转链接或购买入口。" },
+  { key: "created_at", label: "created_at", type: "timestamptz", required: true, description: "创建时间。" },
+  { key: "updated_at", label: "updated_at", type: "timestamptz", required: true, description: "更新时间。" },
+];
+
+const resourceRecords: AdminRecord[] = [
+  {
+    id: "4f8b80ca-fd9d-47c6-8cd9-3df28a887bc1",
+    title: "计算机考研 408 核心笔记",
+    resource_type: "book",
+    subject: "计算机学科专业基础",
+    stage_tag: "foundation",
+    difficulty_level: "intermediate",
+    format: "text",
+    provider_name: "SureGrad 内容组",
+    price_type: "free",
+    status: "active",
+    featured_rank: 1,
+    summary: "用于 408 早期打基础，强调知识框架、章节地图和真题关键词索引。",
+    notes: "适合作为前台推荐卡片样例，后续可补封面与下载文件映射。",
+    landing_url: "https://suregrad.example.com/resources/408-core-notes",
+    created_at: "2026-05-14T09:20:00+08:00",
+    updated_at: "2026-05-18T19:35:00+08:00",
+  },
+  {
+    id: "a1ff7276-0acd-45a8-b566-d4eb5e14f52c",
+    title: "金融专硕 高频热点精讲",
+    resource_type: "course",
+    subject: "金融学综合",
+    stage_tag: "intensive",
+    difficulty_level: "advanced",
+    format: "video",
+    provider_name: "校内合作讲师",
+    price_type: "paid",
+    status: "draft",
+    featured_rank: 3,
+    summary: "聚焦金融专硕冲刺阶段的时政热点、名词解释和高频案例拆解。",
+    notes: "仍在等待课程页素材，先保留 draft 状态给运营排期。",
+    landing_url: "https://suregrad.example.com/resources/finance-intensive-course",
+    created_at: "2026-05-15T11:08:00+08:00",
+    updated_at: "2026-05-18T14:12:00+08:00",
+  },
+  {
+    id: "f3f2dfd2-5d78-4c9e-b580-7c4515250ac6",
+    title: "应用心理冲刺题库",
+    resource_type: "question_bank",
+    subject: "心理学专业综合",
+    stage_tag: "sprint",
+    difficulty_level: "intermediate",
+    format: "mixed",
+    provider_name: "SureGrad 教研组",
+    price_type: "paid",
+    status: "active",
+    featured_rank: 2,
+    summary: "按章节和题型拆分的冲刺题库，适合复试前两周集中刷题。",
+    notes: "保留 mixed 格式样例，方便后续接题库文件与讲解视频的组合资源。",
+    landing_url: "https://suregrad.example.com/resources/psy-sprint-bank",
+    created_at: "2026-05-15T16:42:00+08:00",
+    updated_at: "2026-05-19T10:06:00+08:00",
+  },
+];
+
 const schoolsDataset: AdminDataset = {
   id: "schools",
   title: "schools",
@@ -795,6 +871,79 @@ const programsDataset: AdminDataset = {
     },
   ],
   records: programRecords,
+};
+
+const resourcesDataset: AdminDataset = {
+  id: "resources",
+  title: "study_resources",
+  description: "资料推荐页围绕 study_resources 组织推荐清单、科目标签、学习阶段和前台可见状态。",
+  tableName: "study_resources",
+  templateName: "study_resources.csv",
+  ...getSharedActions("study_resources", "study_resources.csv"),
+  filters: [
+    {
+      key: "status",
+      label: "status",
+      options: [
+        { label: "全部状态", value: "" },
+        { label: "active", value: "active" },
+        { label: "draft", value: "draft" },
+        { label: "archived", value: "archived" },
+      ],
+    },
+    {
+      key: "subject",
+      label: "subject",
+      options: [
+        { label: "全部科目", value: "" },
+        { label: "计算机学科专业基础", value: "计算机学科专业基础" },
+        { label: "金融学综合", value: "金融学综合" },
+        { label: "心理学专业综合", value: "心理学专业综合" },
+      ],
+    },
+    {
+      key: "stage_tag",
+      label: "stage_tag",
+      options: [
+        { label: "全部阶段", value: "" },
+        { label: "foundation", value: "foundation" },
+        { label: "intensive", value: "intensive" },
+        { label: "sprint", value: "sprint" },
+      ],
+    },
+  ],
+  columns: [
+    { key: "title", label: "title" },
+    { key: "subject", label: "subject" },
+    { key: "stage_tag", label: "stage_tag" },
+    { key: "resource_type", label: "resource_type" },
+    { key: "status", label: "status" },
+    { key: "updated_at", label: "updated_at" },
+  ],
+  fields: resourceFields,
+  detailSections: [
+    {
+      title: "推荐主字段",
+      description: "资料标题、类型和状态决定前台推荐清单如何展示。",
+      fields: ["id", "title", "resource_type", "status", "featured_rank"],
+    },
+    {
+      title: "适用范围",
+      description: "用 subject、stage_tag 和 difficulty_level 维持推荐命中的运营口径。",
+      fields: ["subject", "stage_tag", "difficulty_level", "format", "price_type"],
+    },
+    {
+      title: "推荐说明",
+      description: "承接推荐语、运营备注与跳转链接，方便后续接前台卡片和购买入口。",
+      fields: ["provider_name", "summary", "notes", "landing_url"],
+    },
+    {
+      title: "审计字段",
+      description: "为资源上下架、排序调整和批量导入对账保留时间字段。",
+      fields: ["created_at", "updated_at"],
+    },
+  ],
+  records: resourceRecords,
 };
 
 const sourceLinksDataset: AdminDataset = {
@@ -1158,6 +1307,13 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
     description: "先交付 programs 的筛选与详情结构，保证专业主表能承接后续年份数据、来源链接和人工修订。",
     relatedTables: ["programs", "departments", "schools"],
     datasets: [programsDataset],
+  },
+  resources: {
+    eyebrow: "Resources",
+    title: "资料推荐管理",
+    description: "基于 study_resources 搭建资料推荐工作台，统一维护推荐标题、科目标签、学习阶段、可见状态和跳转链接。",
+    relatedTables: ["study_resources", "subjects"],
+    datasets: [resourcesDataset],
   },
   "yearly-data": {
     eyebrow: "Yearly Data",

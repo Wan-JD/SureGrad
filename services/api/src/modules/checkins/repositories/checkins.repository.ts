@@ -45,6 +45,16 @@ export interface TodoStatusSummary {
   pendingCount: number;
 }
 
+export interface CreateDailyCheckinInput {
+  userId: string;
+  checkinDate: string;
+  totalStudyMinutes: number;
+  completedTodoCount: number;
+  primarySubjectId: string | null;
+  reflection: string | null;
+  moodTag: string | null;
+}
+
 @Injectable()
 export class CheckinsRepository {
   constructor(private readonly dataSource: DataSource) {}
@@ -104,6 +114,34 @@ export class CheckinsRepository {
       .getRawOne<{ count: string }>();
 
     return Number(row?.count ?? 0);
+  }
+
+  async createDailyCheckin(
+    input: CreateDailyCheckinInput,
+  ): Promise<TodayCheckinRecord> {
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('study_checkins')
+      .values({
+        user_id: input.userId,
+        checkin_date: input.checkinDate,
+        total_study_minutes: input.totalStudyMinutes,
+        completed_todo_count: input.completedTodoCount,
+        primary_subject_id: input.primarySubjectId,
+        reflection: input.reflection,
+        mood_tag: input.moodTag,
+      })
+      .orIgnore()
+      .execute();
+
+    const record = await this.findTodayCheckin(input.userId, input.checkinDate);
+
+    if (!record) {
+      throw new Error('CHECKIN_CREATE_FAILED');
+    }
+
+    return record;
   }
 
   findCheckinsByDateRange(

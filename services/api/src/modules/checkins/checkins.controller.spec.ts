@@ -7,6 +7,7 @@ import { CheckinsService } from './checkins.service';
 import {
   CheckinRangeRecord,
   CheckinsRepository,
+  CreateDailyCheckinInput,
   CurrentPlanRecord,
   CurrentTargetRecord,
   TodayCheckinRecord,
@@ -43,11 +44,18 @@ describe('CheckinsControllers', () => {
       ratio: number;
     }>;
   };
+  type CreateCheckinBody = {
+    checkinId: string;
+    checkinDate: string;
+    continuousDays: number;
+    todayStudyMinutes: number;
+  };
   const getHttpServer = (app: { getHttpServer: () => unknown }): HttpServer =>
     app.getHttpServer() as HttpServer;
 
   const userId = '12121212-1212-1212-1212-121212121212';
   const subjectId = '34343434-3434-3434-3434-343434343434';
+  const validPrimarySubjectId = '44444444-4444-4444-8444-444444444444';
 
   const today = '2026-05-18';
   const weekCheckins: CheckinRangeRecord[] = [
@@ -102,6 +110,8 @@ describe('CheckinsControllers', () => {
     pendingCount: 1,
   };
 
+  let createdCheckinSequence = 0;
+
   const createRepositoryMock = ({
     todayRecord = todayCheckin,
     checkins = weekCheckins,
@@ -119,39 +129,108 @@ describe('CheckinsControllers', () => {
     target?: CurrentTargetRecord | null;
     plan?: CurrentPlanRecord | null;
   } = {}) =>
-    ({
-      findTodayCheckin: jest
-        .fn<CheckinsRepository['findTodayCheckin']>()
-        .mockImplementation(() => Promise.resolve(todayRecord)),
-      countCompletedTodosByDate: jest
-        .fn<CheckinsRepository['countCompletedTodosByDate']>()
-        .mockImplementation(() => Promise.resolve(completedTodosToday)),
-      countPendingTodosByDate: jest
-        .fn<CheckinsRepository['countPendingTodosByDate']>()
-        .mockImplementation(() => Promise.resolve(pendingTodosToday)),
-      findCheckinsByDateRange: jest
-        .fn<CheckinsRepository['findCheckinsByDateRange']>()
-        .mockImplementation(() => Promise.resolve(checkins)),
-      findCheckinDatesBeforeOrOn: jest
-        .fn<CheckinsRepository['findCheckinDatesBeforeOrOn']>()
-        .mockImplementation(() =>
-          Promise.resolve(
-            checkins
-              .map((item) => item.checkinDate)
-              .sort()
-              .reverse(),
+    {
+      let mutableTodayRecord = todayRecord
+        ? { ...todayRecord }
+        : null;
+      const mutableCheckins = checkins.map((item) => ({ ...item }));
+
+      const findCheckinIndexByDate = (date: string) =>
+        mutableCheckins.findIndex((item) => item.checkinDate === date);
+
+      const upsertCheckinRangeRecord = (record: TodayCheckinRecord) => {
+        const nextRangeRecord: CheckinRangeRecord = {
+          checkinDate: record.checkinDate,
+          totalStudyMinutes: record.totalStudyMinutes,
+          primarySubjectId: record.primarySubjectId,
+          primarySubjectName: record.primarySubjectName,
+        };
+        const existingIndex = findCheckinIndexByDate(record.checkinDate);
+
+        if (existingIndex >= 0) {
+          mutableCheckins[existingIndex] = nextRangeRecord;
+          return;
+        }
+
+        mutableCheckins.push(nextRangeRecord);
+      };
+
+      if (mutableTodayRecord) {
+        upsertCheckinRangeRecord(mutableTodayRecord);
+      }
+
+      return {
+        findTodayCheckin: jest
+          .fn<CheckinsRepository['findTodayCheckin']>()
+          .mockImplementation((_userId: string, date: string) =>
+            Promise.resolve(
+              mutableTodayRecord?.checkinDate === date
+                ? { ...mutableTodayRecord }
+                : null,
+            ),
           ),
-        ),
-      getTodoStatusSummary: jest
-        .fn<CheckinsRepository['getTodoStatusSummary']>()
-        .mockImplementation(() => Promise.resolve(summary)),
-      getCurrentTarget: jest
-        .fn<CheckinsRepository['getCurrentTarget']>()
-        .mockImplementation(() => Promise.resolve(target)),
-      getCurrentPlan: jest
-        .fn<CheckinsRepository['getCurrentPlan']>()
-        .mockImplementation(() => Promise.resolve(plan)),
-    }) as unknown as jest.Mocked<CheckinsRepository>;
+        countCompletedTodosByDate: jest
+          .fn<CheckinsRepository['countCompletedTodosByDate']>()
+          .mockImplementation(() => Promise.resolve(completedTodosToday)),
+        countPendingTodosByDate: jest
+          .fn<CheckinsRepository['countPendingTodosByDate']>()
+          .mockImplementation(() => Promise.resolve(pendingTodosToday)),
+        createDailyCheckin: jest
+          .fn<CheckinsRepository['createDailyCheckin']>()
+          .mockImplementation((input: CreateDailyCheckinInput) => {
+            if (mutableTodayRecord?.checkinDate === input.checkinDate) {
+              return Promise.resolve({ ...mutableTodayRecord });
+            }
+
+            mutableTodayRecord = {
+              checkinId: `created-checkin-${++createdCheckinSequence}`,
+              checkinDate: input.checkinDate,
+              totalStudyMinutes: input.totalStudyMinutes,
+              completedTodoCount: input.completedTodoCount,
+              primarySubjectId: input.primarySubjectId,
+              primarySubjectName: input.primarySubjectId
+                ? 'New Subject'
+                : null,
+              reflection: input.reflection,
+              moodTag: input.moodTag,
+            };
+            upsertCheckinRangeRecord(mutableTodayRecord);
+
+            return Promise.resolve({ ...mutableTodayRecord });
+          }),
+        findCheckinsByDateRange: jest
+          .fn<CheckinsRepository['findCheckinsByDateRange']>()
+          .mockImplementation(() =>
+            Promise.resolve(
+              mutableCheckins
+                .sort((left, right) =>
+                  right.checkinDate.localeCompare(left.checkinDate),
+                )
+                .map((item) => ({ ...item })),
+            ),
+          ),
+        findCheckinDatesBeforeOrOn: jest
+          .fn<CheckinsRepository['findCheckinDatesBeforeOrOn']>()
+          .mockImplementation((_userId: string, date: string) =>
+            Promise.resolve(
+              mutableCheckins
+                .filter((item) => item.checkinDate <= date)
+                .map((item) => item.checkinDate)
+                .sort()
+                .reverse(),
+            ),
+          ),
+        getTodoStatusSummary: jest
+          .fn<CheckinsRepository['getTodoStatusSummary']>()
+          .mockImplementation(() => Promise.resolve(summary)),
+        getCurrentTarget: jest
+          .fn<CheckinsRepository['getCurrentTarget']>()
+          .mockImplementation(() => Promise.resolve(target)),
+        getCurrentPlan: jest
+          .fn<CheckinsRepository['getCurrentPlan']>()
+          .mockImplementation(() => Promise.resolve(plan)),
+      } as unknown as jest.Mocked<CheckinsRepository>;
+    };
 
   const createApp = async (repository = createRepositoryMock()) => {
     const moduleRef = await Test.createTestingModule({
@@ -187,6 +266,7 @@ describe('CheckinsControllers', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-05-18T12:00:00.000Z'));
+    createdCheckinSequence = 0;
   });
 
   afterEach(() => {
@@ -257,6 +337,112 @@ describe('CheckinsControllers', () => {
           completedTodoCount: 2,
           primarySubjectName: '政治',
           isCheckedIn: true,
+        });
+      });
+
+    await app.close();
+  });
+
+  it('creates the first daily checkin', async () => {
+    const { app, tokenService } = await createApp(
+      createRepositoryMock({
+        todayRecord: null,
+        checkins: [],
+      }),
+    );
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .post('/api/v1/study-checkins')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        totalStudyMinutes: 135,
+        primarySubjectId: validPrimarySubjectId,
+        reflection: 'Solid progress today',
+        moodTag: 'focused',
+      })
+      .expect(201)
+      .expect(({ body }: { body: CreateCheckinBody }) => {
+        expect(body).toEqual({
+          checkinId: 'created-checkin-1',
+          checkinDate: today,
+          continuousDays: 1,
+          todayStudyMinutes: 135,
+        });
+      });
+
+    await app.close();
+  });
+
+  it('treats repeated daily checkin posts as idempotent', async () => {
+    const repository = createRepositoryMock({
+      todayRecord: null,
+      checkins: [],
+    });
+    const { app, tokenService } = await createApp(repository);
+    const token = tokenService.createToken(userId, 'access');
+    const payload = {
+      totalStudyMinutes: 135,
+      primarySubjectId: validPrimarySubjectId,
+      reflection: 'Solid progress today',
+      moodTag: 'focused',
+    };
+
+    const firstResponse = await request(getHttpServer(app))
+      .post('/api/v1/study-checkins')
+      .set('Authorization', `Bearer ${token}`)
+      .send(payload)
+      .expect(201);
+
+    const secondResponse = await request(getHttpServer(app))
+      .post('/api/v1/study-checkins')
+      .set('Authorization', `Bearer ${token}`)
+      .send(payload)
+      .expect(201);
+
+    expect(secondResponse.body).toEqual(firstResponse.body);
+    expect(repository.createDailyCheckin).toHaveBeenCalledTimes(2);
+
+    await app.close();
+  });
+
+  it('keeps overview summary consistent after creating a daily checkin', async () => {
+    const repository = createRepositoryMock({
+      todayRecord: null,
+      checkins: [
+        {
+          checkinDate: '2026-05-17',
+          totalStudyMinutes: 90,
+          primarySubjectId: '56565656-5656-5656-5656-565656565656',
+          primarySubjectName: 'English',
+        },
+      ],
+      summary: {
+        completedCount: 2,
+        pendingCount: 1,
+      },
+    });
+    const { app, tokenService } = await createApp(repository);
+    const token = tokenService.createToken(userId, 'access');
+
+    const createResponse = await request(getHttpServer(app))
+      .post('/api/v1/study-checkins')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        totalStudyMinutes: 135,
+        primarySubjectId: validPrimarySubjectId,
+      })
+      .expect(201);
+
+    await request(getHttpServer(app))
+      .get('/api/v1/study-stats/overview')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect(({ body }: { body: OverviewBody }) => {
+        expect(body).toMatchObject({
+          todayStudyMinutes: createResponse.body.todayStudyMinutes,
+          weekStudyMinutes: 225,
+          continuousCheckinDays: createResponse.body.continuousDays,
         });
       });
 

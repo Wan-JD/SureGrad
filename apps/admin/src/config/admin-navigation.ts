@@ -35,7 +35,7 @@ export const adminNavigation: AdminNavItem[] = [
     href: "/resources",
     label: "资料推荐",
     shortLabel: "资料",
-    description: "本轮不交付，预留 study_resources、subjects 和阶段标签治理入口。",
+    description: "维护 study_resources 的推荐清单、适用科目、学习阶段和可见状态。",
   },
   {
     href: "/source-links",

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   addDays,
   formatDateOnly,
@@ -50,22 +50,41 @@ export class CheckinsService {
     };
   }
 
-  create(userId: string, dto: CreateCheckinDto) {
-    return buildSkeletonResponse({
-      domain: 'checkins',
-      action: 'create',
-      message:
-        'Daily check-in write flow is reserved here, but idempotency and streak logic are not implemented yet.',
-      nextSteps: [
-        'Enforce one primary check-in per user per day.',
-        'Snapshot completed todo count for the day.',
-        'Compute streak metrics after successful writes.',
-      ],
-      payload: {
-        userId,
-        ...dto,
-      },
+  async create(userId: string, dto: CreateCheckinDto) {
+    const today = getTodayDate();
+    const checkinDate = dto.checkinDate ?? today;
+
+    if (checkinDate !== today) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    const completedTodoCount = await this.checkinsRepository.countCompletedTodosByDate(
+      userId,
+      checkinDate,
+    );
+    const checkin = await this.checkinsRepository.createDailyCheckin({
+      userId,
+      checkinDate,
+      totalStudyMinutes: dto.totalStudyMinutes,
+      completedTodoCount,
+      primarySubjectId: dto.primarySubjectId ?? null,
+      reflection: dto.reflection ?? null,
+      moodTag: dto.moodTag ?? null,
     });
+    const streakDates = await this.checkinsRepository.findCheckinDatesBeforeOrOn(
+      userId,
+      checkinDate,
+    );
+
+    return {
+      checkinId: checkin.checkinId,
+      checkinDate: checkin.checkinDate,
+      continuousDays: this.computeContinuousCheckinDays(
+        streakDates,
+        checkin.checkinDate,
+      ),
+      todayStudyMinutes: checkin.totalStudyMinutes,
+    };
   }
 
   update(userId: string, checkinId: string, dto: UpdateCheckinDto) {
