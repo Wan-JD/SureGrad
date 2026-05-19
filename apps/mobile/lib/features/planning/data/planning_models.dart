@@ -1,3 +1,4 @@
+import '../../../core/models/main_journey_state.dart';
 import '../../../core/state/current_target_store.dart';
 
 class CurrentTargetRecord {
@@ -352,6 +353,18 @@ class PlanningSnapshot {
 
   bool get hasTarget => currentTarget.hasTarget;
   bool get hasPlan => currentPlan.hasPlan;
+  bool get hasWeeklyPlan => weeklyPlan != null;
+  bool get hasDailyPlan => dailyPlan != null;
+
+  MainJourneyState get journeyState {
+    if (!hasTarget) {
+      return MainJourneyState.noTarget;
+    }
+    if (!hasPlan) {
+      return MainJourneyState.noPlan;
+    }
+    return MainJourneyState.hasPlan;
+  }
 
   String get headline {
     if (targetPreview != null) {

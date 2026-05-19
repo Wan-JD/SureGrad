@@ -22,7 +22,7 @@ import '../../features/todo/data/todo_api.dart';
 import '../../features/todo/data/todo_repository.dart';
 
 class AppBootstrap {
-  const AppBootstrap._({
+  const AppBootstrap({
     required this.apiConfig,
     required this.apiClient,
     required this.sessionStore,
@@ -56,7 +56,7 @@ class AppBootstrap {
     final apiConfig = ApiConfig(baseUrl: resolvedBaseUrl);
     final apiClient = ApiClient(config: apiConfig, sessionStore: sessionStore);
 
-    return AppBootstrap._(
+    return AppBootstrap(
       apiConfig: apiConfig,
       apiClient: apiClient,
       sessionStore: sessionStore,

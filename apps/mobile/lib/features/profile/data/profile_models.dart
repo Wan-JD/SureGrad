@@ -1,3 +1,4 @@
+import '../../../core/models/main_journey_state.dart';
 import '../../../core/state/current_target_store.dart';
 import '../../planning/data/planning_models.dart';
 
@@ -43,6 +44,16 @@ class ProfileScreenData {
   final UserProfileSnapshot me;
   final CurrentTargetRecord currentTarget;
   final CurrentTargetPreview? targetPreview;
+
+  MainJourneyState get journeyState {
+    if (!currentTarget.hasTarget) {
+      return MainJourneyState.noTarget;
+    }
+    if (!me.hasActivePlan) {
+      return MainJourneyState.noPlan;
+    }
+    return MainJourneyState.hasPlan;
+  }
 
   String get targetHeadline {
     if (targetPreview != null) {

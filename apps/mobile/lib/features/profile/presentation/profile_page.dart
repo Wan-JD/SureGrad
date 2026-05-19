@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
+import '../../../core/models/main_journey_state.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
 import '../../../core/widgets/empty_state_card.dart';
@@ -17,6 +18,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  Future<void> _refresh() async {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+    await Future<void>.delayed(Duration.zero);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bootstrap = AppScope.of(context);
@@ -25,6 +34,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return AppNavigationScaffold(
       currentTab: AppTab.profile,
       title: '我的',
+      actions: [
+        if (sessionStore.isLoggedIn)
+          IconButton(
+            onPressed: _refresh,
+            tooltip: '刷新',
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+      ],
       child: AnimatedBuilder(
         animation: Listenable.merge([
           sessionStore,
@@ -33,118 +50,165 @@ class _ProfilePageState extends State<ProfilePage> {
         ]),
         builder: (context, _) {
           if (!sessionStore.isLoggedIn) {
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                EmptyStateCard(
-                  title: '未登录',
-                  message: '登录后，这里会展示真实的 /users/me 和 /user-targets/current 结果。',
-                  actionLabel: '去登录',
-                  onAction: () {
-                    Navigator.of(context).pushNamed(AppRoutes.login);
-                  },
-                ),
-              ],
+            return RefreshIndicator(
+              onRefresh: _refresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                children: [
+                  EmptyStateCard(
+                    title: '还没有登录',
+                    message: '登录后，这里会展示账号、目标和计划的真实状态，并和首页、规划页保持一致。',
+                    actionLabel: '去登录',
+                    onAction: () {
+                      Navigator.of(context).pushNamed(AppRoutes.login);
+                    },
+                  ),
+                ],
+              ),
             );
           }
 
           return FutureBuilder<ProfileScreenData>(
             future: bootstrap.profileRepository.fetchProfile(),
             builder: (context, snapshot) {
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (snapshot.hasError)
-                    EmptyStateCard(
-                      title: '个人中心加载失败',
-                      message: _errorMessage(snapshot.error),
-                      actionLabel: '重试',
-                      onAction: () => setState(() {}),
-                    )
-                  else if (!snapshot.hasData)
-                    const _ProfileLoading()
-                  else ...[
-                    _ProfileHero(data: snapshot.data!),
-                    const SizedBox(height: 16),
-                    SectionCard(
-                      title: '账号信息',
-                      children: [
-                        _ProfileRow(
-                          label: '手机号',
-                          value: snapshot.data!.me.phoneMasked ?? '-',
-                        ),
-                        _ProfileRow(
-                          label: '昵称',
-                          value: snapshot.data!.me.nickname ?? '未设置',
-                        ),
-                        _ProfileRow(
-                          label: '档案完成',
-                          value: snapshot.data!.me.profileCompleted ? '是' : '否',
-                        ),
-                        _ProfileRow(
-                          label: '当前目标',
-                          value: snapshot.data!.targetHeadline,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SectionCard(
-                      title: '我的入口',
-                      children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('我的收藏'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(
-                              context,
-                            ).pushNamed(AppRoutes.favorites);
-                          },
-                        ),
-                        const Divider(),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('专业对比'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(
-                              context,
-                            ).pushNamed(AppRoutes.comparison);
-                          },
-                        ),
-                        const Divider(),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('提醒中心'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(
-                              context,
-                            ).pushNamed(AppRoutes.reminders);
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton(
-                      onPressed: () {
-                        sessionStore.signOut();
-                        bootstrap.currentTargetStore.clear();
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          AppRoutes.splash,
-                          (_) => false,
-                        );
-                      },
-                      child: const Text('退出登录'),
-                    ),
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    if (snapshot.hasError) ...[
+                      _JourneyErrorCard(
+                        title: '个人中心加载失败',
+                        message: _errorMessage(snapshot.error),
+                        onRetry: _refresh,
+                      ),
+                    ] else if (!snapshot.hasData) ...[
+                      const _ProfileLoading(),
+                    ] else ...[
+                      _ProfileHero(data: snapshot.data!),
+                      const SizedBox(height: 16),
+                      SectionCard(
+                        title: '主链路状态',
+                        subtitle: snapshot.data!.journeyState.title,
+                        children: [
+                          _ProfileRow(
+                            label: '当前状态',
+                            value: snapshot.data!.journeyState.label,
+                          ),
+                          _ProfileRow(
+                            label: '当前目标',
+                            value: snapshot.data!.targetHeadline,
+                          ),
+                          _ProfileRow(
+                            label: '档案完成',
+                            value: snapshot.data!.me.profileCompleted
+                                ? '是'
+                                : '否',
+                          ),
+                          _ProfileRow(
+                            label: '建议动作',
+                            value: _nextStepText(snapshot.data!.journeyState),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _ProfileStateAction(data: snapshot.data!),
+                      const SizedBox(height: 16),
+                      SectionCard(
+                        title: '账号信息',
+                        children: [
+                          _ProfileRow(
+                            label: '手机号',
+                            value: snapshot.data!.me.phoneMasked ?? '-',
+                          ),
+                          _ProfileRow(
+                            label: '昵称',
+                            value: snapshot.data!.me.nickname ?? '未设置',
+                          ),
+                          _ProfileRow(
+                            label: '活跃目标',
+                            value: snapshot.data!.me.hasActiveTarget
+                                ? '是'
+                                : '否',
+                          ),
+                          _ProfileRow(
+                            label: '活跃计划',
+                            value: snapshot.data!.me.hasActivePlan ? '是' : '否',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SectionCard(
+                        title: '我的入口',
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('我的收藏'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.favorites);
+                            },
+                          ),
+                          const Divider(),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('专业对比'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.comparison);
+                            },
+                          ),
+                          const Divider(),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('提醒中心'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.reminders);
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton(
+                        onPressed: () {
+                          sessionStore.signOut();
+                          bootstrap.currentTargetStore.clear();
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            AppRoutes.splash,
+                            (_) => false,
+                          );
+                        },
+                        child: const Text('退出登录'),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               );
             },
           );
         },
       ),
     );
+  }
+
+  String _nextStepText(MainJourneyState state) {
+    switch (state) {
+      case MainJourneyState.noTarget:
+        return '去院校页设置目标';
+      case MainJourneyState.noPlan:
+        return '去规划页生成计划';
+      case MainJourneyState.hasPlan:
+        return '继续查看今日 Todo';
+    }
   }
 
   String _errorMessage(Object? error) {
@@ -174,6 +238,21 @@ class _ProfileHero extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                data.journeyState.label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
             Text(
               data.targetHeadline,
               style: Theme.of(
@@ -182,29 +261,10 @@ class _ProfileHero extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '这里不再拼 mock 收藏数，而是展示用户、目标和计划是否激活这些真实状态。',
+              data.journeyState.summary,
               style: Theme.of(
                 context,
               ).textTheme.bodyLarge?.copyWith(color: const Color(0xFFF0E7DB)),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _MetricChip(
-                  label: 'Active Target',
-                  value: data.me.hasActiveTarget ? 'Yes' : 'No',
-                ),
-                _MetricChip(
-                  label: 'Active Plan',
-                  value: data.me.hasActivePlan ? 'Yes' : 'No',
-                ),
-                _MetricChip(
-                  label: 'Profile',
-                  value: data.me.profileCompleted ? 'Done' : 'Pending',
-                ),
-              ],
             ),
           ],
         ),
@@ -213,34 +273,69 @@ class _ProfileHero extends StatelessWidget {
   }
 }
 
-class _MetricChip extends StatelessWidget {
-  const _MetricChip({required this.label, required this.value});
+class _ProfileStateAction extends StatelessWidget {
+  const _ProfileStateAction({required this.data});
 
-  final String label;
-  final String value;
+  final ProfileScreenData data;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(color: Color(0xFFE8D8C6))),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+    switch (data.journeyState) {
+      case MainJourneyState.noTarget:
+        return EmptyStateCard(
+          title: '目标还没设好',
+          message: '先去院校页设置目标，首页和规划页才会继续向下同步真实状态。',
+          actionLabel: '去选学校',
+          onAction: () {
+            Navigator.of(context).pushNamed(AppRoutes.schools);
+          },
+        );
+      case MainJourneyState.noPlan:
+        return EmptyStateCard(
+          title: '目标已就位，还没有计划',
+          message: '当前账号信息已经同步完成，接下来去规划页生成第一版学习计划即可。',
+          actionLabel: '去规划页',
+          onAction: () {
+            Navigator.of(context).pushNamed(AppRoutes.planning);
+          },
+        );
+      case MainJourneyState.hasPlan:
+        return SectionCard(
+          title: '当前进度',
+          subtitle: '主链路已经连通，可以直接继续执行。',
+          children: [
+            const Text('首页、规划页和今日 Todo 会按真实状态继续联动。'),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.todo);
+              },
+              child: const Text('查看今日 Todo'),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+    }
+  }
+}
+
+class _JourneyErrorCard extends StatelessWidget {
+  const _JourneyErrorCard({
+    required this.title,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final String title;
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return EmptyStateCard(
+      title: title,
+      message: '$message\n\n下拉刷新或点击重试后，会重新拉取账号和目标状态。',
+      actionLabel: '重试',
+      onAction: onRetry,
     );
   }
 }
@@ -256,6 +351,7 @@ class _ProfileRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(width: 100, child: Text(label)),
           Expanded(child: Text(value)),
