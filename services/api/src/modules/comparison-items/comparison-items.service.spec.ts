@@ -254,15 +254,23 @@ describe('ComparisonItemsService', () => {
     const service = new ComparisonItemsService(
       asComparisonItemsRepository(comparisonItemsRepository),
     );
+    const result = await service.getResult('user-1', {});
 
-    await expect(service.getResult('user-1', {})).resolves.toEqual({
-      items: [],
-      dimensions: expect.any(Array),
-      pool: {
-        currentCount: 0,
-        maxCount: 4,
-        isEmpty: true,
-      },
+    expect(result.items).toEqual([]);
+    expect(result.dimensions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: 'totalScore',
+        }),
+        expect.objectContaining({
+          key: 'examSubjects',
+        }),
+      ]),
+    );
+    expect(result.pool).toEqual({
+      currentCount: 0,
+      maxCount: 4,
+      isEmpty: true,
     });
   });
 

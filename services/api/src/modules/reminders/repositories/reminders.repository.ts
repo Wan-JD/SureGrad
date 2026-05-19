@@ -59,7 +59,8 @@ export class RemindersRepository {
       ])
       .where('reminder.id = :reminderId', { reminderId })
       .andWhere('reminder.user_id = :userId', { userId })
-      .getRawOne<ReminderRecord | null>();
+      .getRawOne<ReminderRecord>()
+      .then((record) => record ?? null);
   }
 
   async findReminders(

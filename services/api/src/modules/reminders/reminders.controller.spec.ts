@@ -265,11 +265,13 @@ describe('RemindersController', () => {
         });
       });
 
-    expect(repository.updateReminderEnabled).toHaveBeenCalledWith({
-      userId,
-      reminderId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-      isEnabled: false,
-    });
+    expect(repository.updateReminderEnabled.mock.calls).toContainEqual([
+      {
+        userId,
+        reminderId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        isEnabled: false,
+      },
+    ]);
 
     await app.close();
   });

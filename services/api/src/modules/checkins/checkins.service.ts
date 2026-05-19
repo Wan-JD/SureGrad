@@ -58,10 +58,11 @@ export class CheckinsService {
       throw new BadRequestException('INVALID_PARAMS');
     }
 
-    const completedTodoCount = await this.checkinsRepository.countCompletedTodosByDate(
-      userId,
-      checkinDate,
-    );
+    const completedTodoCount =
+      await this.checkinsRepository.countCompletedTodosByDate(
+        userId,
+        checkinDate,
+      );
     const checkin = await this.checkinsRepository.createDailyCheckin({
       userId,
       checkinDate,
@@ -71,10 +72,11 @@ export class CheckinsService {
       reflection: dto.reflection ?? null,
       moodTag: dto.moodTag ?? null,
     });
-    const streakDates = await this.checkinsRepository.findCheckinDatesBeforeOrOn(
-      userId,
-      checkinDate,
-    );
+    const streakDates =
+      await this.checkinsRepository.findCheckinDatesBeforeOrOn(
+        userId,
+        checkinDate,
+      );
 
     return {
       checkinId: checkin.checkinId,
