@@ -134,9 +134,9 @@ export class RemindersRepository {
       });
     }
 
+    const countQuery = query.clone().select('COUNT(1)', 'total');
     this.applySort(query, params.sortBy, params.sortOrder);
 
-    const countQuery = query.clone().select('COUNT(1)', 'total');
     const items = await query
       .offset((params.page - 1) * params.pageSize)
       .limit(params.pageSize)

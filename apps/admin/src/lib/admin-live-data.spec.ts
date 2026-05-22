@@ -5,6 +5,8 @@ import {
   mapProgramListItemToRecord,
   mapSchoolDetailToRecord,
   mapSchoolListItemToRecord,
+  mapStudyResourceDetailToRecord,
+  mapStudyResourceListItemToRecord,
   toSelectOptions,
 } from "./admin-live-data";
 
@@ -127,4 +129,46 @@ test("builds stable select options without duplicates", () => {
     "Shanghai",
     "Zhejiang",
   ]);
+});
+
+test("maps study resource list items into workspace records", () => {
+  const record = mapStudyResourceListItemToRecord({
+    resourceId: "resource-1",
+    title: "政治冲刺课",
+    resourceType: "course",
+    subjectId: "subject-1",
+    subjectName: "政治",
+    stageTag: "final",
+    providerName: "SureGrad",
+    summary: "真题串讲",
+    sourceUrl: "https://example.com/resource-1",
+    isPublicLegal: true,
+    isFavorited: false,
+  });
+
+  assert.equal(record.title, "政治冲刺课");
+  assert.equal(record.resource_type, "course");
+  assert.equal(record.subject_name, "政治");
+  assert.equal(record.stage_tag, "final");
+  assert.equal(record.is_public_legal, true);
+});
+
+test("maps study resource detail with usage advice", () => {
+  const record = mapStudyResourceDetailToRecord({
+    resourceId: "resource-1",
+    title: "英语基础词汇书",
+    resourceType: "book",
+    subjectId: null,
+    subjectName: null,
+    stageTag: "foundation",
+    providerName: "Open Press",
+    summary: "打底用",
+    usageAdvice: "每天 30 分钟",
+    sourceUrl: "https://example.com/resource-3",
+    isPublicLegal: true,
+    isFavorited: false,
+  });
+
+  assert.equal(record.usage_advice, "每天 30 分钟");
+  assert.equal(record.subject_name, null);
 });

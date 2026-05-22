@@ -51,10 +51,33 @@ export class ResourcesRepository {
   async findResources(
     params: ResourceQueryParams,
   ): Promise<{ items: ResourceRecord[]; total: number }> {
-    const query = this.baseQuery().where('resource.status = :status', {
-      status: 'active',
-    });
+    const filtered = this.applyResourceFilters(
+      this.baseQuery().where('resource.status = :status', {
+        status: 'active',
+      }),
+      params,
+    );
 
+    const countQuery = filtered.clone().select('COUNT(1)', 'total');
+    const itemsQuery = filtered.clone();
+    this.applySort(itemsQuery, params.sortBy, params.sortOrder);
+
+    const items = await itemsQuery
+      .offset((params.page - 1) * params.pageSize)
+      .limit(params.pageSize)
+      .getRawMany<ResourceRecord>();
+    const totalRow = await countQuery.getRawOne<{ total: string }>();
+
+    return {
+      items,
+      total: Number(totalRow?.total ?? 0),
+    };
+  }
+
+  private applyResourceFilters(
+    query: SelectQueryBuilder<any>,
+    params: ResourceQueryParams,
+  ) {
     if (params.resourceType) {
       query.andWhere('resource.resource_type = :resourceType', {
         resourceType: params.resourceType,
@@ -79,19 +102,7 @@ export class ResourcesRepository {
       });
     }
 
-    this.applySort(query, params.sortBy, params.sortOrder);
-
-    const countQuery = query.clone().select('COUNT(1)', 'total');
-    const items = await query
-      .offset((params.page - 1) * params.pageSize)
-      .limit(params.pageSize)
-      .getRawMany<ResourceRecord>();
-    const totalRow = await countQuery.getRawOne<{ total: string }>();
-
-    return {
-      items,
-      total: Number(totalRow?.total ?? 0),
-    };
+    return query;
   }
 
   async findResourceById(resourceId: string): Promise<ResourceRecord | null> {

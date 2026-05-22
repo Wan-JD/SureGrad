@@ -126,6 +126,8 @@
 
 **入库（2026-05-22）**：ecust 五表可通过 `pnpm db:seed:ecust` 写入 PostgreSQL（`db:migrate` + `db:import:ecust`）。全新库先执行 `docs/schema.sql`；旧库缺列时 migrate 会补齐。本机验证：`GET /api/v1/schools` 应返回华东理工大学及 2024 分数线摘要。
 
+**备考资料演示（2026-05-22）**：不扩大院校 CSV 采集时，可用 `pnpm db:seed:resources` 幂等写入 4 门 `subjects`（政治/英语/数学/专业课）与 6 条 `study_resources`（固定 UUID，`is_public_legal=true`、`status=active`）。与 ecust 一并演示可跑 `pnpm db:seed:demo`。本机验证：`GET /api/v1/study-resources` 应返回 ≥6 条公开合法资料。
+
 这意味着当前数据线的重点不是“有没有开始采”，而是：
 
 1. 扩大批次数量。
@@ -173,18 +175,13 @@
 3. 新线程如果明显匹配某个 skill 的职责范围，应先用 skill 再展开具体工作。
 4. 文档、代码、真实采集数据三条线都要回写现状，不能把关键信息只留在聊天记录里。
 
-## 10. 当前并行推进线（2026-05-23）
+## 10. 当前并行推进线（2026-05-22）
 
-以下条目已在工作区落地，合并前已跑 `pnpm verify:api` / `verify:admin` / `flutter test`（见 §9 验收记录）：
-
-1. API：`GET /schools/:id/programs` 的 `isInComparison` — 已接 `comparison-items` 仓库
-2. API：`reminders` 的 `POST` / `DELETE` — 已去 skeleton，测试日期已改为 2027 避免过期 400
-3. Mobile：游客冷启动 `initialRoute` → `/schools`；启动页「先逛院校 / 登录」
-4. Admin：首页与 `/yearly-data` 展示 `BatchMissingTemplates` / `CollectedBatchGapsBanner`
-5. 数据：第二批次 `tools/data-import/collected/sufe-finance-2024/`（骨架，校验 0 error）
-6. API：`GET /health` 增加 `database: ok|error`
-
-**待提交**：上述改动仍在本地工作区，推送前用 `git.exe commit -F`（勿带 agent 署名）。
+1. **备考资料演示**：`pnpm db:seed:resources`（4 科目 + 6 条 `study_resources`）；`pnpm db:seed:demo` = ecust + 资料
+2. **Admin 资料 Live**：`/resources` 接 `GET /study-resources`，筛选类型/阶段/科目
+3. **Mobile 视觉 harness**：`main_visual_qa_planning.dart`、`main_visual_qa_resources.dart`；`verify:visual` 增规划/资料截图
+4. **API 修复**：`study-resources` 列表分页 COUNT 不再携带 ORDER BY（PostgreSQL 42803）
+5. 延续：游客冷启动、采集缺口 Banner、reminders CRUD、对比 `isInComparison` 等（见 `docs/visual-qa/` 各轮记录）
 
 ## 11. 下一步工作建议
 

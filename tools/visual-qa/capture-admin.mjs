@@ -19,6 +19,12 @@ const pages = [
     mustSee: ["年度数据 CSV 缺口", "采集缺口", "待补 CSV"],
     waitFor: ".batch-gaps-banner",
   },
+  {
+    name: "admin-resources",
+    url: "/resources",
+    mustSee: ["资料", "资料推荐"],
+    waitFor: ".record-table",
+  },
 ];
 
 fs.mkdirSync(outDir, { recursive: true });

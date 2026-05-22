@@ -148,6 +148,32 @@ export type SchoolProgramsQuery = {
   pageSize?: number;
 };
 
+export type StudyResourceListItem = {
+  resourceId: string;
+  title: string;
+  resourceType: string;
+  subjectId: string | null;
+  subjectName: string | null;
+  stageTag: string;
+  providerName: string | null;
+  summary: string | null;
+  sourceUrl: string;
+  isPublicLegal: boolean;
+  isFavorited: boolean;
+};
+
+export type StudyResourceDetail = StudyResourceListItem & {
+  usageAdvice: string | null;
+};
+
+export type StudyResourcesQuery = {
+  resourceType?: string;
+  stageTag?: string;
+  subjectId?: string;
+  page?: number;
+  pageSize?: number;
+};
+
 export const schoolsLiveColumns: AdminColumn[] = [
   { key: "name", label: "school" },
   { key: "province", label: "province" },
@@ -297,6 +323,94 @@ export const programsLiveFields: AdminField[] = [
   },
 ];
 
+export const resourcesLiveColumns: AdminColumn[] = [
+  { key: "title", label: "title" },
+  { key: "resource_type", label: "resource_type" },
+  { key: "subject_name", label: "subject_name" },
+  { key: "stage_tag", label: "stage_tag" },
+  { key: "provider_name", label: "provider_name" },
+  { key: "summary", label: "summary" },
+];
+
+export const resourcesLiveFields: AdminField[] = [
+  { key: "id", label: "id", type: "uuid", required: true, description: "资料主键 ID。" },
+  { key: "title", label: "title", type: "string", required: true, description: "资料标题。" },
+  {
+    key: "resource_type",
+    label: "resource_type",
+    type: "string",
+    required: true,
+    description: "资料类型，如课程、图书或文章。",
+  },
+  {
+    key: "subject_name",
+    label: "subject_name",
+    type: "string",
+    description: "关联科目名称。",
+  },
+  {
+    key: "stage_tag",
+    label: "stage_tag",
+    type: "string",
+    required: true,
+    description: "适用学习阶段。",
+  },
+  {
+    key: "provider_name",
+    label: "provider_name",
+    type: "string",
+    description: "资料提供方或作者。",
+  },
+  {
+    key: "summary",
+    label: "summary",
+    type: "text",
+    description: "推荐语或内容摘要。",
+  },
+  {
+    key: "usage_advice",
+    label: "usage_advice",
+    type: "text",
+    description: "使用建议，仅详情接口返回。",
+  },
+  {
+    key: "source_url",
+    label: "source_url",
+    type: "text",
+    description: "原始来源或跳转链接。",
+  },
+  {
+    key: "is_public_legal",
+    label: "is_public_legal",
+    type: "boolean",
+    description: "是否满足公开合规要求。",
+  },
+  {
+    key: "is_favorited",
+    label: "is_favorited",
+    type: "boolean",
+    description: "用户收藏状态。",
+  },
+];
+
+export const resourcesLiveDetailSections: AdminDetailSection[] = [
+  {
+    title: "Resource Identity",
+    description: "Live list fields that identify the study resource in admin review.",
+    fields: ["id", "title", "resource_type", "subject_name", "stage_tag"],
+  },
+  {
+    title: "Recommendation Copy",
+    description: "Provider, summary, and usage advice returned by the detail endpoint.",
+    fields: ["provider_name", "summary", "usage_advice"],
+  },
+  {
+    title: "Source & Compliance",
+    description: "Source link and compliance flags from the live API.",
+    fields: ["source_url", "is_public_legal", "is_favorited"],
+  },
+];
+
 export const programsLiveDetailSections: AdminDetailSection[] = [
   {
     title: "Program Identity",
@@ -342,6 +456,18 @@ export async function listSchoolPrograms(
     query,
     { signal },
   );
+}
+
+export async function listStudyResources(query: StudyResourcesQuery, signal?: AbortSignal) {
+  return getAdminJson<PaginatedResponse<StudyResourceListItem>>("/study-resources", query, {
+    signal,
+  });
+}
+
+export async function getStudyResourceDetail(resourceId: string, signal?: AbortSignal) {
+  return getAdminJson<StudyResourceDetail>(`/study-resources/${resourceId}`, undefined, {
+    signal,
+  });
 }
 
 function formatScoreLineSummary(summary: SchoolListItem["scoreLineSummary"]): string | null {
@@ -436,6 +562,10 @@ export function formatAdminValue(value: AdminScalar | undefined): string {
   if (text === "course") return "课程";
   if (text === "question_bank") return "题库";
   if (text === "article") return "文章";
+  if (text === "past_exam") return "历年真题";
+  if (text === "public_resource") return "公开资源";
+  if (text === "final") return "冲刺阶段";
+  if (text === "interview") return "复试阶段";
   if (text === "text") return "图文";
   if (text === "video") return "视频";
   if (text === "mixed") return "混合内容";
@@ -486,6 +616,14 @@ export function getAdminTone(key: string, value: AdminScalar | undefined): strin
     return text === "true" ? "success" : "muted";
   }
 
+  if (key === "is_public_legal") {
+    return text === "是" ? "success" : "warning";
+  }
+
+  if (key === "resource_type" || key === "stage_tag") {
+    return "accent";
+  }
+
   return "default";
 }
 
@@ -516,6 +654,9 @@ export function getAdminRecordMeta(record: AdminRecord): string[] {
     "discipline_category",
     "department_name",
     "code",
+    "resource_type",
+    "stage_tag",
+    "subject_name",
   ];
 
   return keys
@@ -581,6 +722,28 @@ export function mapSchoolDetailToRecord(detail: SchoolDetail): AdminRecord {
     program_count: detail.programCount,
     hot_programs: formatHotPrograms(detail.hotPrograms),
     is_favorited: detail.isFavorited,
+  };
+}
+
+export function mapStudyResourceListItemToRecord(item: StudyResourceListItem): AdminRecord {
+  return {
+    id: item.resourceId,
+    title: item.title,
+    resource_type: item.resourceType,
+    subject_name: item.subjectName,
+    stage_tag: item.stageTag,
+    provider_name: item.providerName,
+    summary: item.summary,
+    source_url: item.sourceUrl,
+    is_public_legal: item.isPublicLegal,
+    is_favorited: item.isFavorited,
+  };
+}
+
+export function mapStudyResourceDetailToRecord(detail: StudyResourceDetail): AdminRecord {
+  return {
+    ...mapStudyResourceListItemToRecord(detail),
+    usage_advice: detail.usageAdvice,
   };
 }
 

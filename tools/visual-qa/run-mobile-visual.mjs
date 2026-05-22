@@ -26,10 +26,12 @@ async function withStaticServer(dir, port, handler) {
     stdio: "ignore",
   });
 
-  for (let attempt = 0; attempt < 20; attempt += 1) {
+  let ready = false;
+  for (let attempt = 0; attempt < 45; attempt += 1) {
     try {
       const response = await fetch(`http://127.0.0.1:${port}/`);
       if (response.ok) {
+        ready = true;
         break;
       }
     } catch {
@@ -37,6 +39,11 @@ async function withStaticServer(dir, port, handler) {
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  if (!ready) {
+    server.kill("SIGTERM");
+    throw new Error(`Static server did not become ready on port ${port} (${dir})`);
   }
 
   try {
@@ -48,14 +55,40 @@ async function withStaticServer(dir, port, handler) {
 
 fs.mkdirSync(outDir, { recursive: true });
 
-run("flutter", [
-  "build",
-  "web",
+const apiDefine = [
   "--dart-define=SUREGRAD_API_BASE_URL=http://127.0.0.1:3000/api/v1",
-], mobileDir);
+];
+
+run("flutter", ["build", "web", ...apiDefine], mobileDir);
 run(
   "flutter",
   ["build", "web", "-t", "lib/main_visual_qa_splash.dart", "-o", "build/web-splash"],
+  mobileDir,
+);
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
+    "lib/main_visual_qa_planning.dart",
+    "-o",
+    "build/web-planning",
+    ...apiDefine,
+  ],
+  mobileDir,
+);
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
+    "lib/main_visual_qa_resources.dart",
+    "-o",
+    "build/web-resources",
+    ...apiDefine,
+  ],
   mobileDir,
 );
 
@@ -76,6 +109,18 @@ const targets = [
     name: "mobile-splash-guest",
     dir: path.join(mobileDir, "build", "web-splash"),
     port: 7358,
+    path: "/",
+  },
+  {
+    name: "mobile-guest-planning-tab",
+    dir: path.join(mobileDir, "build", "web-planning"),
+    port: 7359,
+    path: "/",
+  },
+  {
+    name: "mobile-guest-resources-tab",
+    dir: path.join(mobileDir, "build", "web-resources"),
+    port: 7360,
     path: "/",
   },
 ];
