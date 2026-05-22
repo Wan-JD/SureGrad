@@ -43,6 +43,18 @@ const pages = [
     mustSee: ["专业管理", "专业"],
     waitFor: ".workspace-hero",
   },
+  {
+    name: "admin-departments",
+    url: "/departments",
+    mustSee: ["院系管理", "院系列表"],
+    waitFor: ".workspace-hero",
+  },
+  {
+    name: "admin-source-links",
+    url: "/source-links",
+    mustSee: ["来源链接管理", "来源链接"],
+    waitFor: ".workspace-hero",
+  },
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -59,7 +71,12 @@ function waitSelectorsFor(target) {
       ".workspace-hero",
     ];
   }
-  if (target.name === "admin-schools" || target.name === "admin-programs") {
+  if (
+    target.name === "admin-schools" ||
+    target.name === "admin-programs" ||
+    target.name === "admin-departments" ||
+    target.name === "admin-source-links"
+  ) {
     return [
       ".record-table tbody tr",
       ".record-table",
@@ -83,7 +100,9 @@ async function waitForPageReady(page, target, viewportKey) {
         timeout:
           target.name === "admin-resources" ||
           target.name === "admin-schools" ||
-          target.name === "admin-programs"
+          target.name === "admin-programs" ||
+          target.name === "admin-departments" ||
+          target.name === "admin-source-links"
             ? 25000
             : 15000,
         state: "attached",

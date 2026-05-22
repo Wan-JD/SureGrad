@@ -61,6 +61,7 @@ function capturePlansFor(target) {
   if (
     target.name === "mobile-guest-schools-tab" ||
     target.name === "mobile-guest-home-tab" ||
+    target.name === "mobile-guest-comparison" ||
     target.name === "mobile-guest-planning-tab" ||
     target.name === "mobile-guest-resources-tab"
   ) {
@@ -172,6 +173,19 @@ run(
   ],
   mobileDir,
 );
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
+    "lib/main_visual_qa_comparison.dart",
+    "-o",
+    "build/web-comparison",
+    ...apiDefine,
+  ],
+  mobileDir,
+);
 
 const browser = await chromium.launch();
 const page = await browser.newPage(MOBILE_VIEWPORT);
@@ -197,6 +211,18 @@ const targets = [
     port: 7361,
     path: "/",
     mustSeeAny: ["首页", "首页状态加载失败", "主链路状态", "还没进入主链路"],
+  },
+  {
+    name: "mobile-guest-comparison",
+    dir: path.join(mobileDir, "build", "web-comparison"),
+    port: 7362,
+    path: "/",
+    mustSeeAny: [
+      "专业对比",
+      "对比中心暂时不可用",
+      "比较池还是空的",
+      "重试",
+    ],
   },
   {
     name: "mobile-guest-planning-tab",
