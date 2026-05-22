@@ -78,7 +78,7 @@ const pages = [
   {
     name: "admin-departments",
     url: "/departments",
-    mustSee: ["院系管理", "院系列表"],
+    mustSee: ["院系管理", "院系列表", "信息科学", "华东理工"],
     waitFor: ".workspace-hero",
   },
   {

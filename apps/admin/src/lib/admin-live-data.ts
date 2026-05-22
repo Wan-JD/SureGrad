@@ -483,6 +483,85 @@ export async function getAdminSchool(schoolId: string, signal?: AbortSignal) {
   return getAdminJson<AdminSchoolSummary>(`/admin/schools/${schoolId}`, undefined, { signal });
 }
 
+export type AdminDepartmentSummary = {
+  departmentId: string;
+  schoolId: string;
+  schoolName: string;
+  name: string;
+  code: string | null;
+  website: string | null;
+  status: "active" | "inactive";
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminDepartmentsQuery = {
+  keyword?: string;
+  schoolId?: string;
+  status?: "active" | "inactive";
+  page?: number;
+  pageSize?: number;
+};
+
+export type AdminDepartmentsResponse = {
+  items: AdminDepartmentSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export const departmentsLiveColumns: AdminColumn[] = [
+  { key: "name", label: "department" },
+  { key: "school_id", label: "school" },
+  { key: "code", label: "code" },
+  { key: "website", label: "website" },
+  { key: "status", label: "status" },
+];
+
+export const departmentsLiveFields: AdminField[] = [
+  { key: "id", label: "department_id", type: "uuid", required: true, description: "Department id." },
+  { key: "school_id", label: "school_name", type: "string", required: true, description: "Owning school label." },
+  { key: "raw_school_id", label: "school_id", type: "uuid", required: true, description: "Owning school id." },
+  { key: "name", label: "department_name", type: "string", required: true, description: "Department name." },
+  { key: "code", label: "department_code", type: "string", description: "Department code." },
+  { key: "website", label: "website", type: "text", description: "Department website." },
+  { key: "status", label: "status", type: "string", required: true, description: "Display status." },
+  { key: "updated_at", label: "updated_at", type: "string", description: "Last updated timestamp." },
+];
+
+export const departmentsLiveDetailSections: AdminDetailSection[] = [
+  {
+    title: "院系归属",
+    description: "院系与学校的归属关系来自 PostgreSQL Live API。",
+    fields: ["id", "school_id", "raw_school_id", "name", "code", "status"],
+  },
+  {
+    title: "站点信息",
+    description: "院系官网入口，便于运营核对链接是否可用。",
+    fields: ["website"],
+  },
+  {
+    title: "更新时间",
+    description: "最近写入或导入后的更新时间。",
+    fields: ["updated_at"],
+  },
+];
+
+export async function listAdminDepartments(
+  query: AdminDepartmentsQuery,
+  signal?: AbortSignal,
+) {
+  return getAdminJson<AdminDepartmentsResponse>("/admin/departments", query, { signal });
+}
+
+export async function getAdminDepartment(departmentId: string, signal?: AbortSignal) {
+  return getAdminJson<AdminDepartmentSummary>(
+    `/admin/departments/${departmentId}`,
+    undefined,
+    { signal },
+  );
+}
+
 export async function listSchools(query: SchoolsQuery, signal?: AbortSignal) {
   return getAdminJson<PaginatedResponse<SchoolListItem>>("/schools", query, { signal });
 }
@@ -733,6 +812,20 @@ export function toSelectOptions(values: Array<string | number | boolean | null |
         .map((value) => String(value)),
     ),
   ).sort((left, right) => left.localeCompare(right, "en", { numeric: true }));
+}
+
+export function mapAdminDepartmentToRecord(item: AdminDepartmentSummary): AdminRecord {
+  return {
+    id: item.departmentId,
+    name: item.name,
+    school_id: item.schoolName,
+    raw_school_id: item.schoolId,
+    code: item.code,
+    website: item.website,
+    status: item.status === "active" ? "启用" : "停用",
+    updated_at: item.updatedAt,
+    raw_status: item.status,
+  };
 }
 
 export function mapAdminSchoolToRecord(item: AdminSchoolSummary): AdminRecord {

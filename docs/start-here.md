@@ -178,10 +178,11 @@
 ## 10. 当前并行推进线（2026-05-22）
 
 1. **移动端专业详情**：`/programs/detail` 对接 `GET /programs/{id}`，院校详情可跳转；视觉见 `docs/visual-qa/2026-05-22-program-detail-round.md`
-2. **响应式布局**：Admin 1080px 抽屉 + 720px 表格卡片化；Mobile `NavigationRail`（≥600px）+ `ResponsivePageBody`
-3. **视觉验收**：`capture-admin.mjs` 每页 desktop/tablet/mobile；`run-mobile-visual.mjs` 含 `mobile-program-detail`
-4. **备考资料演示**：`pnpm db:seed:resources` / `db:seed:demo`；Admin `/resources` Live API
-5. **API**：`study-resources` 分页 COUNT 修复；延续 reminders、对比、游客冷启动等
+2. **Admin 院系 Live**：`GET /admin/departments` 只读列表/详情，`/departments` 工作台接库；视觉见 `docs/visual-qa/2026-05-22-admin-departments-live-round.md`
+3. **响应式布局**：Admin 1080px 抽屉 + 720px 表格卡片化；Mobile `NavigationRail`（≥600px）+ `ResponsivePageBody`
+4. **视觉验收**：`capture-admin.mjs` 每页 desktop/tablet/mobile；`run-mobile-visual.mjs` 含 `mobile-program-detail`
+5. **备考资料演示**：`pnpm db:seed:resources` / `db:seed:demo`；Admin `/resources` Live API
+6. **API**：`study-resources` 分页 COUNT 修复；延续 reminders、对比、游客冷启动等
 
 ## 11. 下一步工作建议
 
