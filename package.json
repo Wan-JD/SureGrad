@@ -16,7 +16,7 @@
     "verify:api": "pnpm build:api && pnpm lint:api && pnpm --filter @suregrad/api test -- --runInBand",
     "verify:admin": "pnpm build:admin && pnpm lint:admin",
     "verify:mobile": "pnpm analyze:mobile && pnpm test:mobile",
-    "verify:visual": "node tools/visual-qa/capture-admin.mjs && node tools/visual-qa/run-mobile-visual.mjs",
+    "verify:visual": "npm install --prefix tools/visual-qa && node tools/visual-qa/capture-admin.mjs && node tools/visual-qa/run-mobile-visual.mjs",
     "verify": "pnpm verify:api && pnpm verify:admin && pnpm verify:mobile",
     "verify:all": "pnpm verify && pnpm verify:visual",
     "db:schema": "python tools/data-import/apply_schema.py",
