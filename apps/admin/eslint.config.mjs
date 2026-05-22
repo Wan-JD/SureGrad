@@ -1,29 +1,20 @@
-import js from "@eslint/js";
-import nextPlugin from "@next/eslint-plugin-next";
-import tsParser from "@typescript-eslint/parser";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { FlatCompat } from "@eslint/eslintrc";
 import { defineConfig, globalIgnores } from "eslint/config";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
 
 export default defineConfig([
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  ...compat.extends("next/core-web-vitals"),
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-    },
-    plugins: {
-      "@next/next": nextPlugin,
-    },
     rules: {
-      ...js.configs.recommended.rules,
-      ...nextPlugin.configs.recommended.rules,
-      ...nextPlugin.configs["core-web-vitals"].rules,
       "no-undef": "off",
       "no-unused-vars": [
         "error",

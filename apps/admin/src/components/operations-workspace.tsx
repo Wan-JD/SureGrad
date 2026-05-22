@@ -310,15 +310,19 @@ export function OperationsWorkspace({ page }: OperationsWorkspaceProps) {
   const activeDataset =
     page.datasets.find((dataset) => dataset.id === activeDatasetId) ?? page.datasets[0];
 
+  useEffect(() => {
+    if (!activeDataset) {
+      return;
+    }
+
+    setFilters({});
+    setSearchTerm("");
+    setSelectedId(activeDataset.records[0]?.id ? String(activeDataset.records[0].id) : "");
+  }, [activeDatasetId, activeDataset]);
+
   if (!activeDataset) {
     return null;
   }
-
-  useEffect(() => {
-    setFilters({});
-    setSearchTerm("");
-    setSelectedId(activeDataset?.records[0]?.id ? String(activeDataset.records[0].id) : "");
-  }, [activeDatasetId, activeDataset]);
 
   const filteredRecords = activeDataset.records.filter(
     (record) => matchesSearch(record, searchTerm) && matchesFilters(record, filters),

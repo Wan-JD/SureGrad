@@ -6,6 +6,8 @@ class PlanningApi {
   final ApiClient client;
 
   String get currentTargetPath => '/user-targets/current';
+
+  String programPath(String programId) => '/programs/$programId';
   String get currentPlanPath => '/study-plans/current';
   String get generatePlanPath => '/study-plans/generate';
   String get weeklyPlanPath => '/weekly-plans';

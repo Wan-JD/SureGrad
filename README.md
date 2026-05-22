@@ -105,6 +105,30 @@ flutter pub get
 flutter run
 ```
 
+## 验证入口
+
+在仓库根目录可直接执行：
+
+```bash
+pnpm verify
+```
+
+如需分模块验收，可使用：
+
+```bash
+pnpm verify:api
+pnpm verify:admin
+pnpm verify:mobile
+```
+
+其中仓库级验证当前覆盖：
+
+1. API：`build`、`lint`、单元测试
+2. Admin：`build`、`lint`
+3. Mobile：`flutter analyze`、`flutter test`
+
+同时仓库已补上 `.github/workflows/ci.yml`，会在 `main` 推送和 Pull Request 上自动执行同一组校验。
+
 ## 模块文档入口
 
 ### 主控 / 接班

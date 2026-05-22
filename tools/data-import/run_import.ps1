@@ -253,5 +253,19 @@ Write-Host "Dry-run report: $finalReportPath"
 if ($config.execution.dry_run) {
     Write-Host "Dry-run complete. No database writes were executed."
 } else {
-    Write-Host "Config dry_run=false, but this skeleton does not implement database import yet."
+    $importLogPath = Join-Path $reportDir "import-log.json"
+    Write-Host "Step $($totalSteps + 1)/$($totalSteps + 1): importing validated CSV batch into PostgreSQL"
+    $importArgs = @(
+        (Join-Path $PSScriptRoot "import_to_db.py"),
+        "--config",
+        $resolvedConfigPath,
+        "--report-dir",
+        $reportDir
+    )
+    Invoke-PythonStep -Name "import-to-db" -Arguments $importArgs
+    $importLog = Get-Content -LiteralPath $importLogPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $finalReport.summary.import_log_json = $importLogPath
+    $finalReport.summary.imported_files = [int](@($importLog.files.PSObject.Properties).Count)
+    $finalReport | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $finalReportPath -Encoding UTF8
+    Write-Host "Database import complete. Log: $importLogPath"
 }

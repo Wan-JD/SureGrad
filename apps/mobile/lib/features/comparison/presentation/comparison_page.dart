@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
+import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
@@ -110,11 +111,36 @@ class _ComparisonDecisionSurface extends StatelessWidget {
               item: item,
               result: result,
               isMostComplete: identical(item, mostComplete),
+              onSetTarget: () => _setTargetFromComparison(context, item),
             ),
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _setTargetFromComparison(
+    BuildContext context,
+    ComparisonItem item,
+  ) async {
+    final bootstrap = AppScope.of(context);
+    try {
+      await bootstrap.planningRepository.setTargetFromProgramId(item.targetId);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('已将 ${item.programName} 设为目标专业')),
+      );
+      Navigator.of(context).pushNamed(AppRoutes.planning);
+    } on ApiException catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    }
   }
 
   ComparisonItem? _findMostComplete(List<ComparisonItem> items) {
@@ -197,11 +223,13 @@ class _ComparisonProgramCard extends StatelessWidget {
     required this.item,
     required this.result,
     required this.isMostComplete,
+    required this.onSetTarget,
   });
 
   final ComparisonItem item;
   final ComparisonResult result;
   final bool isMostComplete;
+  final VoidCallback onSetTarget;
 
   @override
   Widget build(BuildContext context) {
@@ -309,6 +337,11 @@ class _ComparisonProgramCard extends StatelessWidget {
                 content: item.missingFlags.map(_missingFlagLabel).join('、'),
               ),
             ],
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: onSetTarget,
+              child: const Text('设为目标专业'),
+            ),
           ],
         ),
       ),

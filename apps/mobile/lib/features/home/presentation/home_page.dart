@@ -287,6 +287,13 @@ class _HomePrimaryAction extends StatelessWidget {
               },
               child: const Text('查看今日 Todo'),
             ),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.todo);
+              },
+              child: const Text('去打卡'),
+            ),
           ],
         );
     }

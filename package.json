@@ -3,10 +3,23 @@
   "private": true,
   "packageManager": "pnpm@9.14.4",
   "scripts": {
+    "dev:admin": "pnpm --dir apps/admin dev",
     "dev:api": "pnpm --filter @suregrad/api start:dev",
+    "build:admin": "pnpm --dir apps/admin build",
     "build:api": "pnpm --filter @suregrad/api build",
+    "lint:admin": "pnpm --dir apps/admin lint",
     "lint:api": "pnpm --filter @suregrad/api lint",
     "test:api": "pnpm --filter @suregrad/api test",
-    "test:api:e2e": "pnpm --filter @suregrad/api test:e2e"
+    "test:api:e2e": "pnpm --filter @suregrad/api test:e2e",
+    "analyze:mobile": "cd apps/mobile && flutter analyze",
+    "test:mobile": "cd apps/mobile && flutter test",
+    "verify:api": "pnpm build:api && pnpm lint:api && pnpm --filter @suregrad/api test -- --runInBand",
+    "verify:admin": "pnpm build:admin && pnpm lint:admin",
+    "verify:mobile": "pnpm analyze:mobile && pnpm test:mobile",
+    "verify": "pnpm verify:api && pnpm verify:admin && pnpm verify:mobile",
+    "db:schema": "python tools/data-import/apply_schema.py",
+    "db:migrate": "python tools/data-import/apply_migrations.py",
+    "db:import:ecust": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-ecust-cs-2024.yaml --report-dir tools/data-import/.out/reports/ecust-cs-2024",
+    "db:seed:ecust": "pnpm db:migrate && pnpm db:import:ecust"
   }
 }

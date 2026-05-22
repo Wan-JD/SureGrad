@@ -171,6 +171,29 @@ export async function getCollectedImportBatches(): Promise<CollectedBatchSummary
   }
 }
 
+export async function getCollectedDepartmentRecords(): Promise<AdminRecord[]> {
+  const batches = await getCollectedImportBatches();
+  const records = await Promise.all(
+    batches.map(async (batch) => {
+      const rows = await readCsvFile(path.join(collectedRoot, batch.id), "departments.csv");
+      return rows.map<AdminRecord>((row, index) => ({
+        id: `${batch.id}:department:${index + 1}`,
+        name: row.department_name,
+        school_id: row.school_name,
+        code: row.department_code || null,
+        website: row.website || null,
+        status: row.status,
+        created_at: batch.collectedAt ?? null,
+        updated_at: batch.collectedAt ?? null,
+        deleted_at: null,
+        notes: `采集批次: ${batch.id}`,
+      }));
+    }),
+  );
+
+  return records.flat().sort((left, right) => String(left.school_id).localeCompare(String(right.school_id)));
+}
+
 export async function getCollectedSourceLinkRecords(): Promise<AdminRecord[]> {
   const batches = await getCollectedImportBatches();
   const records = await Promise.all(

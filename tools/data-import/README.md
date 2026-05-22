@@ -8,8 +8,9 @@
 4. 批次级跨文件关联校验
 5. 批次级导入报告生成
 6. Windows dry-run 串行执行和 JSON / Markdown 报告
+7. PostgreSQL 批次入库（`import_to_db.py`，ecust 五表最小闭环）
 
-当前还不包含数据库写入和映射表落库。
+数据库写入已支持 ecust 批次五表（`schools` → `departments` → `programs` → `program_score_lines` → `program_source_links`），其它模板后续按同模式扩展。
 
 在继续改这一条线之前，先读：
 
@@ -167,12 +168,45 @@ tools/data-import/
 4. 生成批次级 `import-report.json` 和 `import-report.md`
 5. 汇总写出 `.out/reports/*.json`
 
-当前不会执行数据库写入；`dry_run=false` 也只会提示骨架尚未实现导入器。
+当 `execution.dry_run=false` 且配置包含 `database` 时，会额外执行第 6 步：`import_to_db.py` 写入 PostgreSQL，并生成 `import-log.json`。
 
 补充说明：
 
 1. 如果配置里提供了 `files` 列表，`run_import.ps1` 会只处理这些 CSV，而不是盲扫整个目录。
-2. `config.collected-ecust-cs-2024.yaml` 就是一个“部分批次 + 指定文件列表”的真实示例。
+2. `config.collected-ecust-cs-2024.yaml` 用于 dry-run 校验；`config.import-ecust-cs-2024.yaml` 用于校验后入库。
+
+### 4.4 `import_to_db.py`
+
+前置条件：
+
+1. 本机 PostgreSQL 已创建库（默认 `suregrad`）。
+2. 已执行 `docs/schema.sql`。
+3. 已安装 Python 依赖：`pip install -r tools/data-import/requirements.txt`
+
+推荐命令（仓库根目录）：
+
+```powershell
+# 仅入库（假定 CSV 已通过校验）
+pnpm db:import:ecust
+
+# 校验 + 规范化 + 报告 + 入库
+powershell -ExecutionPolicy Bypass -File tools/data-import/run_import.ps1 -ConfigPath tools/data-import/config.import-ecust-cs-2024.yaml
+```
+
+环境变量可覆盖 `database` 配置：`DATABASE_HOST`、`DATABASE_PORT`、`DATABASE_NAME`、`DATABASE_USER`、`DATABASE_PASSWORD`。
+
+### 4.5 迁移（已有旧库时）
+
+若库表由早期 TypeORM 自动同步生成、缺少 `program_source_links.source_confidence` 等列，先执行：
+
+```powershell
+pnpm db:migrate
+pnpm db:import:ecust
+```
+
+或一条命令：`pnpm db:seed:ecust`（等价于 migrate + import）。
+
+全新库仍建议先 `docs/schema.sql`，再 `pnpm db:import:ecust`。
 
 ## 5. Dry-Run 用法
 

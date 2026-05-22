@@ -1,6 +1,6 @@
 # SureGrad Start Here
 
-更新日期：`2026-05-19`
+更新日期：`2026-05-22`
 
 这份文档是 SureGrad 当前仓库的统一接班入口。
 
@@ -88,7 +88,7 @@
 
 ## 4. 当前仓库快照
 
-截至本入口更新时，当前分支是 `codex/round-20260519-sync`。
+当前默认协作基线以 `main` 为准；新线程接手时先执行 `git status -sb` 和 `git log --oneline --decorate --max-count=5`，不要拿旧聊天记录里的分支名当现状。
 
 最近几轮已经推进到“骨架之上继续补真实联调与真实数据”的阶段，方向上不是从零搭架子，而是继续把以下 4 条线收实：
 
@@ -124,11 +124,13 @@
 3. 现在可以直接通过 `tools/data-import/run_import.ps1` 产出批次级 `import-report.json` 和 `import-report.md`。
 4. 当前真实批次还没有覆盖 `program_admissions`、`program_application_stats`、`program_interview_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板。
 
+**入库（2026-05-22）**：ecust 五表可通过 `pnpm db:seed:ecust` 写入 PostgreSQL（`db:migrate` + `db:import:ecust`）。全新库先执行 `docs/schema.sql`；旧库缺列时 migrate 会补齐。本机验证：`GET /api/v1/schools` 应返回华东理工大学及 2024 分数线摘要。
+
 这意味着当前数据线的重点不是“有没有开始采”，而是：
 
 1. 扩大批次数量。
 2. 补齐单批次缺失模板。
-3. 把真实采集批次继续往后台展示和后端入库链路推进。
+3. 确保本地 PostgreSQL schema 与 `docs/schema.sql` 一致后，让 Admin/API 读到库内数据（不仅是 CSV 文件）。
 
 ## 6. 当前后台现状
 
@@ -149,17 +151,20 @@
 2. 任何新线程如果发现“代码已变、文档未变”，优先补文档再继续扩写提示词。
 3. 主控线程在分发任务前，先确认子线程需要读哪几份文档，并把阅读顺序写进提示词。
 
-## 8. 当前已知工程阻塞
+## 8. 当前工程健康度
 
-截至 `2026-05-19`，当前仓库还有两类需要接手线程提前知道的旧阻塞：
+截至 `2026-05-20`，仓库主干的基础校验已经可以整套跑通：
 
-1. `services/api` 全量 `build` 会被 `services/api/src/modules/reminders/repositories/reminders.repository.ts` 里的既有 TypeScript 报错挡住。
-2. `services/api` 全量 `lint` 目前还会被 `checkins`、`comparison-items`、`reminders` 相关测试文件里的既有规则报错挡住。
+1. `services/api`：`pnpm build:api`、`pnpm lint:api`、`pnpm test:api`
+2. `apps/admin`：`pnpm build:admin`、`pnpm lint:admin`
+3. `apps/mobile`：`pnpm analyze:mobile`、`pnpm test:mobile`
 
-这意味着后续线程做局部功能验收时，最好同时提供：
+本轮同时补上了仓库级入口与自动守门：
 
-1. 定点测试或定点 lint 结果。
-2. 全量校验失败是否属于仓库既有问题的说明。
+1. 根目录新增 `pnpm verify`、`pnpm verify:api`、`pnpm verify:admin`、`pnpm verify:mobile`
+2. `.github/workflows/ci.yml` 已覆盖 `main` 推送和 Pull Request 的 API、Admin、Mobile 校验
+
+这意味着后续线程如果做了跨模块改动，默认应至少给出对应模块级验证结果，而不是只报局部页面或单个接口“看起来能用”。
 
 ## 9. 默认验收规则
 
@@ -181,7 +186,12 @@
 2. 让后台看到的不只是“批次文件存在”，还要能继续看到“哪些模板缺、哪些年份缺、哪些字段待补”。
 3. 坚持运营表达，不让后台重新退化成开发者控制台。
 
-### 10.3 数据采集优先项
+### 10.3 移动端 / 视觉验收优先项
+
+1. 主流程页面虽然已能通过静态检查和测试，但视觉验收密度仍然不够，尤其是空态、错误态和提交流程反馈。
+2. 任何涉及 Flutter 页面结构或交互的改动，除了 `flutter analyze` / `flutter test` 外，还应补设备级截图或真机 / 模拟器检查结论。
+
+### 10.4 数据采集优先项
 
 1. 可以分发独立子线程采第二所学校或扩充现有学校更多专业。
 2. 每个真实批次都必须带批次 README、来源链接和可复核时间。

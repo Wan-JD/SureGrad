@@ -147,17 +147,21 @@ pnpm test:e2e
 - 环境配置：`src/common/config/database.config.ts`
 - DDL 基线：`docs/schema.sql`
 
-为了避免本地未起库时阻塞应用启动，当前 TypeORM 仍使用 `manualInitialization: true`。这意味着：
+### 本地种子数据（ecust 批次）
 
-- 应用可以先启动
-- 当前不会在启动阶段自动连库
-- 后续接入完整实体与迁移策略后，可以切换为自动初始化或显式初始化 `DataSource`
+1. 对本机 `suregrad` 库执行 `docs/schema.sql`（需包含 `program_source_links.source_confidence` 等列）。
+2. 安装导入依赖：`pip install -r tools/data-import/requirements.txt`
+3. 在仓库根目录写入 ecust 五表：
 
-建议后续演进顺序：
+```powershell
+pnpm db:seed:ecust
+```
 
-1. 继续以 `docs/schema.sql` 作为表结构基线。
-2. 逐模块补齐实体、Repository 和迁移策略。
-3. 打开真实数据库初始化、健康检查和运行时监控。
+（已有旧库、缺列时等价于 `pnpm db:migrate` + `pnpm db:import:ecust`）
+
+4. 验证：`curl "http://localhost:3000/api/v1/schools?q=%E5%8D%8E%E4%B8%9C"`
+
+若来源链接导入被跳过，请重新应用完整 `docs/schema.sql` 后再跑一次导入。
 
 ## 核心接口覆盖
 

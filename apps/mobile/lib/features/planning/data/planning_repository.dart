@@ -68,6 +68,42 @@ class PlanningRepository {
     );
   }
 
+  Future<CurrentTargetPreview> setTargetFromProgramId(String programId) async {
+    final program = _unwrap(
+      await api.client.get(api.programPath(programId)),
+    );
+    final school = program['school'] as Map<String, dynamic>? ?? const {};
+    final department =
+        program['department'] as Map<String, dynamic>? ?? const {};
+
+    final result = await api.client.put(
+      api.currentTargetPath,
+      body: <String, dynamic>{
+        'schoolId': school['schoolId'],
+        if (department['departmentId'] != null)
+          'departmentId': department['departmentId'],
+        'programId': program['programId'] ?? programId,
+      },
+    );
+    final json = _unwrap(result);
+    final summary = json['targetSummary'] is Map<String, dynamic>
+        ? json['targetSummary'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final preview = CurrentTargetPreview(
+      schoolId: summary['schoolId'] as String?,
+      schoolName: summary['schoolName'] as String? ?? school['schoolName'] as String?,
+      departmentId: summary['departmentId'] as String? ?? department['departmentId'] as String?,
+      departmentName:
+          summary['departmentName'] as String? ?? department['departmentName'] as String?,
+      programId: summary['programId'] as String? ?? programId,
+      programName: summary['programName'] as String? ?? program['programName'] as String?,
+      targetScore: (summary['targetScore'] as num?)?.toInt(),
+    );
+    currentTargetStore.update(preview);
+    refreshStore.markDirty();
+    return preview;
+  }
+
   Future<void> generatePlan() async {
     final now = DateTime.now();
     final startDate = DateTime(now.year, now.month, now.day);
