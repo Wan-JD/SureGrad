@@ -15,6 +15,8 @@ import 'package:suregrad_mobile/features/comparison/data/comparison_repository.d
 import 'package:suregrad_mobile/features/favorites/data/favorites_repository.dart';
 import 'package:suregrad_mobile/features/home/presentation/home_page.dart';
 import 'package:suregrad_mobile/features/planning/data/planning_api.dart';
+import 'package:suregrad_mobile/features/programs/data/programs_api.dart';
+import 'package:suregrad_mobile/features/programs/data/programs_repository.dart';
 import 'package:suregrad_mobile/features/planning/data/planning_models.dart';
 import 'package:suregrad_mobile/features/planning/data/planning_repository.dart';
 import 'package:suregrad_mobile/features/planning/presentation/planning_page.dart';
@@ -263,6 +265,11 @@ AppBootstrap _createBootstrap({
     authRepository: AuthRepository(api: AuthApi(client: client)),
     schoolsRepository: SchoolsRepository(
       api: SchoolsApi(client: client),
+      refreshStore: refreshStore,
+      currentTargetStore: currentTargetStore,
+    ),
+    programsRepository: ProgramsRepository(
+      api: ProgramsApi(client: client),
       refreshStore: refreshStore,
       currentTargetStore: currentTargetStore,
     ),

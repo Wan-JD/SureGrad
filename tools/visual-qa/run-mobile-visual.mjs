@@ -128,6 +128,36 @@ const apiDefine = [
   "--dart-define=SUREGRAD_API_BASE_URL=http://127.0.0.1:3000/api/v1",
 ];
 
+async function resolveProgramId() {
+  try {
+    const schoolsResponse = await fetch("http://127.0.0.1:3000/api/v1/schools");
+    if (!schoolsResponse.ok) {
+      return "";
+    }
+    const schoolsJson = await schoolsResponse.json();
+    const schoolId = schoolsJson.items?.[0]?.schoolId;
+    if (!schoolId) {
+      return "";
+    }
+
+    const programsResponse = await fetch(
+      `http://127.0.0.1:3000/api/v1/schools/${schoolId}/programs`,
+    );
+    if (!programsResponse.ok) {
+      return "";
+    }
+    const programsJson = await programsResponse.json();
+    return programsJson.items?.[0]?.programId ?? "";
+  } catch {
+    return "";
+  }
+}
+
+const programId = await resolveProgramId();
+const programDefine = programId
+  ? [`--dart-define=SUREGRAD_PROGRAM_ID=${programId}`]
+  : [];
+
 run("flutter", ["build", "web", ...apiDefine], mobileDir);
 run(
   "flutter",
@@ -186,6 +216,20 @@ run(
   ],
   mobileDir,
 );
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
+    "lib/main_visual_qa_program.dart",
+    "-o",
+    "build/web-program",
+    ...apiDefine,
+    ...programDefine,
+  ],
+  mobileDir,
+);
 
 const browser = await chromium.launch();
 const page = await browser.newPage(MOBILE_VIEWPORT);
@@ -237,6 +281,20 @@ const targets = [
     port: 7360,
     path: "/",
     mustSeeAny: ["资料", "备考资料", "资料中心暂时不可用", "重试"],
+  },
+  {
+    name: "mobile-program-detail",
+    dir: path.join(mobileDir, "build", "web-program"),
+    port: 7363,
+    path: "/",
+    mustSeeAny: [
+      "专业详情",
+      "专业详情加载失败",
+      "计算机科学与技术",
+      "历年分数线",
+      "加入对比",
+      "重试",
+    ],
   },
 ];
 

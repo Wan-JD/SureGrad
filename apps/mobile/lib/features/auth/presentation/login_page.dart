@@ -319,6 +319,8 @@ class _LoginPageState extends State<LoginPage> {
         return '提醒中心';
       case AppRoutes.schoolDetail:
         return '院校详情页';
+      case AppRoutes.programDetail:
+        return '专业详情页';
       default:
         return '目标页面';
     }

@@ -14,6 +14,8 @@ import '../../features/comparison/data/comparison_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
 import '../../features/planning/data/planning_api.dart';
 import '../../features/planning/data/planning_repository.dart';
+import '../../features/programs/data/programs_api.dart';
+import '../../features/programs/data/programs_repository.dart';
 import '../../features/profile/data/profile_api.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/reminders/data/reminders_repository.dart';
@@ -32,6 +34,7 @@ class AppBootstrap {
     required this.currentTargetStore,
     required this.authRepository,
     required this.schoolsRepository,
+    required this.programsRepository,
     required this.planningRepository,
     required this.todoRepository,
     required this.checkinsRepository,
@@ -71,6 +74,11 @@ class AppBootstrap {
         refreshStore: refreshStore,
         currentTargetStore: currentTargetStore,
       ),
+      programsRepository: ProgramsRepository(
+        api: ProgramsApi(client: apiClient),
+        refreshStore: refreshStore,
+        currentTargetStore: currentTargetStore,
+      ),
       planningRepository: PlanningRepository(
         api: PlanningApi(client: apiClient),
         refreshStore: refreshStore,
@@ -102,6 +110,7 @@ class AppBootstrap {
   final CurrentTargetStore currentTargetStore;
   final AuthRepository authRepository;
   final SchoolsRepository schoolsRepository;
+  final ProgramsRepository programsRepository;
   final PlanningRepository planningRepository;
   final TodoRepository todoRepository;
   final CheckinsRepository checkinsRepository;

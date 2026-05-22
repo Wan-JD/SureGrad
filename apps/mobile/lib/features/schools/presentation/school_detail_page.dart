@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/login_route_args.dart';
+import '../../../app/navigation/program_detail_route_args.dart';
 import '../../../app/navigation/school_detail_route_args.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/state/app_session_store.dart';
@@ -142,7 +143,11 @@ class _SchoolDetailPageState extends State<SchoolDetailPage> {
                               .map(
                                 (program) => Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
-                                  child: _HotProgramTile(program: program),
+                                  child: _HotProgramTile(
+                                    program: program,
+                                    onOpenDetail: () =>
+                                        _openHotProgramDetail(program),
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -162,6 +167,8 @@ class _SchoolDetailPageState extends State<SchoolDetailPage> {
                                       ),
                                       child: _ProgramTile(
                                         program: program,
+                                        onOpenDetail: () =>
+                                            _openProgramDetail(program),
                                         onCompare: () =>
                                             _handleCompare(program),
                                         onSetTarget: () =>
@@ -303,6 +310,26 @@ class _SchoolDetailPageState extends State<SchoolDetailPage> {
     } catch (error) {
       _showMessage(_errorMessage(error));
     }
+  }
+
+  void _openProgramDetail(SchoolProgram program) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.programDetail,
+      arguments: ProgramDetailRouteArgs(
+        programId: program.id,
+        programName: program.name,
+      ),
+    );
+  }
+
+  void _openHotProgramDetail(HotProgramSummary program) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.programDetail,
+      arguments: ProgramDetailRouteArgs(
+        programId: program.programId,
+        programName: program.programName,
+      ),
+    );
   }
 
   Future<void> _handleCompare(SchoolProgram program) async {
@@ -487,9 +514,13 @@ class _SchoolHero extends StatelessWidget {
 }
 
 class _HotProgramTile extends StatelessWidget {
-  const _HotProgramTile({required this.program});
+  const _HotProgramTile({
+    required this.program,
+    required this.onOpenDetail,
+  });
 
   final HotProgramSummary program;
+  final VoidCallback onOpenDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -511,6 +542,14 @@ class _HotProgramTile extends StatelessWidget {
             Text(
               '分数线 ${program.scoreLineSummary?.totalScore ?? '-'} / 报录比 ${program.applicationRatioSummary?.applicationRatio ?? '-'}',
             ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onOpenDetail,
+                child: const Text('查看专业详情'),
+              ),
+            ),
           ],
         ),
       ),
@@ -521,11 +560,13 @@ class _HotProgramTile extends StatelessWidget {
 class _ProgramTile extends StatelessWidget {
   const _ProgramTile({
     required this.program,
+    required this.onOpenDetail,
     required this.onCompare,
     required this.onSetTarget,
   });
 
   final SchoolProgram program;
+  final VoidCallback onOpenDetail;
   final VoidCallback onCompare;
   final VoidCallback onSetTarget;
 
@@ -567,18 +608,26 @@ class _ProgramTile extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: onCompare,
-                    child: const Text('加入对比'),
+                    onPressed: onOpenDetail,
+                    child: const Text('查看详情'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: FilledButton(
-                    onPressed: onSetTarget,
-                    child: const Text('设为目标'),
+                  child: OutlinedButton(
+                    onPressed: onCompare,
+                    child: const Text('加入对比'),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onSetTarget,
+                child: const Text('设为目标'),
+              ),
             ),
           ],
         ),

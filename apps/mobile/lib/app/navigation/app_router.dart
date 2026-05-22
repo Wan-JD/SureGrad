@@ -8,6 +8,7 @@ import '../../features/planning/presentation/planning_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
 import '../../features/reminders/presentation/reminders_page.dart';
 import '../../features/resources/presentation/resources_page.dart';
+import '../../features/programs/presentation/program_detail_page.dart';
 import '../../features/schools/presentation/school_detail_page.dart';
 import '../../features/schools/presentation/school_list_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
@@ -15,6 +16,7 @@ import '../../features/todo/presentation/todo_page.dart';
 import '../bootstrap/app_bootstrap.dart';
 import 'app_routes.dart';
 import 'login_route_args.dart';
+import 'program_detail_route_args.dart';
 import 'school_detail_route_args.dart';
 
 class AppRouter {
@@ -47,6 +49,14 @@ class AppRouter {
                 schoolName: '院校详情',
               );
         return _page(SchoolDetailPage(args: args), settings);
+      case AppRoutes.programDetail:
+        final programArgs = settings.arguments is ProgramDetailRouteArgs
+            ? settings.arguments as ProgramDetailRouteArgs
+            : const ProgramDetailRouteArgs(
+                programId: 'program-unavailable',
+                programName: '专业详情',
+              );
+        return _page(ProgramDetailPage(args: programArgs), settings);
       case AppRoutes.planning:
         if (!_bootstrap.sessionStore.isLoggedIn) {
           return _redirectToLogin(settings);

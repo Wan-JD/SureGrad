@@ -177,10 +177,11 @@
 
 ## 10. 当前并行推进线（2026-05-22）
 
-1. **响应式布局**：Admin 1080px 抽屉 + 720px 表格卡片化；Mobile `NavigationRail`（≥600px）+ `ResponsivePageBody`
-2. **视觉验收**：`capture-admin.mjs` 每页 desktop/tablet/mobile；规划/资料 Tab 含 tablet 截图（见 `docs/visual-qa/2026-05-22-responsive-round.md`）
-3. **备考资料演示**：`pnpm db:seed:resources` / `db:seed:demo`；Admin `/resources` Live API
-4. **API**：`study-resources` 分页 COUNT 修复；延续 reminders、对比、游客冷启动等
+1. **移动端专业详情**：`/programs/detail` 对接 `GET /programs/{id}`，院校详情可跳转；视觉见 `docs/visual-qa/2026-05-22-program-detail-round.md`
+2. **响应式布局**：Admin 1080px 抽屉 + 720px 表格卡片化；Mobile `NavigationRail`（≥600px）+ `ResponsivePageBody`
+3. **视觉验收**：`capture-admin.mjs` 每页 desktop/tablet/mobile；`run-mobile-visual.mjs` 含 `mobile-program-detail`
+4. **备考资料演示**：`pnpm db:seed:resources` / `db:seed:demo`；Admin `/resources` Live API
+5. **API**：`study-resources` 分页 COUNT 修复；延续 reminders、对比、游客冷启动等
 
 ## 11. 下一步工作建议
 
@@ -198,8 +199,8 @@
 
 ### 11.3 移动端 / 视觉验收优先项
 
-1. 主流程页面虽然已能通过静态检查和测试，但视觉验收密度仍然不够，尤其是空态、错误态和提交流程反馈。
-2. 任何涉及 Flutter 页面结构或交互的改动，除了 `flutter analyze` / `flutter test` 外，还应补设备级截图或真机 / 模拟器检查结论。
+1. 专业详情页已落地；下一步优先 **资料详情页** 或补齐 ecust 报录比/复试 CSV，减少详情与对比中的「待补充」。
+2. 任何涉及 Flutter 页面结构或交互的改动，除 `flutter analyze` / `flutter test` 外，应跑 `pnpm verify:visual` 并写 `docs/visual-qa/` 记录。
 
 ### 11.4 数据采集优先项
 

@@ -6,6 +6,7 @@ class AppRoutes {
   static const home = '/home';
   static const schools = '/schools';
   static const schoolDetail = '/schools/detail';
+  static const programDetail = '/programs/detail';
   static const planning = '/planning';
   static const todo = '/todo';
   static const resources = '/resources';
