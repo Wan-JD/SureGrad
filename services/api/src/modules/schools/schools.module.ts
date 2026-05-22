@@ -6,12 +6,14 @@ import { ProgramInterviewStatEntity } from '../../database/entities/program-inte
 import { ProgramScoreLineEntity } from '../../database/entities/program-score-line.entity';
 import { ProgramEntity } from '../../database/entities/program.entity';
 import { SchoolEntity } from '../../database/entities/school.entity';
+import { FavoritesModule } from '../favorites/favorites.module';
 import { SchoolsRepository } from './repositories/schools.repository';
 import { SchoolsController } from './schools.controller';
 import { SchoolsService } from './schools.service';
 
 @Module({
   imports: [
+    FavoritesModule,
     TypeOrmModule.forFeature([
       SchoolEntity,
       DepartmentEntity,

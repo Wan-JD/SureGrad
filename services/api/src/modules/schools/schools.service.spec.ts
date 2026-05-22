@@ -1,8 +1,14 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { FavoritesRepository } from '../favorites/repositories/favorites.repository';
 import { SchoolsRepository } from './repositories/schools.repository';
 import { SchoolsService } from './schools.service';
 
 describe('SchoolsService', () => {
+  const createFavoritesRepositoryMock = () =>
+    ({
+      findFavoritedTargetIds: jest.fn().mockResolvedValue(new Set<string>()),
+    }) as unknown as jest.Mocked<FavoritesRepository>;
+
   const createSchoolsRepositoryMock = () =>
     ({
       findSchools: jest.fn(),
@@ -76,7 +82,10 @@ describe('SchoolsService', () => {
         ]),
       );
 
-    const service = new SchoolsService(schoolsRepository);
+    const service = new SchoolsService(
+      schoolsRepository,
+      createFavoritesRepositoryMock(),
+    );
     const result = await service.findAll({
       q: 'Computer',
       page: 1,
@@ -134,7 +143,10 @@ describe('SchoolsService', () => {
       .fn()
       .mockResolvedValue(new Map());
 
-    const service = new SchoolsService(schoolsRepository);
+    const service = new SchoolsService(
+      schoolsRepository,
+      createFavoritesRepositoryMock(),
+    );
     const result = await service.findOne('school-1', {});
 
     expect(result).toMatchObject({
@@ -184,7 +196,10 @@ describe('SchoolsService', () => {
       .fn()
       .mockResolvedValue(new Map());
 
-    const service = new SchoolsService(schoolsRepository);
+    const service = new SchoolsService(
+      schoolsRepository,
+      createFavoritesRepositoryMock(),
+    );
     const result = await service.findPrograms('school-1', {
       departmentId: 'dept-1',
       page: 1,
@@ -214,7 +229,10 @@ describe('SchoolsService', () => {
     const schoolsRepository = createSchoolsRepositoryMock();
     schoolsRepository.findSchoolById = jest.fn().mockResolvedValue(null);
 
-    const service = new SchoolsService(schoolsRepository);
+    const service = new SchoolsService(
+      schoolsRepository,
+      createFavoritesRepositoryMock(),
+    );
 
     await expect(service.findOne('missing-school', {})).rejects.toBeInstanceOf(
       NotFoundException,

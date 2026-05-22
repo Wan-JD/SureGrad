@@ -114,6 +114,26 @@ export class FavoritesRepository {
     });
   }
 
+  async findFavoritedTargetIds(
+    userId: string,
+    targetType: FavoriteTargetType,
+    targetIds: string[],
+  ): Promise<Set<string>> {
+    if (targetIds.length === 0) {
+      return new Set();
+    }
+
+    const rows = await this.favoritesRepository
+      .createQueryBuilder('favorite')
+      .select('favorite.targetId', 'targetId')
+      .where('favorite.userId = :userId', { userId })
+      .andWhere('favorite.targetType = :targetType', { targetType })
+      .andWhere('favorite.targetId IN (:...targetIds)', { targetIds })
+      .getRawMany<{ targetId: string }>();
+
+    return new Set(rows.map((row) => row.targetId));
+  }
+
   async ensureTargetExists(targetType: FavoriteTargetType, targetId: string) {
     switch (targetType) {
       case 'school':

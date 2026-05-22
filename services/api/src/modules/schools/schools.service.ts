@@ -6,13 +6,17 @@ import {
 import { QuerySchoolDetailDto } from './dto/query-school-detail.dto';
 import { QuerySchoolProgramsDto } from './dto/query-school-programs.dto';
 import { QuerySchoolsDto } from './dto/query-schools.dto';
+import { FavoritesRepository } from '../favorites/repositories/favorites.repository';
 import { SchoolsRepository } from './repositories/schools.repository';
 
 @Injectable()
 export class SchoolsService {
-  constructor(private readonly schoolsRepository: SchoolsRepository) {}
+  constructor(
+    private readonly schoolsRepository: SchoolsRepository,
+    private readonly favoritesRepository: FavoritesRepository,
+  ) {}
 
-  async findAll(query: QuerySchoolsDto) {
+  async findAll(query: QuerySchoolsDto, userId?: string) {
     this.assertAllowedSort(query.sortBy, [
       'recommended',
       'score_line',
@@ -44,16 +48,24 @@ export class SchoolsService {
       ),
     ];
 
-    const [scoreSummaries, applicationSummaries] = await Promise.all([
-      this.schoolsRepository.getLatestScoreLineSummaries(
-        programIds,
-        query.examYear,
-      ),
-      this.schoolsRepository.getLatestApplicationRatioSummaries(
-        programIds,
-        query.examYear,
-      ),
-    ]);
+    const [scoreSummaries, applicationSummaries, favoritedSchoolIds] =
+      await Promise.all([
+        this.schoolsRepository.getLatestScoreLineSummaries(
+          programIds,
+          query.examYear,
+        ),
+        this.schoolsRepository.getLatestApplicationRatioSummaries(
+          programIds,
+          query.examYear,
+        ),
+        userId
+          ? this.favoritesRepository.findFavoritedTargetIds(
+              userId,
+              'school',
+              schoolIds,
+            )
+          : Promise.resolve(new Set<string>()),
+      ]);
 
     return {
       items: items.map((school) => {
@@ -98,7 +110,7 @@ export class SchoolsService {
             ...(scoreLineSummary ? [] : ['score_line']),
             ...(applicationRatioSummary ? [] : ['application_ratio']),
           ],
-          isFavorited: false,
+          isFavorited: favoritedSchoolIds.has(school.id),
         };
       }),
       pagination: {
@@ -110,7 +122,11 @@ export class SchoolsService {
     };
   }
 
-  async findOne(schoolId: string, query: QuerySchoolDetailDto) {
+  async findOne(
+    schoolId: string,
+    query: QuerySchoolDetailDto,
+    userId?: string,
+  ) {
     const school = await this.schoolsRepository.findSchoolById(schoolId);
     if (!school) {
       throw new NotFoundException('NOT_FOUND');
@@ -122,16 +138,22 @@ export class SchoolsService {
     ]);
 
     const hotProgramIds = hotPrograms.map((program) => program.id);
-    const [scoreSummaries, applicationSummaries] = await Promise.all([
-      this.schoolsRepository.getLatestScoreLineSummaries(
-        hotProgramIds,
-        query.examYear,
-      ),
-      this.schoolsRepository.getLatestApplicationRatioSummaries(
-        hotProgramIds,
-        query.examYear,
-      ),
-    ]);
+    const [scoreSummaries, applicationSummaries, favoritedSchoolIds] =
+      await Promise.all([
+        this.schoolsRepository.getLatestScoreLineSummaries(
+          hotProgramIds,
+          query.examYear,
+        ),
+        this.schoolsRepository.getLatestApplicationRatioSummaries(
+          hotProgramIds,
+          query.examYear,
+        ),
+        userId
+          ? this.favoritesRepository.findFavoritedTargetIds(userId, 'school', [
+              school.id,
+            ])
+          : Promise.resolve(new Set<string>()),
+      ]);
 
     return {
       schoolId: school.id,
@@ -159,11 +181,15 @@ export class SchoolsService {
           applicationSummaries.get(program.id),
         ),
       })),
-      isFavorited: false,
+      isFavorited: favoritedSchoolIds.has(school.id),
     };
   }
 
-  async findPrograms(schoolId: string, query: QuerySchoolProgramsDto) {
+  async findPrograms(
+    schoolId: string,
+    query: QuerySchoolProgramsDto,
+    userId?: string,
+  ) {
     this.assertAllowedSort(query.sortBy, [
       'recommended',
       'score_line',
@@ -198,21 +224,32 @@ export class SchoolsService {
     );
 
     const programIds = items.map((item) => item.id);
-    const [scoreSummaries, applicationSummaries, interviewSummaries] =
-      await Promise.all([
-        this.schoolsRepository.getLatestScoreLineSummaries(
-          programIds,
-          query.examYear,
-        ),
-        this.schoolsRepository.getLatestApplicationRatioSummaries(
-          programIds,
-          query.examYear,
-        ),
-        this.schoolsRepository.getLatestInterviewRatioSummaries(
-          programIds,
-          query.examYear,
-        ),
-      ]);
+    const [
+      scoreSummaries,
+      applicationSummaries,
+      interviewSummaries,
+      favoritedProgramIds,
+    ] = await Promise.all([
+      this.schoolsRepository.getLatestScoreLineSummaries(
+        programIds,
+        query.examYear,
+      ),
+      this.schoolsRepository.getLatestApplicationRatioSummaries(
+        programIds,
+        query.examYear,
+      ),
+      this.schoolsRepository.getLatestInterviewRatioSummaries(
+        programIds,
+        query.examYear,
+      ),
+      userId
+        ? this.favoritesRepository.findFavoritedTargetIds(
+            userId,
+            'program',
+            programIds,
+          )
+        : Promise.resolve(new Set<string>()),
+    ]);
 
     return {
       items: items.map((program) => ({
@@ -233,7 +270,7 @@ export class SchoolsService {
         interviewRatioSummary: this.toInterviewSummary(
           interviewSummaries.get(program.id),
         ),
-        isFavorited: false,
+        isFavorited: favoritedProgramIds.has(program.id),
         isInComparison: false,
       })),
       pagination: {

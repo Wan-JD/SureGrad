@@ -1,0 +1,10 @@
+---
+description: Git commit rules for this repository
+alwaysApply: true
+---
+
+# Git commits
+
+- Never add `Co-authored-by: Cursor`, `Co-authored-by:`, or any AI/agent attribution to commit messages.
+- Use the user's identity only. When committing from automation, prefer `git.exe commit -F <message-file>` or `git commit-tree` if hooks inject agent trailers.
+- Do not use `--no-verify` unless fixing an unwanted agent trailer hook.
