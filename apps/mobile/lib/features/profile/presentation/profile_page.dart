@@ -5,6 +5,7 @@ import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
 import '../../../core/models/main_journey_state.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
 import '../../../core/widgets/empty_state_card.dart';
 import '../../../core/widgets/section_card.dart';
@@ -54,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onRefresh: _refresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: context.contentPadding(),
                 children: [
                   EmptyStateCard(
                     title: '还没有登录',
@@ -76,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onRefresh: _refresh,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
+                  padding: context.contentPadding(),
                   children: [
                     if (snapshot.hasError) ...[
                       _JourneyErrorCard(
@@ -89,60 +90,68 @@ class _ProfilePageState extends State<ProfilePage> {
                     ] else ...[
                       _ProfileHero(data: snapshot.data!),
                       const SizedBox(height: 16),
-                      SectionCard(
-                        title: '主链路状态',
-                        subtitle: snapshot.data!.journeyState.title,
+                      ResponsiveColumns(
                         children: [
-                          _ProfileRow(
-                            label: '当前状态',
-                            value: snapshot.data!.journeyState.label,
+                          SectionCard(
+                            title: '主链路状态',
+                            subtitle: snapshot.data!.journeyState.title,
+                            children: [
+                              _ProfileRow(
+                                label: '当前状态',
+                                value: snapshot.data!.journeyState.label,
+                              ),
+                              _ProfileRow(
+                                label: '当前目标',
+                                value: snapshot.data!.targetHeadline,
+                              ),
+                              _ProfileRow(
+                                label: '档案完成',
+                                value: snapshot.data!.me.profileCompleted
+                                    ? '是'
+                                    : '否',
+                              ),
+                              _ProfileRow(
+                                label: '建议动作',
+                                value: _nextStepText(
+                                  snapshot.data!.journeyState,
+                                ),
+                              ),
+                            ],
                           ),
-                          _ProfileRow(
-                            label: '当前目标',
-                            value: snapshot.data!.targetHeadline,
-                          ),
-                          _ProfileRow(
-                            label: '档案完成',
-                            value: snapshot.data!.me.profileCompleted
-                                ? '是'
-                                : '否',
-                          ),
-                          _ProfileRow(
-                            label: '建议动作',
-                            value: _nextStepText(snapshot.data!.journeyState),
-                          ),
+                          _ProfileStateAction(data: snapshot.data!),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _ProfileStateAction(data: snapshot.data!),
-                      const SizedBox(height: 16),
-                      SectionCard(
-                        title: '账号信息',
+                      ResponsiveColumns(
                         children: [
-                          _ProfileRow(
-                            label: '手机号',
-                            value: snapshot.data!.me.phoneMasked ?? '-',
+                          SectionCard(
+                            title: '账号信息',
+                            children: [
+                              _ProfileRow(
+                                label: '手机号',
+                                value: snapshot.data!.me.phoneMasked ?? '-',
+                              ),
+                              _ProfileRow(
+                                label: '昵称',
+                                value: snapshot.data!.me.nickname ?? '未设置',
+                              ),
+                              _ProfileRow(
+                                label: '活跃目标',
+                                value: snapshot.data!.me.hasActiveTarget
+                                    ? '是'
+                                    : '否',
+                              ),
+                              _ProfileRow(
+                                label: '活跃计划',
+                                value: snapshot.data!.me.hasActivePlan
+                                    ? '是'
+                                    : '否',
+                              ),
+                            ],
                           ),
-                          _ProfileRow(
-                            label: '昵称',
-                            value: snapshot.data!.me.nickname ?? '未设置',
-                          ),
-                          _ProfileRow(
-                            label: '活跃目标',
-                            value: snapshot.data!.me.hasActiveTarget
-                                ? '是'
-                                : '否',
-                          ),
-                          _ProfileRow(
-                            label: '活跃计划',
-                            value: snapshot.data!.me.hasActivePlan ? '是' : '否',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      SectionCard(
-                        title: '我的入口',
-                        children: [
+                          SectionCard(
+                            title: '我的入口',
+                            children: [
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: const Text('我的收藏'),
@@ -174,6 +183,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 context,
                               ).pushNamed(AppRoutes.reminders);
                             },
+                          ),
+                            ],
                           ),
                         ],
                       ),

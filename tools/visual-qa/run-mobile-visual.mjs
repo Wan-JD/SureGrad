@@ -7,6 +7,9 @@ const repoRoot = path.resolve(import.meta.dirname, "../..");
 const mobileDir = path.join(repoRoot, "apps", "mobile");
 const outDir = path.join(repoRoot, "docs", ".visual-qa");
 
+const MOBILE_VIEWPORT = { width: 390, height: 844, deviceScaleFactor: 2 };
+const TABLET_VIEWPORT = { width: 834, height: 1194, deviceScaleFactor: 2 };
+
 function run(command, args, cwd = repoRoot) {
   const result = spawnSync(command, args, {
     cwd,
@@ -53,6 +56,17 @@ async function withStaticServer(dir, port, handler) {
   }
 }
 
+function capturePlansFor(target) {
+  const plans = [{ suffix: "", viewport: MOBILE_VIEWPORT }];
+  if (
+    target.name === "mobile-guest-planning-tab" ||
+    target.name === "mobile-guest-resources-tab"
+  ) {
+    plans.push({ suffix: "-tablet", viewport: TABLET_VIEWPORT });
+  }
+  return plans;
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 
 const apiDefine = [
@@ -93,10 +107,7 @@ run(
 );
 
 const browser = await chromium.launch();
-const page = await browser.newPage({
-  viewport: { width: 390, height: 844 },
-  deviceScaleFactor: 2,
-});
+const page = await browser.newPage(MOBILE_VIEWPORT);
 
 const targets = [
   {
@@ -127,15 +138,21 @@ const targets = [
 
 for (const target of targets) {
   await withStaticServer(target.dir, target.port, async (baseUrl) => {
-    await page.goto(`${baseUrl}${target.path}`, {
-      waitUntil: "networkidle",
-      timeout: 90000,
-    });
-    await page.waitForTimeout(5000);
-    await page.screenshot({
-      path: path.join(outDir, `${target.name}.png`),
-      fullPage: true,
-    });
+    for (const plan of capturePlansFor(target)) {
+      await page.setViewportSize({
+        width: plan.viewport.width,
+        height: plan.viewport.height,
+      });
+      await page.goto(`${baseUrl}${target.path}`, {
+        waitUntil: "networkidle",
+        timeout: 90000,
+      });
+      await page.waitForTimeout(5000);
+      await page.screenshot({
+        path: path.join(outDir, `${target.name}${plan.suffix}.png`),
+        fullPage: true,
+      });
+    }
   });
 }
 

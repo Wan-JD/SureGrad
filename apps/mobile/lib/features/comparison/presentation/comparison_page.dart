@@ -4,6 +4,7 @@ import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
 import '../../../core/widgets/empty_state_card.dart';
 import '../data/comparison_models.dart';
@@ -27,7 +28,7 @@ class _ComparisonPageState extends State<ComparisonPage> {
         future: repository.fetchComparisonResult(),
         builder: (context, snapshot) {
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: context.contentPadding(),
             children: [
               if (snapshot.hasError)
                 EmptyStateCard(
@@ -104,16 +105,17 @@ class _ComparisonDecisionSurface extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        ...items.map(
-          (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _ComparisonProgramCard(
-              item: item,
-              result: result,
-              isMostComplete: identical(item, mostComplete),
-              onSetTarget: () => _setTargetFromComparison(context, item),
-            ),
-          ),
+        ResponsiveColumns(
+          children: items
+              .map(
+                (item) => _ComparisonProgramCard(
+                  item: item,
+                  result: result,
+                  isMostComplete: identical(item, mostComplete),
+                  onSetTarget: () => _setTargetFromComparison(context, item),
+                ),
+              )
+              .toList(),
         ),
       ],
     );

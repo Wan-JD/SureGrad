@@ -6,6 +6,12 @@ const repoRoot = path.resolve(import.meta.dirname, "../..");
 const outDir = path.join(repoRoot, "docs", ".visual-qa");
 const baseUrl = process.env.ADMIN_BASE_URL ?? "http://localhost:3001";
 
+const VIEWPORTS = [
+  { key: "desktop", width: 1440, height: 900 },
+  { key: "tablet", width: 834, height: 1194 },
+  { key: "mobile", width: 390, height: 844 },
+];
+
 const pages = [
   {
     name: "admin-home",
@@ -29,29 +35,70 @@ const pages = [
 
 fs.mkdirSync(outDir, { recursive: true });
 
+function waitSelectorsFor(target) {
+  if (!target.waitFor) {
+    return [];
+  }
+  if (target.name === "admin-resources") {
+    return [
+      ".record-table tbody tr",
+      ".record-table",
+      ".record-list-panel",
+      ".workspace-hero",
+    ];
+  }
+  return [target.waitFor];
+}
+
+async function waitForPageReady(page, target, viewportKey) {
+  const selectors = waitSelectorsFor(target);
+  if (selectors.length === 0) {
+    return;
+  }
+
+  let lastError;
+  for (const selector of selectors) {
+    try {
+      await page.waitForSelector(selector, {
+        timeout: target.name === "admin-resources" ? 25000 : 15000,
+        state: "attached",
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError ?? new Error(`${target.name} (${viewportKey}): no selector matched`);
+}
+
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
 const failures = [];
 
 for (const target of pages) {
-  await page.goto(`${baseUrl}${target.url}`, { waitUntil: "domcontentloaded" });
-  if (target.waitFor) {
-    await page.waitForSelector(target.waitFor, { timeout: 15000 });
-  }
-  await page.waitForTimeout(500);
-
-  const text = await page.locator("body").innerText();
-  for (const phrase of target.mustSee) {
-    if (!text.includes(phrase)) {
-      failures.push(`${target.name}: missing "${phrase}"`);
+  for (const viewport of VIEWPORTS) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto(`${baseUrl}${target.url}`, { waitUntil: "domcontentloaded" });
+    await waitForPageReady(page, target, viewport.key);
+    if (target.name === "admin-resources") {
+      await page.waitForTimeout(1500);
     }
-  }
+    await page.waitForTimeout(500);
 
-  await page.screenshot({
-    path: path.join(outDir, `${target.name}.png`),
-    fullPage: true,
-  });
+    const text = await page.locator("body").innerText();
+    for (const phrase of target.mustSee) {
+      if (!text.includes(phrase)) {
+        failures.push(`${target.name} (${viewport.key}): missing "${phrase}"`);
+      }
+    }
+
+    await page.screenshot({
+      path: path.join(outDir, `${target.name}-${viewport.key}.png`),
+      fullPage: true,
+    });
+  }
 }
 
 await browser.close();

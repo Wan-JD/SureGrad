@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/empty_state_card.dart';
 import '../../../core/widgets/section_card.dart';
@@ -34,15 +35,16 @@ class _TodoPageState extends State<TodoPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Todo')),
       body: SafeArea(
-        child: AnimatedBuilder(
-          animation: bootstrap.refreshStore,
-          builder: (context, _) {
-            return FutureBuilder<_TodoPageSnapshot>(
-              future: _loadPage(bootstrap),
-              builder: (context, snapshot) {
-                return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
+        child: ResponsivePageBody(
+          child: AnimatedBuilder(
+            animation: bootstrap.refreshStore,
+            builder: (context, _) {
+              return FutureBuilder<_TodoPageSnapshot>(
+                future: _loadPage(bootstrap),
+                builder: (context, snapshot) {
+                  return ListView(
+                    padding: context.contentPadding(),
+                    children: [
                     if (snapshot.hasError)
                       EmptyStateCard(
                         title: 'Todo 加载失败',
@@ -57,19 +59,24 @@ class _TodoPageState extends State<TodoPage> {
                         title: '今日总览',
                         subtitle: snapshot.data!.todos.summary.date,
                         children: [
-                          _SummaryRow(
-                            label: '全部',
-                            value: '${snapshot.data!.todos.summary.totalCount}',
-                          ),
-                          _SummaryRow(
-                            label: '待完成',
-                            value:
-                                '${snapshot.data!.todos.summary.pendingCount}',
-                          ),
-                          _SummaryRow(
-                            label: '已完成',
-                            value:
-                                '${snapshot.data!.todos.summary.completedCount}',
+                          ResponsiveColumns(
+                            children: [
+                              _TodoStatTile(
+                                label: '全部',
+                                value:
+                                    '${snapshot.data!.todos.summary.totalCount}',
+                              ),
+                              _TodoStatTile(
+                                label: '待完成',
+                                value:
+                                    '${snapshot.data!.todos.summary.pendingCount}',
+                              ),
+                              _TodoStatTile(
+                                label: '已完成',
+                                value:
+                                    '${snapshot.data!.todos.summary.completedCount}',
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -140,9 +147,10 @@ class _TodoPageState extends State<TodoPage> {
                     ],
                   ],
                 );
-              },
-            );
-          },
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -368,6 +376,35 @@ class _CheckinCard extends StatelessWidget {
           FilledButton(onPressed: onCheckin, child: const Text('完成今日打卡')),
         ],
       ],
+    );
+  }
+}
+
+class _TodoStatTile extends StatelessWidget {
+  const _TodoStatTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFCFAF5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5DECF)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            Text(value, style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
+      ),
     );
   }
 }

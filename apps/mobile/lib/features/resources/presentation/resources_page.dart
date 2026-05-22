@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_tab.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/models/feature_list_item.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
@@ -27,7 +28,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
         future: repository.fetchResources(),
         builder: (context, snapshot) {
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: context.contentPadding(),
             children: [
               const SectionCard(
                 title: '备考资料',
@@ -57,18 +58,13 @@ class _ResourcesPageState extends State<ResourcesPage> {
                 SectionCard(
                   title: '可用内容',
                   subtitle: '根据当前返回结果整理展示，进入备考时可以先从这里补充信息。',
-                  children: snapshot.data!
-                      .map(
-                        (item) => ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(item.title),
-                          subtitle: Text(item.subtitle),
-                          trailing: item.footnote == null
-                              ? null
-                              : Text(item.footnote!),
-                        ),
-                      )
-                      .toList(),
+                  children: [
+                    ResponsiveColumns(
+                      children: snapshot.data!
+                          .map((item) => _ResourceItemCard(item: item))
+                          .toList(),
+                    ),
+                  ],
                 ),
             ],
           );
@@ -82,6 +78,44 @@ class _ResourcesPageState extends State<ResourcesPage> {
       return '${error.message}\n${error.nextSteps.join('\n')}';
     }
     return '$error';
+  }
+}
+
+class _ResourceItemCard extends StatelessWidget {
+  const _ResourceItemCard({required this.item});
+
+  final FeatureListItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFCFAF5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5DECF)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(item.title, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 6),
+            Text(item.subtitle),
+            if (item.footnote != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                item.footnote!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: const Color(0xFF125B52),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 

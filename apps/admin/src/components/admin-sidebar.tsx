@@ -4,11 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminNavigation } from "@/config/admin-navigation";
 
-export function AdminSidebar() {
+type AdminSidebarProps = {
+  id: string;
+  isDrawerMode: boolean;
+  isOpen: boolean;
+  onNavigate?: () => void;
+};
+
+export function AdminSidebar({ id, isDrawerMode, isOpen, onNavigate }: AdminSidebarProps) {
   const pathname = usePathname();
+  const ariaHidden = isDrawerMode && !isOpen;
 
   return (
-    <aside className="admin-sidebar">
+    <aside
+      id={id}
+      className="admin-sidebar"
+      aria-hidden={ariaHidden || undefined}
+      inert={ariaHidden ? true : undefined}
+    >
       <div className="brand-block">
         <span className="brand-mark">SG</span>
         <div>
@@ -30,6 +43,8 @@ export function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 className={isActive ? "nav-item active" : "nav-item"}
+                onClick={onNavigate}
+                tabIndex={ariaHidden ? -1 : undefined}
               >
                 <span className="nav-badge">{item.shortLabel}</span>
                 <span className="nav-content">

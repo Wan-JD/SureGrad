@@ -19,11 +19,11 @@ html {
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
 }
 
 body {
   min-height: 100%;
+  overflow-x: clip;
   color: var(--foreground);
   background:
     radial-gradient(circle at top left, rgba(213, 123, 63, 0.18), transparent 28%),
@@ -203,10 +203,78 @@ ul {
 
 .admin-topbar {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   padding: 28px 32px 0;
+}
+
+.topbar-leading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 280px;
+}
+
+.nav-toggle {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  width: 46px;
+  height: 46px;
+  margin-top: 4px;
+  border: 1px solid rgba(42, 59, 48, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--foreground);
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(43, 55, 46, 0.08);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.nav-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(213, 123, 63, 0.34);
+}
+
+.nav-toggle:focus-visible {
+  outline: 2px solid rgba(213, 123, 63, 0.55);
+  outline-offset: 2px;
+}
+
+.nav-toggle-bar {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.admin-shell--nav-open .nav-toggle-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.admin-shell--nav-open .nav-toggle-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.admin-shell--nav-open .nav-toggle-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 .topbar-title {
@@ -223,6 +291,9 @@ ul {
 }
 
 .topbar-tag {
+  flex: 0 1 auto;
+  align-self: flex-start;
+  max-width: 100%;
   border: 1px solid rgba(213, 123, 63, 0.3);
   border-radius: 999px;
   padding: 10px 14px;
@@ -230,6 +301,9 @@ ul {
   background: rgba(255, 247, 239, 0.85);
   font-size: 0.9rem;
   font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .admin-content {
@@ -996,7 +1070,37 @@ ul {
 }
 
 .table-scroll {
+  position: relative;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+.table-scroll::after {
+  content: "";
+  position: sticky;
+  right: 0;
+  top: 0;
+  float: right;
+  width: 28px;
+  height: 100%;
+  margin-left: -28px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 253, 248, 0.96));
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.table-scroll--hint::after {
+  opacity: 1;
+}
+
+.table-scroll-hint {
+  display: none;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .record-table {
@@ -1180,16 +1284,69 @@ ul {
   line-height: 1.7;
 }
 
+body.admin-body--nav-open {
+  overflow: hidden;
+}
+
+@media (max-width: 1280px) {
+  .workspace-main-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+    gap: 16px;
+  }
+}
+
 @media (max-width: 1080px) {
   .admin-shell {
     grid-template-columns: 1fr;
   }
 
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: block;
+    border: 0;
+    padding: 0;
+    background: rgba(24, 36, 30, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+    cursor: pointer;
+  }
+
+  .admin-shell--nav-open .sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .admin-sidebar {
-    position: static;
-    height: auto;
-    min-height: 0;
-    align-self: stretch;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    width: min(300px, 88vw);
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: auto;
+    transform: translateX(calc(-100% - 12px));
+    transition: transform 240ms ease;
+    box-shadow: 24px 0 48px rgba(17, 28, 23, 0.24);
+  }
+
+  .admin-shell--nav-open .admin-sidebar {
+    transform: translateX(0);
+  }
+
+  .topbar-copy {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .module-grid,
@@ -1212,6 +1369,18 @@ ul {
     position: static;
     max-height: none;
   }
+
+  .record-table {
+    min-width: 640px;
+  }
+
+  .table-scroll-hint {
+    display: block;
+  }
+
+  .table-scroll--hint::after {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1228,6 +1397,14 @@ ul {
     flex-direction: column;
   }
 
+  .topbar-copy {
+    display: none;
+  }
+
+  .topbar-title {
+    font-size: 1.45rem;
+  }
+
   .hero-card,
   .section-card,
   .placeholder-card {
@@ -1236,5 +1413,96 @@ ul {
 
   .list-header {
     flex-direction: column;
+  }
+
+  .filter-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-field,
+  .filter-search {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .toolbar-reset {
+    width: 100%;
+  }
+
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  .table-scroll::after {
+    display: none;
+  }
+
+  .table-scroll-hint {
+    display: none;
+  }
+
+  .record-table--stacked {
+    min-width: 0;
+  }
+
+  .record-table--stacked thead {
+    display: none;
+  }
+
+  .record-table--stacked tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .record-table--stacked tr {
+    display: grid;
+    gap: 10px;
+    border: 1px solid rgba(42, 59, 48, 0.12);
+    border-radius: 18px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.58);
+  }
+
+  .record-table--stacked tr:hover {
+    background: rgba(246, 233, 216, 0.46);
+  }
+
+  .record-table--stacked tr.selected {
+    border-color: rgba(213, 123, 63, 0.34);
+    background: rgba(255, 244, 231, 0.92);
+    box-shadow: 0 12px 24px rgba(57, 66, 51, 0.08);
+  }
+
+  .record-table--stacked td {
+    display: grid;
+    grid-template-columns: minmax(88px, 34%) minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    border-bottom: 0;
+    padding: 0;
+  }
+
+  .record-table--stacked td::before {
+    content: attr(data-label);
+    color: #8a603e;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .sidebar-backdrop,
+  .nav-toggle,
+  .nav-toggle-bar,
+  .nav-item,
+  .table-scroll::after {
+    transition: none;
   }
 }

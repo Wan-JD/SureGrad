@@ -425,8 +425,9 @@ export function LiveOperationsWorkspace({
             ) : null}
 
             {records.length ? (
-              <div className="table-scroll">
-                <table className="record-table">
+              <div className="table-scroll table-scroll--hint">
+                <p className="table-scroll-hint">左右滑动可查看完整表格列</p>
+                <table className="record-table record-table--stacked">
                   <thead>
                     <tr>
                       {dataset.columns.map((column) => (
@@ -449,7 +450,10 @@ export function LiveOperationsWorkspace({
                             const tone = getAdminTone(column.key, value);
 
                             return (
-                              <td key={`${record.id}-${column.key}`}>
+                              <td
+                                key={`${record.id}-${column.key}`}
+                                data-label={getBusinessLabel(column.label)}
+                              >
                                 <span className={`table-value tone-${tone}`}>
                                   {formatAdminValue(value)}
                                 </span>

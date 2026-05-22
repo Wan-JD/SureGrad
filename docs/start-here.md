@@ -177,11 +177,10 @@
 
 ## 10. 当前并行推进线（2026-05-22）
 
-1. **备考资料演示**：`pnpm db:seed:resources`（4 科目 + 6 条 `study_resources`）；`pnpm db:seed:demo` = ecust + 资料
-2. **Admin 资料 Live**：`/resources` 接 `GET /study-resources`，筛选类型/阶段/科目
-3. **Mobile 视觉 harness**：`main_visual_qa_planning.dart`、`main_visual_qa_resources.dart`；`verify:visual` 增规划/资料截图
-4. **API 修复**：`study-resources` 列表分页 COUNT 不再携带 ORDER BY（PostgreSQL 42803）
-5. 延续：游客冷启动、采集缺口 Banner、reminders CRUD、对比 `isInComparison` 等（见 `docs/visual-qa/` 各轮记录）
+1. **响应式布局**：Admin 1080px 抽屉 + 720px 表格卡片化；Mobile `NavigationRail`（≥600px）+ `ResponsivePageBody`
+2. **视觉验收**：`capture-admin.mjs` 每页 desktop/tablet/mobile；规划/资料 Tab 含 tablet 截图（见 `docs/visual-qa/2026-05-22-responsive-round.md`）
+3. **备考资料演示**：`pnpm db:seed:resources` / `db:seed:demo`；Admin `/resources` Live API
+4. **API**：`study-resources` 分页 COUNT 修复；延续 reminders、对比、游客冷启动等
 
 ## 11. 下一步工作建议
 

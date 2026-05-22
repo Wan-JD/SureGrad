@@ -5,6 +5,7 @@ import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
 import '../../../core/models/main_journey_state.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
 import '../../../core/widgets/empty_state_card.dart';
 import '../../../core/widgets/section_card.dart';
@@ -53,7 +54,7 @@ class _HomePageState extends State<HomePage> {
               onRefresh: _refresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: context.contentPadding(),
                 children: [
                   SectionCard(
                     title: '主链路状态',
@@ -61,26 +62,32 @@ class _HomePageState extends State<HomePage> {
                     children: const [Text('登录后，首页会直接展示目标、计划和 Todo 的真实联动状态。')],
                   ),
                   const SizedBox(height: 16),
-                  EmptyStateCard(
-                    title: '还没进入主链路',
-                    message: '你可以先浏览院校，也可以先登录，然后按“设目标 -> 生成计划 -> 查看 Todo”继续演示。',
-                    actionLabel: '去登录',
-                    onAction: () {
-                      Navigator.of(context).pushNamed(AppRoutes.login);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  SectionCard(
-                    title: '主入口',
+                  ResponsiveColumns(
                     children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('浏览院校'),
-                        subtitle: const Text('先去院校页查看并选择目标。'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(AppRoutes.schools);
+                      EmptyStateCard(
+                        title: '还没进入主链路',
+                        message:
+                            '你可以先浏览院校，也可以先登录，然后按“设目标 -> 生成计划 -> 查看 Todo”继续演示。',
+                        actionLabel: '去登录',
+                        onAction: () {
+                          Navigator.of(context).pushNamed(AppRoutes.login);
                         },
+                      ),
+                      SectionCard(
+                        title: '主入口',
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('浏览院校'),
+                            subtitle: const Text('先去院校页查看并选择目标。'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.schools);
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -96,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                 onRefresh: _refresh,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
+                  padding: context.contentPadding(),
                   children: [
                     if (snapshot.hasError) ...[
                       EmptyStateCard(
@@ -111,30 +118,12 @@ class _HomePageState extends State<HomePage> {
                     ] else ...[
                       _HomeHero(snapshot: snapshot.data!),
                       const SizedBox(height: 16),
-                      SectionCard(
-                        title: '主链路状态',
-                        subtitle: snapshot.data!.journeyState.title,
+                      ResponsiveColumns(
                         children: [
-                          _HomeRow(
-                            label: '当前状态',
-                            value: snapshot.data!.journeyState.label,
-                          ),
-                          _HomeRow(
-                            label: '当前目标',
-                            value: snapshot.data!.headline,
-                          ),
-                          _HomeRow(
-                            label: '状态说明',
-                            value: snapshot.data!.journeyState.summary,
-                          ),
-                          _HomeRow(
-                            label: '建议动作',
-                            value: _nextStepText(snapshot.data!.journeyState),
-                          ),
+                          _HomeJourneyStats(snapshot: snapshot.data!),
+                          _HomePrimaryAction(snapshot: snapshot.data!),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      _HomePrimaryAction(snapshot: snapshot.data!),
                       const SizedBox(height: 16),
                       SectionCard(
                         title: '继续操作',
@@ -173,17 +162,6 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
-  }
-
-  String _nextStepText(MainJourneyState state) {
-    switch (state) {
-      case MainJourneyState.noTarget:
-        return '去院校页设置目标';
-      case MainJourneyState.noPlan:
-        return '去规划页生成计划';
-      case MainJourneyState.hasPlan:
-        return '继续查看今日 Todo';
-    }
   }
 
   String _errorMessage(Object? error) {
@@ -300,22 +278,76 @@ class _HomePrimaryAction extends StatelessWidget {
   }
 }
 
-class _HomeRow extends StatelessWidget {
-  const _HomeRow({required this.label, required this.value});
+class _HomeJourneyStats extends StatelessWidget {
+  const _HomeJourneyStats({required this.snapshot});
+
+  final PlanningSnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    final tiles = [
+      _HomeStatTile(label: '当前状态', value: snapshot.journeyState.label),
+      _HomeStatTile(label: '当前目标', value: snapshot.headline),
+      _HomeStatTile(label: '状态说明', value: snapshot.journeyState.summary),
+      _HomeStatTile(
+        label: '建议动作',
+        value: _HomeJourneyStats._nextStepText(snapshot.journeyState),
+      ),
+    ];
+
+    return SectionCard(
+      title: '主链路状态',
+      subtitle: snapshot.journeyState.title,
+      children: [
+        if (context.isCompact)
+          ...tiles.map(
+            (tile) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: tile,
+            ),
+          )
+        else
+          ResponsiveColumns(children: tiles),
+      ],
+    );
+  }
+
+  static String _nextStepText(MainJourneyState state) {
+    switch (state) {
+      case MainJourneyState.noTarget:
+        return '去院校页设置目标';
+      case MainJourneyState.noPlan:
+        return '去规划页生成计划';
+      case MainJourneyState.hasPlan:
+        return '继续查看今日 Todo';
+    }
+  }
+}
+
+class _HomeStatTile extends StatelessWidget {
+  const _HomeStatTile({required this.label, required this.value});
 
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(width: 96, child: Text(label)),
-          Expanded(child: Text(value)),
-        ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFCFAF5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5DECF)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            Text(value, style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
       ),
     );
   }

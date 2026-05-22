@@ -5,6 +5,7 @@ import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
 import '../../../app/navigation/login_route_args.dart';
 import '../../../app/navigation/school_detail_route_args.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/state/app_session_store.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
@@ -72,7 +73,7 @@ class _SchoolListPageState extends State<SchoolListPage> {
             ),
             builder: (context, snapshot) {
               return ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: context.contentPadding(),
                 children: [
                   const _ListHero(),
                   const SizedBox(height: 16),
@@ -185,23 +186,24 @@ class _SchoolListPageState extends State<SchoolListPage> {
                       },
                     )
                   else
-                    ...snapshot.data!.map(
-                      (school) => Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: _SchoolCard(
-                          school: school,
-                          onOpen: () {
-                            Navigator.of(context).pushNamed(
-                              AppRoutes.schoolDetail,
-                              arguments: SchoolDetailRouteArgs(
-                                schoolId: school.id,
-                                schoolName: school.name,
-                              ),
-                            );
-                          },
-                          onFavorite: () => _handleFavorite(school),
-                        ),
-                      ),
+                    ResponsiveColumns(
+                      children: snapshot.data!
+                          .map(
+                            (school) => _SchoolCard(
+                              school: school,
+                              onOpen: () {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.schoolDetail,
+                                  arguments: SchoolDetailRouteArgs(
+                                    schoolId: school.id,
+                                    schoolName: school.name,
+                                  ),
+                                );
+                              },
+                              onFavorite: () => _handleFavorite(school),
+                            ),
+                          )
+                          .toList(),
                     ),
                 ],
               );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
+import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/models/main_journey_state.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_navigation_scaffold.dart';
@@ -54,7 +55,7 @@ class _PlanningPageState extends State<PlanningPage> {
                 onRefresh: _refresh,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding: context.contentPadding(),
                   children: [
                     if (snapshot.hasError) ...[
                       _JourneyErrorCard(
@@ -112,41 +113,49 @@ class _PlanningPageState extends State<PlanningPage> {
         ];
       case MainJourneyState.hasPlan:
         return [
-          SectionCard(
-            title: '当前计划',
-            subtitle: snapshot.currentPlan.title ?? '未命名计划',
+          ResponsiveColumns(
             children: [
-              _InfoRow(
-                label: '模板',
-                value: snapshot.currentPlan.templateType ?? '-',
+              SectionCard(
+                title: '当前计划',
+                subtitle: snapshot.currentPlan.title ?? '未命名计划',
+                children: [
+                  _InfoRow(
+                    label: '模板',
+                    value: snapshot.currentPlan.templateType ?? '-',
+                  ),
+                  _InfoRow(
+                    label: '周期',
+                    value:
+                        '${snapshot.currentPlan.startDate ?? '-'} - ${snapshot.currentPlan.endDate ?? '-'}',
+                  ),
+                  _InfoRow(
+                    label: '总时长',
+                    value:
+                        '${snapshot.currentPlan.totalExpectedHours ?? '-'} 小时',
+                  ),
+                ],
               ),
-              _InfoRow(
-                label: '周期',
-                value:
-                    '${snapshot.currentPlan.startDate ?? '-'} - ${snapshot.currentPlan.endDate ?? '-'}',
-              ),
-              _InfoRow(
-                label: '总时长',
-                value: '${snapshot.currentPlan.totalExpectedHours ?? '-'} 小时',
+              SectionCard(
+                title: '阶段路线',
+                subtitle: snapshot.currentPlan.phases.isEmpty
+                    ? '当前计划已创建，但还没有同步出阶段拆分。'
+                    : '按当前计划返回的 phases 字段展示。',
+                children: snapshot.currentPlan.phases.isEmpty
+                    ? const [
+                        _InlineHint(
+                          text:
+                              '下拉刷新后仍为空时，可稍后再试或回到首页确认状态是否已同步。',
+                        ),
+                      ]
+                    : [
+                        ResponsiveColumns(
+                          children: snapshot.currentPlan.phases
+                              .map((phase) => _PhaseTile(phase: phase))
+                              .toList(),
+                        ),
+                      ],
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          SectionCard(
-            title: '阶段路线',
-            subtitle: snapshot.currentPlan.phases.isEmpty
-                ? '当前计划已创建，但还没有同步出阶段拆分。'
-                : '按当前计划返回的 phases 字段展示。',
-            children: snapshot.currentPlan.phases.isEmpty
-                ? const [_InlineHint(text: '下拉刷新后仍为空时，可稍后再试或回到首页确认状态是否已同步。')]
-                : snapshot.currentPlan.phases
-                      .map(
-                        (phase) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _PhaseTile(phase: phase),
-                        ),
-                      )
-                      .toList(),
           ),
           const SizedBox(height: 16),
           SectionCard(
