@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LiveOperationsWorkspace, type FilterControl } from "@/components/live-operations-workspace";
+import { patchAdminJson } from "@/lib/admin-api-client";
 import { getAdminOperationsPage } from "@/lib/admin-operations";
 import {
-  getSchoolDetail,
+  getAdminSchool,
+  listAdminSchools,
   listSchools,
-  mapSchoolDetailToRecord,
-  mapSchoolListItemToRecord,
+  mapAdminSchoolToRecord,
   schoolsLiveColumns,
   schoolsLiveDetailSections,
   schoolsLiveFields,
@@ -24,17 +25,18 @@ type SchoolsQueryState = {
   city: string;
   schoolLevel: string;
   schoolType: string;
+  status: string;
 };
 
 type ListState = {
-  records: ReturnType<typeof mapSchoolListItemToRecord>[];
+  records: ReturnType<typeof mapAdminSchoolToRecord>[];
   total: number;
   loading: boolean;
   error: string | null;
 };
 
 type DetailState = {
-  record: ReturnType<typeof mapSchoolDetailToRecord> | null;
+  record: ReturnType<typeof mapAdminSchoolToRecord> | null;
   loading: boolean;
   error: string | null;
 };
@@ -50,7 +52,9 @@ export function SchoolsLiveWorkspace() {
     city: "",
     schoolLevel: "",
     schoolType: "",
+    status: "",
   });
+  const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState("");
   const [listState, setListState] = useState<ListState>({
     records: [],
@@ -90,13 +94,14 @@ export function SchoolsLiveWorkspace() {
       error: null,
     }));
 
-    void listSchools(
+    void listAdminSchools(
       {
-        q: query.q,
+        keyword: query.q,
         province: query.province,
         city: query.city,
         schoolLevel: query.schoolLevel,
         schoolType: query.schoolType,
+        status: query.status ? (query.status as "active" | "inactive") : undefined,
         page: 1,
         pageSize: 50,
       },
@@ -104,8 +109,8 @@ export function SchoolsLiveWorkspace() {
     )
       .then((response) => {
         setListState({
-          records: response.items.map(mapSchoolListItemToRecord),
-          total: response.pagination.total,
+          records: response.items.map(mapAdminSchoolToRecord),
+          total: response.total,
           loading: false,
           error: null,
         });
@@ -156,10 +161,10 @@ export function SchoolsLiveWorkspace() {
       error: null,
     }));
 
-    void getSchoolDetail(selectedId, controller.signal)
+    void getAdminSchool(selectedId, controller.signal)
       .then((detail) => {
         setDetailState({
-          record: mapSchoolDetailToRecord(detail),
+          record: mapAdminSchoolToRecord(detail),
           loading: false,
           error: null,
         });
@@ -202,8 +207,49 @@ export function SchoolsLiveWorkspace() {
     [optionSource],
   );
 
+  const selectedRecord = useMemo(
+    () => listState.records.find((record) => String(record.id) === selectedId) ?? null,
+    [listState.records, selectedId],
+  );
+
+  async function toggleSelectedStatus() {
+    if (!selectedRecord) {
+      return;
+    }
+
+    const nextStatus = selectedRecord.raw_status === "active" ? "inactive" : "active";
+    setSaving(true);
+    setListState((current) => ({ ...current, error: null }));
+
+    try {
+      await patchAdminJson(`/admin/schools/${selectedRecord.id}`, {
+        status: nextStatus,
+      });
+      setReloadToken((value) => value + 1);
+      setDetailReloadToken((value) => value + 1);
+    } catch (error: unknown) {
+      setListState((current) => ({
+        ...current,
+        error: error instanceof Error ? error.message : "学校状态更新失败。",
+      }));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const filters = useMemo<FilterControl[]>(
     () => [
+      {
+        key: "status",
+        label: "展示状态",
+        value: query.status,
+        options: [
+          { label: "全部状态", value: "" },
+          { label: "启用", value: "active" },
+          { label: "停用", value: "inactive" },
+        ],
+        onChange: (value) => setQuery((current) => ({ ...current, status: value })),
+      },
       {
         key: "province",
         label: "省份",
@@ -243,7 +289,26 @@ export function SchoolsLiveWorkspace() {
   );
 
   return (
-    <LiveOperationsWorkspace
+    <div className="page-stack">
+      <section className="user-admin-toolbar">
+        <p>学校列表已接入 Admin 写接口，可筛选停用学校并切换展示状态。</p>
+        <button
+          type="button"
+          className="mini-action"
+          disabled={!selectedRecord || saving}
+          onClick={() => {
+            void toggleSelectedStatus();
+          }}
+        >
+          {saving
+            ? "保存中…"
+            : selectedRecord?.raw_status === "active"
+              ? "停用选中学校"
+              : "启用选中学校"}
+        </button>
+      </section>
+
+      <LiveOperationsWorkspace
       page={page}
       dataset={{
         title: scaffoldDataset.title,
@@ -274,6 +339,7 @@ export function SchoolsLiveWorkspace() {
           city: "",
           schoolLevel: "",
           schoolType: "",
+          status: "",
         })
       }
       listLoading={listState.loading}
@@ -287,7 +353,8 @@ export function SchoolsLiveWorkspace() {
       detailLoadingCopy="正在从后端加载学校详情。"
       detailEmptyCopy="请选择一所学校查看详情。"
       onRetryDetail={() => setDetailReloadToken((value) => value + 1)}
-      listScopeCopy="当前列表已切换为真实后端返回，不再展示静态样例数据。"
+      listScopeCopy="列表与详情来自 /admin/schools，支持启用/停用写操作。"
     />
+    </div>
   );
 }

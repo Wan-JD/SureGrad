@@ -48,8 +48,8 @@ const pages = [
   {
     name: "admin-home",
     url: "/",
-    mustSee: ["采集缺口", "华东理工", "上海财经"],
-    waitFor: ".batch-gaps-banner",
+    mustSee: ["用户管理", "App 用户"],
+    waitFor: ".workspace-hero",
   },
   {
     name: "admin-yearly-data",
@@ -66,7 +66,7 @@ const pages = [
   {
     name: "admin-schools",
     url: "/schools",
-    mustSee: ["学校管理", "学校档案"],
+    mustSee: ["学校管理", "写接口"],
     waitFor: ".workspace-hero",
   },
   {

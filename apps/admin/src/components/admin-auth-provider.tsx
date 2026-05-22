@@ -58,7 +58,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (session && pathname === "/login") {
+    if (session && (pathname === "/login" || pathname === "/")) {
       router.replace("/users");
     }
   }, [isReady, pathname, router, session]);

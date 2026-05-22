@@ -438,6 +438,51 @@ export const programsLiveDetailSections: AdminDetailSection[] = [
   },
 ];
 
+export type AdminSchoolSummary = {
+  schoolId: string;
+  name: string;
+  shortName: string;
+  code: string | null;
+  province: string;
+  city: string;
+  schoolType: string;
+  schoolLevel: string;
+  hasGraduateSchool: boolean;
+  officialWebsite: string | null;
+  graduateWebsite: string | null;
+  description: string | null;
+  sortOrder: number;
+  status: "active" | "inactive";
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminSchoolsQuery = {
+  keyword?: string;
+  province?: string;
+  city?: string;
+  schoolLevel?: string;
+  schoolType?: string;
+  status?: "active" | "inactive";
+  page?: number;
+  pageSize?: number;
+};
+
+export type AdminSchoolsResponse = {
+  items: AdminSchoolSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export async function listAdminSchools(query: AdminSchoolsQuery, signal?: AbortSignal) {
+  return getAdminJson<AdminSchoolsResponse>("/admin/schools", query, { signal });
+}
+
+export async function getAdminSchool(schoolId: string, signal?: AbortSignal) {
+  return getAdminJson<AdminSchoolSummary>(`/admin/schools/${schoolId}`, undefined, { signal });
+}
+
 export async function listSchools(query: SchoolsQuery, signal?: AbortSignal) {
   return getAdminJson<PaginatedResponse<SchoolListItem>>("/schools", query, { signal });
 }
@@ -688,6 +733,24 @@ export function toSelectOptions(values: Array<string | number | boolean | null |
         .map((value) => String(value)),
     ),
   ).sort((left, right) => left.localeCompare(right, "en", { numeric: true }));
+}
+
+export function mapAdminSchoolToRecord(item: AdminSchoolSummary): AdminRecord {
+  return {
+    id: item.schoolId,
+    name: item.name,
+    short_name: item.shortName,
+    province: item.province,
+    city: item.city,
+    school_level: item.schoolLevel,
+    school_type: item.schoolType,
+    status: item.status === "active" ? "启用" : "停用",
+    has_graduate_school: item.hasGraduateSchool,
+    official_website: item.officialWebsite,
+    graduate_website: item.graduateWebsite,
+    description: item.description,
+    raw_status: item.status,
+  };
 }
 
 export function mapSchoolListItemToRecord(item: SchoolListItem): AdminRecord {

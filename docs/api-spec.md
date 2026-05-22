@@ -1597,7 +1597,38 @@
 11. `PATCH /reminders/{reminderId}`
 12. `DELETE /reminders/{reminderId}`
 
-## 19. 待确认接口问题
+## 19. 管理后台接口（Admin）
+
+> 基路径：`/api/v1/admin/*`  
+> 鉴权：`Authorization: Bearer <adminAccessToken>`（`mock.admin.` 前缀开发期 token）  
+> 角色：`admin` 可管理 App 用户与学校；`super_admin` 另可管理后台账号。
+
+### 19.1 登录
+
+- `POST /admin/auth/login`：用户名 + 密码，返回 `accessToken` 与 `adminUser`
+- `GET /admin/auth/me`：当前后台账号信息
+
+### 19.2 App 用户（普通用户）
+
+- `GET /admin/app-users`：分页列表，`keyword`、`status`
+- `PATCH /admin/app-users/{userId}`：更新 `nickname`、`status`（`active` / `disabled`）
+
+### 19.3 后台账号（仅 super_admin）
+
+- `GET /admin/staff`：后台账号列表
+- `POST /admin/staff`：新增管理员或超级管理员
+- `PATCH /admin/staff/{adminUserId}`：更新 `displayName`、`password`、`role`、`status`
+
+### 19.4 学校档案（管理员+）
+
+- `GET /admin/schools`：运营列表，支持 `keyword`、`province`、`city`、`schoolLevel`、`schoolType`、`status`
+- `GET /admin/schools/{schoolId}`：学校详情（含停用）
+- `POST /admin/schools`：新建学校
+- `PATCH /admin/schools/{schoolId}`：修订学校字段或 `status`（`active` / `inactive`）
+
+公开 `GET /schools` 仍仅返回 `active` 且未软删学校；停用后前台不可见。
+
+## 20. 待确认接口问题
 
 以下问题建议在后端实现前由产品、客户端、后端共同确认：
 
