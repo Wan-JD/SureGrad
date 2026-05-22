@@ -1,0 +1,15 @@
+---
+description: Visual QA gate and push policy for SureGrad
+alwaysApply: true
+---
+
+# Visual QA and push
+
+1. Every implementation round must end with **agent-performed visual acceptance**, not handing a running app to the user.
+2. Work is **qualified** only after:
+   - `pnpm verify:api` / `verify:admin` / `verify:mobile` pass, and
+   - `pnpm verify:visual` passes (Admin Playwright screenshots + Mobile Flutter Web screenshots under `docs/.visual-qa/`), and
+   - A short record is added under `docs/visual-qa/`.
+3. After qualification, **push to GitHub** on the target branch without waiting for the user to ask again in that round.
+4. Commits: never add `Co-authored-by`, Cursor, or any AI attribution. Prefer `git.exe commit -F <message-file>`.
+5. Do not treat HTML fetch or “server started” as visual QA; inspect screenshot artifacts.

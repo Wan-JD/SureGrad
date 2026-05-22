@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
+
+import 'package:http/http.dart' as http;
 
 import '../state/app_session_store.dart';
 import 'api_config.dart';
@@ -65,36 +66,21 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? body,
   }) async {
-    final client = HttpClient();
-
     try {
-      final request = await client.openUrl(
-        method,
-        resolve(path, queryParameters),
-      );
-
-      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      final uri = resolve(path, queryParameters);
+      final headers = <String, String>{'Accept': 'application/json'};
       if (body != null) {
-        request.headers.set(
-          HttpHeaders.contentTypeHeader,
-          'application/json; charset=utf-8',
-        );
+        headers['Content-Type'] = 'application/json; charset=utf-8';
       }
 
       final accessToken = sessionStore.accessToken;
       if (accessToken != null && accessToken.isNotEmpty) {
-        request.headers.set(
-          HttpHeaders.authorizationHeader,
-          'Bearer $accessToken',
-        );
+        headers['Authorization'] = 'Bearer $accessToken';
       }
 
-      if (body != null) {
-        request.write(jsonEncode(body));
-      }
-
-      final response = await request.close();
-      final responseBody = await utf8.decodeStream(response);
+      final encodedBody = body == null ? null : jsonEncode(body);
+      final response = await _dispatch(method, uri, headers, encodedBody);
+      final responseBody = utf8.decode(response.bodyBytes);
       final statusCode = response.statusCode;
       final decoded = _decodeJson(responseBody);
 
@@ -106,16 +92,34 @@ class ApiClient {
         _extractErrorMessage(decoded, responseBody),
         statusCode: statusCode,
       );
-    } on SocketException {
+    } on http.ClientException {
       return const ApiFailure('无法连接到 SureGrad API。请确认本地后端已启动。');
-    } on HttpException catch (error) {
-      return ApiFailure(error.message);
     } on FormatException {
       return const ApiFailure('API 返回了无法解析的响应。');
     } catch (_) {
       return const ApiFailure('请求失败，请稍后重试。');
-    } finally {
-      client.close(force: true);
+    }
+  }
+
+  Future<http.Response> _dispatch(
+    String method,
+    Uri uri,
+    Map<String, String> headers,
+    String? body,
+  ) {
+    switch (method) {
+      case 'GET':
+        return http.get(uri, headers: headers);
+      case 'POST':
+        return http.post(uri, headers: headers, body: body);
+      case 'PUT':
+        return http.put(uri, headers: headers, body: body);
+      case 'PATCH':
+        return http.patch(uri, headers: headers, body: body);
+      case 'DELETE':
+        return http.delete(uri, headers: headers);
+      default:
+        throw UnsupportedError('Unsupported HTTP method: $method');
     }
   }
 

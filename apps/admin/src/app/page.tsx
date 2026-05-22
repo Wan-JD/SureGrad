@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BatchMissingTemplates, CollectedBatchGapsBanner } from "@/components/batch-missing-templates";
 import { adminNavigation } from "@/config/admin-navigation";
 import { getCollectedImportBatches } from "@/lib/collected-import-batches";
 
@@ -58,6 +59,8 @@ export default async function Home() {
         summary.years.add(year);
       }
 
+      summary.missingCsv += batch.missingTemplates.length;
+
       return summary;
     },
     {
@@ -66,9 +69,11 @@ export default async function Home() {
       programs: 0,
       sourceLinks: 0,
       scoreLines: 0,
+      missingCsv: 0,
       years: new Set<number>(),
     },
   );
+  const batchesNeedingCsv = collectedBatches.filter((batch) => batch.missingTemplates.length > 0).length;
 
   return (
     <div className="page-stack">
@@ -128,8 +133,13 @@ export default async function Home() {
             <span className="eyebrow">Collected</span>
             <h2>真实采集批次概览</h2>
           </div>
-          <p>首页直接读取 `tools/data-import/collected`，让后台能看见当前已经人工核验的真实批次，而不是只看演示列表。</p>
+          <p>首页直接读取 `tools/data-import/collected`，让运营一眼看到每个真实批次还缺哪些 CSV 才能进入完整校验。</p>
         </div>
+        <CollectedBatchGapsBanner
+          batches={collectedBatches}
+          title="待补 CSV 清单"
+          description="按学校/年份批次列出仍缺的导入模板。业务名称用于指导补数，文件名仅供放入批次目录时对照。"
+        />
         <div className="summary-strip">
           <article className="summary-chip">
             <strong>{collectedStats.batches}</strong>
@@ -155,6 +165,14 @@ export default async function Home() {
             <strong>{collectedStats.years.size}</strong>
             <span>覆盖年份</span>
           </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.missingCsv}</strong>
+            <span>待补 CSV</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{batchesNeedingCsv}</strong>
+            <span>待补批次</span>
+          </article>
         </div>
         <div className="collected-grid">
           {collectedBatches.map((batch) => (
@@ -172,12 +190,14 @@ export default async function Home() {
               </p>
               <div className="hero-chip-row">
                 <span className="hero-chip">年份: {batch.years.join(" / ") || "待补"}</span>
-                <span className="hero-chip">CSV: {batch.csvFiles.length}</span>
-                <span className="hero-chip">缺口: {batch.missingTemplates.length}</span>
+                <span className="hero-chip">已放入: {batch.csvFiles.length} 份 CSV</span>
+                {batch.missingTemplates.length > 0 ? (
+                  <span className="hero-chip warn">待补 {batch.missingTemplates.length} 份</span>
+                ) : (
+                  <span className="hero-chip ok">模板已齐</span>
+                )}
               </div>
-              <p className="collected-copy muted-copy">
-                缺失模板: {batch.missingTemplates.join(", ") || "已覆盖当前追踪模板"}
-              </p>
+              <BatchMissingTemplates batch={batch} />
               <div className="collected-actions">
                 <Link href="/source-links" className="module-card collected-action">
                   查看来源治理

@@ -244,7 +244,7 @@ ul {
 
 .summary-strip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -310,6 +310,179 @@ ul {
   flex: 1;
   min-height: auto;
   padding: 14px 16px;
+}
+
+.hero-chip.warn {
+  background: rgba(213, 123, 63, 0.16);
+  color: #8f4f22;
+}
+
+.hero-chip.ok {
+  background: rgba(47, 109, 89, 0.14);
+  color: var(--success);
+}
+
+.status-pill.warn {
+  background: rgba(213, 123, 63, 0.14);
+  color: #9a5a2a;
+}
+
+.batch-gaps-banner,
+.batch-gap-panel {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.batch-gaps-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+  margin-bottom: 18px;
+  border-color: rgba(213, 123, 63, 0.35);
+  background: linear-gradient(180deg, rgba(255, 247, 238, 0.95), rgba(255, 253, 248, 0.95));
+}
+
+.batch-gaps-banner.complete {
+  border-color: rgba(47, 109, 89, 0.28);
+  background: linear-gradient(180deg, rgba(244, 250, 246, 0.95), rgba(255, 253, 248, 0.95));
+}
+
+.batch-gaps-banner-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.batch-gaps-metrics {
+  display: flex;
+  gap: 12px;
+}
+
+.batch-gaps-metric {
+  min-width: 96px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.batch-gaps-metric strong {
+  display: block;
+  font-family: var(--font-heading), "Segoe UI", sans-serif;
+  font-size: 1.6rem;
+}
+
+.batch-gaps-metric span,
+.batch-gaps-status,
+.batch-gap-copy,
+.batch-gap-item-hint {
+  color: var(--muted);
+}
+
+.batch-gaps-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.batch-gaps-entry {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.batch-gaps-entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.batch-gaps-entry-top h3 {
+  font-family: var(--font-heading), "Segoe UI", sans-serif;
+  font-size: 1.05rem;
+}
+
+.batch-gap-panel {
+  padding: 16px;
+}
+
+.batch-gap-panel.complete {
+  border-color: rgba(47, 109, 89, 0.24);
+  background: rgba(244, 250, 246, 0.8);
+}
+
+.batch-gap-panel.compact {
+  padding: 12px 14px;
+}
+
+.batch-gap-header {
+  margin-bottom: 12px;
+}
+
+.batch-gap-title {
+  font-family: var(--font-heading), "Segoe UI", sans-serif;
+  font-weight: 700;
+}
+
+.batch-gap-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.batch-gap-group h4 {
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+  color: #314137;
+}
+
+.batch-gap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.batch-gap-list li {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr auto;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.batch-gap-item-label {
+  font-weight: 700;
+}
+
+.batch-gap-file {
+  border-radius: 8px;
+  padding: 4px 8px;
+  background: rgba(47, 66, 58, 0.06);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.batch-gap-panel.compact .batch-gap-header,
+.batch-gap-panel.compact .batch-gap-copy {
+  display: none;
+}
+
+.batch-gap-panel.compact .batch-gap-list li {
+  grid-template-columns: minmax(100px, 150px) 1fr;
+}
+
+.batch-gap-panel.compact .batch-gap-file {
+  grid-column: 1 / -1;
 }
 
 .hero-card,

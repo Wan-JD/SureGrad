@@ -22,6 +22,10 @@ class AppRouter {
 
   final AppBootstrap _bootstrap;
 
+  /// Cold start: logged-in users land on home; guests land on the schools tab.
+  String get initialRoute =>
+      _bootstrap.sessionStore.isLoggedIn ? AppRoutes.home : AppRoutes.schools;
+
   Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.splash:

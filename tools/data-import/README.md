@@ -305,7 +305,8 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 
 推荐按以下顺序继续：
 
-1. 继续采第二个真实批次，或者补齐 `ecust-cs-2024` 缺失模板。
+1. 第二批次骨架：`collected/sufe-finance-2024`（`config.collected-sufe-finance-2024.yaml` 可 dry-run）；入库前需补全分数线与缺失模板。
+2. 继续补齐 `ecust-cs-2024` / `sufe-finance-2024` 缺失模板并复核数字字段。
 2. 每个批次都要保留来源链接、核验时间和批次 README。
 3. 采集完成后至少跑一次 `run_import.ps1`，让 `import-report.json` 和 `import-report.md` 一起沉淀下来。
 4. 后续补正式导入器时，保持 `schema.sql` 作为字段与约束的事实来源。

@@ -1,13 +1,28 @@
+import { CollectedBatchGapsBanner } from "@/components/batch-missing-templates";
 import { OperationsWorkspace } from "@/components/operations-workspace";
 import { getAdminOperationsPage } from "@/lib/admin-operations";
-import { buildDynamicFilters, getCollectedYearlyDatasetRecords } from "@/lib/collected-import-batches";
+import {
+  buildDynamicFilters,
+  getCollectedImportBatches,
+  getCollectedYearlyDatasetRecords,
+} from "@/lib/collected-import-batches";
 
 export default async function YearlyDataPage() {
   const page = getAdminOperationsPage("yearly-data");
-  const yearlyRecords = await getCollectedYearlyDatasetRecords();
+  const [collectedBatches, yearlyRecords] = await Promise.all([
+    getCollectedImportBatches(),
+    getCollectedYearlyDatasetRecords(),
+  ]);
 
   return (
-    <OperationsWorkspace
+    <div className="page-stack">
+      <CollectedBatchGapsBanner
+        batches={collectedBatches}
+        focusCategories={["yearly"]}
+        title="年度数据 CSV 缺口"
+        description="只列出影响招生计划、分数线、报录比与复试统计的待补模板。补齐后对应页签会自动出现真实批次数据。"
+      />
+      <OperationsWorkspace
       page={{
         ...page,
         description:
@@ -26,6 +41,7 @@ export default async function YearlyDataPage() {
           };
         }),
       }}
-    />
+      />
+    </div>
   );
 }

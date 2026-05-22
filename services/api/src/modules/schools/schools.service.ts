@@ -6,6 +6,7 @@ import {
 import { QuerySchoolDetailDto } from './dto/query-school-detail.dto';
 import { QuerySchoolProgramsDto } from './dto/query-school-programs.dto';
 import { QuerySchoolsDto } from './dto/query-schools.dto';
+import { ComparisonItemsRepository } from '../comparison-items/repositories/comparison-items.repository';
 import { FavoritesRepository } from '../favorites/repositories/favorites.repository';
 import { SchoolsRepository } from './repositories/schools.repository';
 
@@ -14,6 +15,7 @@ export class SchoolsService {
   constructor(
     private readonly schoolsRepository: SchoolsRepository,
     private readonly favoritesRepository: FavoritesRepository,
+    private readonly comparisonItemsRepository: ComparisonItemsRepository,
   ) {}
 
   async findAll(query: QuerySchoolsDto, userId?: string) {
@@ -229,6 +231,7 @@ export class SchoolsService {
       applicationSummaries,
       interviewSummaries,
       favoritedProgramIds,
+      comparisonProgramIds,
     ] = await Promise.all([
       this.schoolsRepository.getLatestScoreLineSummaries(
         programIds,
@@ -246,6 +249,12 @@ export class SchoolsService {
         ? this.favoritesRepository.findFavoritedTargetIds(
             userId,
             'program',
+            programIds,
+          )
+        : Promise.resolve(new Set<string>()),
+      userId
+        ? this.comparisonItemsRepository.findComparisonProgramIds(
+            userId,
             programIds,
           )
         : Promise.resolve(new Set<string>()),
@@ -271,7 +280,7 @@ export class SchoolsService {
           interviewSummaries.get(program.id),
         ),
         isFavorited: favoritedProgramIds.has(program.id),
-        isInComparison: false,
+        isInComparison: comparisonProgramIds.has(program.id),
       })),
       pagination: {
         page,

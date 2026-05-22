@@ -1,4 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ComparisonItemsRepository } from '../comparison-items/repositories/comparison-items.repository';
 import { FavoritesRepository } from '../favorites/repositories/favorites.repository';
 import { SchoolsRepository } from './repositories/schools.repository';
 import { SchoolsService } from './schools.service';
@@ -8,6 +9,22 @@ describe('SchoolsService', () => {
     ({
       findFavoritedTargetIds: jest.fn().mockResolvedValue(new Set<string>()),
     }) as unknown as jest.Mocked<FavoritesRepository>;
+
+  const createComparisonItemsRepositoryMock = () =>
+    ({
+      findComparisonProgramIds: jest.fn().mockResolvedValue(new Set<string>()),
+    }) as unknown as jest.Mocked<ComparisonItemsRepository>;
+
+  const createService = (
+    schoolsRepository: jest.Mocked<SchoolsRepository>,
+    favoritesRepository = createFavoritesRepositoryMock(),
+    comparisonItemsRepository = createComparisonItemsRepositoryMock(),
+  ) =>
+    new SchoolsService(
+      schoolsRepository,
+      favoritesRepository,
+      comparisonItemsRepository,
+    );
 
   const createSchoolsRepositoryMock = () =>
     ({
@@ -82,10 +99,7 @@ describe('SchoolsService', () => {
         ]),
       );
 
-    const service = new SchoolsService(
-      schoolsRepository,
-      createFavoritesRepositoryMock(),
-    );
+    const service = createService(schoolsRepository);
     const result = await service.findAll({
       q: 'Computer',
       page: 1,
@@ -143,10 +157,7 @@ describe('SchoolsService', () => {
       .fn()
       .mockResolvedValue(new Map());
 
-    const service = new SchoolsService(
-      schoolsRepository,
-      createFavoritesRepositoryMock(),
-    );
+    const service = createService(schoolsRepository);
     const result = await service.findOne('school-1', {});
 
     expect(result).toMatchObject({
@@ -196,10 +207,7 @@ describe('SchoolsService', () => {
       .fn()
       .mockResolvedValue(new Map());
 
-    const service = new SchoolsService(
-      schoolsRepository,
-      createFavoritesRepositoryMock(),
-    );
+    const service = createService(schoolsRepository);
     const result = await service.findPrograms('school-1', {
       departmentId: 'dept-1',
       page: 1,
@@ -209,6 +217,7 @@ describe('SchoolsService', () => {
     expect(result.items[0]).toMatchObject({
       programId: 'program-1',
       programName: 'Computer Science',
+      isInComparison: false,
     });
 
     schoolsRepository.findDepartmentById = jest.fn().mockResolvedValue({
@@ -225,14 +234,88 @@ describe('SchoolsService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('marks programs in the user comparison pool', async () => {
+    const schoolsRepository = createSchoolsRepositoryMock();
+    schoolsRepository.findSchoolById = jest.fn().mockResolvedValue({
+      id: 'school-1',
+    });
+    schoolsRepository.getSchoolPrograms = jest.fn().mockResolvedValue({
+      items: [
+        {
+          id: 'program-1',
+          name: 'Computer Science',
+          code: '0812',
+          departmentId: 'dept-1',
+          department: { name: 'Engineering' },
+          degreeType: 'academic',
+          disciplineCategory: 'engineering',
+          researchDirection: 'AI',
+        },
+        {
+          id: 'program-2',
+          name: 'Software Engineering',
+          code: '0813',
+          departmentId: 'dept-1',
+          department: { name: 'Engineering' },
+          degreeType: 'academic',
+          disciplineCategory: 'engineering',
+          researchDirection: null,
+        },
+      ],
+      total: 2,
+    });
+    schoolsRepository.getLatestScoreLineSummaries = jest
+      .fn()
+      .mockResolvedValue(new Map());
+    schoolsRepository.getLatestApplicationRatioSummaries = jest
+      .fn()
+      .mockResolvedValue(new Map());
+    schoolsRepository.getLatestInterviewRatioSummaries = jest
+      .fn()
+      .mockResolvedValue(new Map());
+
+    const comparisonItemsRepository = createComparisonItemsRepositoryMock();
+    const findComparisonProgramIds = jest
+      .fn()
+      .mockResolvedValue(new Set(['program-1']));
+    comparisonItemsRepository.findComparisonProgramIds =
+      findComparisonProgramIds;
+
+    const service = createService(
+      schoolsRepository,
+      createFavoritesRepositoryMock(),
+      comparisonItemsRepository,
+    );
+    const result = await service.findPrograms(
+      'school-1',
+      {
+        page: 1,
+        pageSize: 20,
+      },
+      'user-1',
+    );
+
+    expect(findComparisonProgramIds).toHaveBeenCalledWith('user-1', [
+      'program-1',
+      'program-2',
+    ]);
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        programId: 'program-1',
+        isInComparison: true,
+      }),
+      expect.objectContaining({
+        programId: 'program-2',
+        isInComparison: false,
+      }),
+    ]);
+  });
+
   it('throws not found when the school does not exist', async () => {
     const schoolsRepository = createSchoolsRepositoryMock();
     schoolsRepository.findSchoolById = jest.fn().mockResolvedValue(null);
 
-    const service = new SchoolsService(
-      schoolsRepository,
-      createFavoritesRepositoryMock(),
-    );
+    const service = createService(schoolsRepository);
 
     await expect(service.findOne('missing-school', {})).rejects.toBeInstanceOf(
       NotFoundException,

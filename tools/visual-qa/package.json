@@ -1,0 +1,8 @@
+{
+  "name": "@suregrad/visual-qa",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.52.0"
+  }
+}

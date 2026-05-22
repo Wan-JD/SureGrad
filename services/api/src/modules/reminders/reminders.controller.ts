@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -42,6 +43,7 @@ export class RemindersController {
   }
 
   @Delete(':reminderId')
+  @HttpCode(204)
   remove(
     @CurrentUser() user: AuthUser,
     @Param('reminderId') reminderId: string,

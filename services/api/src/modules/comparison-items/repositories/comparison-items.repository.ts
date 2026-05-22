@@ -77,6 +77,27 @@ export class ComparisonItemsRepository {
     });
   }
 
+  async findComparisonProgramIds(
+    userId: string,
+    programIds: string[],
+  ): Promise<Set<string>> {
+    if (programIds.length === 0) {
+      return new Set();
+    }
+
+    const rows = await this.comparisonItemsRepository
+      .createQueryBuilder('comparisonItem')
+      .select('comparisonItem.targetId', 'targetId')
+      .where('comparisonItem.userId = :userId', { userId })
+      .andWhere('comparisonItem.targetType = :targetType', {
+        targetType: 'program',
+      })
+      .andWhere('comparisonItem.targetId IN (:...programIds)', { programIds })
+      .getRawMany<{ targetId: string }>();
+
+    return new Set(rows.map((row) => row.targetId));
+  }
+
   findProgramById(programId: string) {
     return this.programsRepository
       .createQueryBuilder('program')

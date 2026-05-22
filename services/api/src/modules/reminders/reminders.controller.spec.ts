@@ -29,6 +29,12 @@ describe('RemindersController', () => {
     reminderId: string;
     isEnabled: boolean;
   };
+  type ReminderCreateBody = {
+    reminderId: string;
+    reminderType: 'study' | 'todo';
+    remindAt: string;
+    isEnabled: boolean;
+  };
 
   const getHttpServer = (app: { getHttpServer: () => unknown }): HttpServer =>
     app.getHttpServer() as HttpServer;
@@ -42,7 +48,7 @@ describe('RemindersController', () => {
       reminderType: 'system',
       title: '系统节点',
       content: '报名快截止了',
-      remindAt: '2026-05-19T08:00:00.000Z',
+      remindAt: '2027-05-19T08:00:00.000Z',
       isEnabled: true,
       isSystemDefault: true,
       relatedTargetType: null,
@@ -55,7 +61,7 @@ describe('RemindersController', () => {
       reminderType: 'study',
       title: '晚间复盘',
       content: '记得整理错题',
-      remindAt: '2026-05-18T12:00:00.000Z',
+      remindAt: '2027-05-18T12:00:00.000Z',
       isEnabled: true,
       isSystemDefault: false,
       relatedTargetType: 'plan',
@@ -68,7 +74,7 @@ describe('RemindersController', () => {
       reminderType: 'todo',
       title: '别人提醒',
       content: '不该返回',
-      remindAt: '2026-05-18T13:00:00.000Z',
+      remindAt: '2027-05-18T13:00:00.000Z',
       isEnabled: true,
       isSystemDefault: false,
       relatedTargetType: 'todo',
@@ -140,6 +146,60 @@ describe('RemindersController', () => {
                 ...mutableItems[index],
                 isEnabled: params.isEnabled,
               };
+            }
+            return Promise.resolve();
+          },
+        ),
+      findReminderByTypeAndRemindAt: jest
+        .fn<RemindersRepository['findReminderByTypeAndRemindAt']>()
+        .mockImplementation(
+          (ownerId: string, reminderType: 'study' | 'todo', remindAt: string) =>
+            Promise.resolve(
+              mutableItems.find(
+                (item) =>
+                  item.userId === ownerId &&
+                  item.reminderType === reminderType &&
+                  item.remindAt === remindAt,
+              ) ?? null,
+            ),
+        ),
+      createReminder: jest
+        .fn<RemindersRepository['createReminder']>()
+        .mockImplementation(
+          (params: Parameters<RemindersRepository['createReminder']>[0]) => {
+            mutableItems.push({
+              reminderId: params.reminderId,
+              userId: params.userId,
+              reminderType: params.reminderType,
+              title: params.title,
+              content: params.content,
+              remindAt: params.remindAt,
+              isEnabled: params.isEnabled,
+              isSystemDefault: false,
+              relatedTargetType: params.relatedTargetType,
+              relatedTargetId: params.relatedTargetId,
+              createdAt: new Date().toISOString(),
+            });
+
+            return Promise.resolve({
+              reminderId: params.reminderId,
+              reminderType: params.reminderType,
+              remindAt: params.remindAt,
+              isEnabled: params.isEnabled,
+            });
+          },
+        ),
+      deleteReminder: jest
+        .fn<RemindersRepository['deleteReminder']>()
+        .mockImplementation(
+          (params: Parameters<RemindersRepository['deleteReminder']>[0]) => {
+            const index = mutableItems.findIndex(
+              (item) =>
+                item.reminderId === params.reminderId &&
+                item.userId === params.userId,
+            );
+            if (index >= 0) {
+              mutableItems.splice(index, 1);
             }
             return Promise.resolve();
           },
@@ -285,6 +345,116 @@ describe('RemindersController', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(400);
+
+    await app.close();
+  });
+
+  it('creates a custom reminder for the current user', async () => {
+    const repository = createRepositoryMock();
+    const { app, tokenService } = await createApp(repository);
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .post('/api/v1/reminders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        reminderType: 'todo',
+        title: ' 晨间背诵 ',
+        content: '背 50 个单词',
+        remindAt: '2027-06-01T08:00:00.000Z',
+        isEnabled: true,
+      })
+      .expect(201)
+      .expect(({ body }: { body: ReminderCreateBody }) => {
+        expect(body).toMatchObject({
+          reminderType: 'todo',
+          remindAt: '2027-06-01T08:00:00.000Z',
+          isEnabled: true,
+        });
+        expect(body.reminderId).toEqual(expect.any(String));
+      });
+
+    expect(repository.createReminder.mock.calls).toHaveLength(1);
+
+    await app.close();
+  });
+
+  it('rejects reminder creation with a past remind time', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .post('/api/v1/reminders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        reminderType: 'study',
+        title: '过期提醒',
+        content: '不应创建',
+        remindAt: '2020-01-01T08:00:00.000Z',
+      })
+      .expect(400);
+
+    await app.close();
+  });
+
+  it('rejects duplicate reminders at the same type and time', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .post('/api/v1/reminders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        reminderType: 'study',
+        title: '重复提醒',
+        content: '与已有记录冲突',
+        remindAt: '2027-05-18T12:00:00.000Z',
+      })
+      .expect(409);
+
+    await app.close();
+  });
+
+  it('deletes a custom reminder for the current user', async () => {
+    const repository = createRepositoryMock();
+    const { app, tokenService } = await createApp(repository);
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .delete('/api/v1/reminders/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
+
+    expect(repository.deleteReminder.mock.calls).toContainEqual([
+      {
+        userId,
+        reminderId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      },
+    ]);
+
+    await app.close();
+  });
+
+  it('rejects deleting a system default reminder', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .delete('/api/v1/reminders/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(403);
+
+    await app.close();
+  });
+
+  it('returns not found when deleting a missing reminder', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .delete('/api/v1/reminders/00000000-0000-0000-0000-000000000000')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
 
     await app.close();
   });

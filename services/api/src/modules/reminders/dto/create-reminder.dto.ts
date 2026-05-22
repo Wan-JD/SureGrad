@@ -2,29 +2,38 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 
 export class CreateReminderDto {
+  @IsIn(['study', 'todo'])
+  reminderType!: 'study' | 'todo';
+
   @IsString()
-  @MaxLength(100)
+  @IsNotEmpty()
+  @MaxLength(255)
   title!: string;
 
-  @IsIn(['countdown', 'plan', 'todo', 'custom'])
-  reminderType!: 'countdown' | 'plan' | 'todo' | 'custom';
-
-  @IsOptional()
-  @IsDateString()
-  reminderDate?: string;
-
-  @IsOptional()
   @IsString()
-  @MaxLength(5)
-  reminderTime?: string;
+  @IsNotEmpty()
+  content!: string;
+
+  @IsDateString()
+  remindAt!: string;
 
   @IsOptional()
   @IsBoolean()
   isEnabled?: boolean;
+
+  @IsOptional()
+  @IsIn(['todo', 'plan', 'program', 'other'])
+  relatedTargetType?: 'todo' | 'plan' | 'program' | 'other';
+
+  @IsOptional()
+  @IsUUID()
+  relatedTargetId?: string;
 }

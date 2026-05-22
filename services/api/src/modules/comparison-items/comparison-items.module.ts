@@ -25,5 +25,6 @@ import { ComparisonItemsService } from './comparison-items.service';
   ],
   controllers: [ComparisonItemsController],
   providers: [ComparisonItemsRepository, ComparisonItemsService],
+  exports: [ComparisonItemsRepository],
 })
 export class ComparisonItemsModule {}

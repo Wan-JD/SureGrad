@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { buildSkeletonResponse } from '../../common/utils/build-skeleton-response';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { QueryRemindersDto } from './dto/query-reminders.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
@@ -57,20 +59,48 @@ export class RemindersService {
     };
   }
 
-  create(userId: string, dto: CreateReminderDto) {
-    return buildSkeletonResponse({
-      domain: 'reminders',
-      action: 'create',
-      message:
-        'Reminder creation is scaffolded, but scheduling conflict detection and persistence are still pending.',
-      nextSteps: [
-        'Validate reminder type and timing.',
-        'Persist custom reminders and register downstream scheduling jobs.',
-      ],
-      payload: {
+  async create(userId: string, dto: CreateReminderDto) {
+    const title = dto.title.trim();
+    const content = dto.content.trim();
+    if (!title || !content) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    const remindAt = new Date(dto.remindAt);
+    if (Number.isNaN(remindAt.getTime())) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    if (remindAt.getTime() <= Date.now()) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    const hasRelatedType = dto.relatedTargetType !== undefined;
+    const hasRelatedId = dto.relatedTargetId !== undefined;
+    if (hasRelatedType !== hasRelatedId) {
+      throw new BadRequestException('INVALID_PARAMS');
+    }
+
+    const existingReminder =
+      await this.remindersRepository.findReminderByTypeAndRemindAt(
         userId,
-        ...dto,
-      },
+        dto.reminderType,
+        dto.remindAt,
+      );
+    if (existingReminder) {
+      throw new ConflictException('REMINDER_CONFLICT');
+    }
+
+    return this.remindersRepository.createReminder({
+      reminderId: randomUUID(),
+      userId,
+      reminderType: dto.reminderType,
+      title,
+      content,
+      remindAt: dto.remindAt,
+      isEnabled: dto.isEnabled ?? true,
+      relatedTargetType: dto.relatedTargetType ?? null,
+      relatedTargetId: dto.relatedTargetId ?? null,
     });
   }
 
@@ -106,17 +136,19 @@ export class RemindersService {
     };
   }
 
-  remove(userId: string, reminderId: string) {
-    return buildSkeletonResponse({
-      domain: 'reminders',
-      action: 'remove',
-      message:
-        'Reminder deletion is scaffolded, but delete strategy and scheduler cleanup are still pending.',
-      nextSteps: [
-        'Resolve the reminder record for the current user.',
-        'Delete or archive the reminder and clear scheduler bindings.',
-      ],
-      payload: { userId, reminderId },
-    });
+  async remove(userId: string, reminderId: string) {
+    const reminder = await this.remindersRepository.findReminderByIdForUser(
+      reminderId,
+      userId,
+    );
+    if (!reminder) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    if (reminder.isSystemDefault) {
+      throw new ForbiddenException('FORBIDDEN');
+    }
+
+    await this.remindersRepository.deleteReminder({ userId, reminderId });
   }
 }

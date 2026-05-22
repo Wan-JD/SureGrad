@@ -33,6 +33,30 @@ export interface UpdateReminderEnabledParams {
   isEnabled: boolean;
 }
 
+export interface CreateReminderParams {
+  reminderId: string;
+  userId: string;
+  reminderType: 'study' | 'todo';
+  title: string;
+  content: string;
+  remindAt: string;
+  isEnabled: boolean;
+  relatedTargetType: 'todo' | 'plan' | 'program' | 'other' | null;
+  relatedTargetId: string | null;
+}
+
+export interface CreateReminderResult {
+  reminderId: string;
+  reminderType: 'study' | 'todo';
+  remindAt: string;
+  isEnabled: boolean;
+}
+
+export interface DeleteReminderParams {
+  userId: string;
+  reminderId: string;
+}
+
 @Injectable()
 export class RemindersRepository {
   constructor(private readonly dataSource: DataSource) {}
@@ -134,6 +158,73 @@ export class RemindersRepository {
       .set({
         is_enabled: params.isEnabled,
       })
+      .where('id = :reminderId', { reminderId: params.reminderId })
+      .andWhere('user_id = :userId', { userId: params.userId })
+      .execute();
+  }
+
+  findReminderByTypeAndRemindAt(
+    userId: string,
+    reminderType: 'study' | 'todo',
+    remindAt: string,
+  ): Promise<ReminderRecord | null> {
+    return this.dataSource
+      .createQueryBuilder()
+      .from('reminders', 'reminder')
+      .select([
+        'reminder.id AS "reminderId"',
+        'reminder.user_id AS "userId"',
+        'reminder.reminder_type AS "reminderType"',
+        'reminder.title AS "title"',
+        'reminder.content AS "content"',
+        'reminder.remind_at AS "remindAt"',
+        'reminder.is_enabled AS "isEnabled"',
+        'reminder.is_system_default AS "isSystemDefault"',
+        'reminder.related_target_type AS "relatedTargetType"',
+        'reminder.related_target_id AS "relatedTargetId"',
+        'reminder.created_at AS "createdAt"',
+      ])
+      .where('reminder.user_id = :userId', { userId })
+      .andWhere('reminder.reminder_type = :reminderType', { reminderType })
+      .andWhere('reminder.remind_at = :remindAt', { remindAt })
+      .getRawOne<ReminderRecord>()
+      .then((record) => record ?? null);
+  }
+
+  async createReminder(
+    params: CreateReminderParams,
+  ): Promise<CreateReminderResult> {
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('reminders')
+      .values({
+        id: params.reminderId,
+        user_id: params.userId,
+        reminder_type: params.reminderType,
+        title: params.title,
+        content: params.content,
+        remind_at: params.remindAt,
+        is_enabled: params.isEnabled,
+        is_system_default: false,
+        related_target_type: params.relatedTargetType,
+        related_target_id: params.relatedTargetId,
+      })
+      .execute();
+
+    return {
+      reminderId: params.reminderId,
+      reminderType: params.reminderType,
+      remindAt: params.remindAt,
+      isEnabled: params.isEnabled,
+    };
+  }
+
+  async deleteReminder(params: DeleteReminderParams): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('reminders')
       .where('id = :reminderId', { reminderId: params.reminderId })
       .andWhere('user_id = :userId', { userId: params.userId })
       .execute();
