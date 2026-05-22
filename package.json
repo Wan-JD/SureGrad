@@ -24,6 +24,7 @@
     "db:import:ecust": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-ecust-cs-2024.yaml --report-dir tools/data-import/.out/reports/ecust-cs-2024",
     "db:seed:ecust": "pnpm db:migrate && pnpm db:import:ecust",
     "db:seed:resources": "python tools/data-import/seed_study_resources.py",
-    "db:seed:demo": "pnpm db:seed:ecust && pnpm db:seed:resources"
+    "db:seed:admin": "python tools/data-import/seed_admin_users.py",
+    "db:seed:demo": "pnpm db:seed:ecust && pnpm db:seed:resources && pnpm db:seed:admin"
   }
 }

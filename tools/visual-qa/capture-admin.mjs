@@ -12,7 +12,39 @@ const VIEWPORTS = [
   { key: "mobile", width: 390, height: 844 },
 ];
 
+async function loginAsSuperAdmin(page) {
+  await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
+  await page.waitForSelector(".admin-login-form", { timeout: 15000 });
+  await page.fill('input[name="username"]', "superadmin");
+  await page.fill('input[name="password"]', "super123");
+
+  const loginResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/admin/auth/login") && response.ok(),
+    { timeout: 20000 },
+  );
+
+  await page.click("button.admin-login-submit");
+  await loginResponse;
+
+  await page.waitForURL((url) => url.pathname === "/users", {
+    timeout: 20000,
+  });
+}
+
 const pages = [
+  {
+    name: "admin-users",
+    url: "/users",
+    mustSee: ["用户管理", "App 用户"],
+    waitFor: ".workspace-hero",
+  },
+  {
+    name: "admin-admins",
+    url: "/admins",
+    mustSee: ["管理员账号", "后台账号"],
+    waitFor: ".workspace-hero",
+  },
   {
     name: "admin-home",
     url: "/",
@@ -72,6 +104,8 @@ function waitSelectorsFor(target) {
     ];
   }
   if (
+    target.name === "admin-users" ||
+    target.name === "admin-admins" ||
     target.name === "admin-schools" ||
     target.name === "admin-programs" ||
     target.name === "admin-departments" ||
@@ -99,6 +133,8 @@ async function waitForPageReady(page, target, viewportKey) {
       await page.waitForSelector(selector, {
         timeout:
           target.name === "admin-resources" ||
+          target.name === "admin-users" ||
+          target.name === "admin-admins" ||
           target.name === "admin-schools" ||
           target.name === "admin-programs" ||
           target.name === "admin-departments" ||
@@ -118,6 +154,8 @@ async function waitForPageReady(page, target, viewportKey) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+
+await loginAsSuperAdmin(page);
 
 const failures = [];
 

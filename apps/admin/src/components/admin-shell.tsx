@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useId, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { useAdminAuth } from "@/components/admin-auth-provider";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -10,6 +12,8 @@ type AdminShellProps = {
 const DRAWER_BREAKPOINT = "(max-width: 1080px)";
 
 export function AdminShell({ children }: AdminShellProps) {
+  const pathname = usePathname();
+  const { session, logout, isReady } = useAdminAuth();
   const sidebarId = useId();
   const [navOpen, setNavOpen] = useState(false);
   const [isDrawerMode, setIsDrawerMode] = useState(false);
@@ -55,12 +59,23 @@ export function AdminShell({ children }: AdminShellProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [closeNav, isDrawerMode, navOpen]);
 
+  if (pathname === "/login") {
+    return <>{children}</>;
+  }
+
+  if (!isReady) {
+    return <div className="admin-auth-loading">正在校验登录状态…</div>;
+  }
+
   const shellClassName = [
     "admin-shell",
     isDrawerMode && navOpen ? "admin-shell--nav-open" : "",
   ]
     .filter(Boolean)
     .join(" ");
+
+  const roleLabel =
+    session?.adminUser.role === "super_admin" ? "超级管理员" : "管理员";
 
   return (
     <div className={shellClassName}>
@@ -102,12 +117,18 @@ export function AdminShell({ children }: AdminShellProps) {
               <p className="eyebrow">运营总览</p>
               <h1 className="topbar-title">SureGrad 管理后台</h1>
               <p className="topbar-copy">
-                面向 SureGrad MVP 数据治理场景的运营工作台。当前覆盖学校、院系、专业、年份数据、资料推荐与来源链接
-                六类核心页面，统一承接筛选、列表、详情和导入修订入口，方便后续接入真实 API。
+                已接入登录鉴权：管理员可维护学校与 App 用户；超级管理员还可管理后台账号与角色升降。
               </p>
             </div>
           </div>
-          <div className="topbar-tag">当前状态：运营工作台可演示</div>
+          <div className="topbar-actions">
+            <div className="topbar-tag">
+              {session?.adminUser.displayName ?? "未登录"} · {roleLabel}
+            </div>
+            <button type="button" className="topbar-logout" onClick={logout}>
+              退出登录
+            </button>
+          </div>
         </header>
         <main className="admin-content">{children}</main>
       </div>

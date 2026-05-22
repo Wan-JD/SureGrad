@@ -17,6 +17,7 @@ import { ResourcesModule } from './modules/resources/resources.module';
 import { SchoolsModule } from './modules/schools/schools.module';
 import { TodosModule } from './modules/todos/todos.module';
 import { UsersModule } from './modules/users/users.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UsersModule } from './modules/users/users.module';
     CheckinsModule,
     ResourcesModule,
     RemindersModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

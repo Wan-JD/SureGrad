@@ -1334,6 +1334,138 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
     relatedTables: ["program_source_links", "programs"],
     datasets: [sourceLinksDataset],
   },
+  users: {
+    eyebrow: "用户",
+    title: "用户管理",
+    description: "管理 App 普通用户账号，支持检索、详情查看与启用/停用。",
+    relatedTables: ["users"],
+    datasets: [
+      {
+        id: "app-users",
+        title: "App 用户列表",
+        description: "面向移动端注册用户的运营视图。",
+        tableName: "users",
+        templateName: "app-users",
+        importActions: [],
+        revisionActions: [
+          {
+            label: "启用/停用",
+            description: "在详情区使用下方操作按钮切换账号状态。",
+            tone: "accent",
+          },
+        ],
+        filters: [],
+        columns: [
+          { key: "nickname", label: "昵称" },
+          { key: "phone_masked", label: "手机号" },
+          { key: "status", label: "状态" },
+        ],
+        fields: [
+          {
+            key: "nickname",
+            label: "昵称",
+            type: "text",
+            description: "用户展示名称",
+          },
+          {
+            key: "phone_masked",
+            label: "手机号",
+            type: "text",
+            description: "脱敏手机号",
+          },
+          {
+            key: "status",
+            label: "账号状态",
+            type: "status",
+            description: "启用或停用",
+          },
+          {
+            key: "role",
+            label: "用户类型",
+            type: "text",
+            description: "固定为普通用户",
+          },
+        ],
+        detailSections: [
+          {
+            title: "账号信息",
+            description: "基础账号字段",
+            fields: ["nickname", "phone_masked", "status", "role"],
+          },
+        ],
+        records: [],
+      },
+    ],
+  },
+  staff: {
+    eyebrow: "权限",
+    title: "管理员账号",
+    description: "超级管理员专属：新增后台账号、角色升降与启用/停用。",
+    relatedTables: ["admin_users"],
+    datasets: [
+      {
+        id: "admin-staff",
+        title: "后台账号列表",
+        description: "管理员与超级管理员账号，不混入 App 用户。",
+        tableName: "admin_users",
+        templateName: "admin-staff",
+        importActions: [
+          {
+            label: "新增管理员",
+            description: "在列表上方表单创建新的后台账号。",
+            tone: "accent",
+          },
+        ],
+        revisionActions: [
+          {
+            label: "角色升降",
+            description: "在详情区使用下方操作按钮调整角色或状态。",
+            tone: "accent",
+          },
+        ],
+        filters: [],
+        columns: [
+          { key: "display_name", label: "显示名" },
+          { key: "username", label: "用户名" },
+          { key: "role", label: "角色" },
+        ],
+        fields: [
+          {
+            key: "display_name",
+            label: "显示名",
+            type: "text",
+            description: "后台展示名称",
+          },
+          {
+            key: "username",
+            label: "用户名",
+            type: "text",
+            description: "登录用户名",
+          },
+          {
+            key: "role",
+            label: "后台角色",
+            type: "text",
+            description: "管理员或超级管理员",
+          },
+          {
+            key: "status",
+            label: "账号状态",
+            type: "status",
+            description: "启用或停用",
+          },
+        ],
+        detailSections: [
+          {
+            title: "账号信息",
+            description: "后台账号字段",
+            fields: ["display_name", "username", "role", "status"],
+          },
+        ],
+        records: [],
+      },
+    ],
+  },
 };
 
 export function getAdminOperationsPage(key: keyof typeof adminOperationsPages) {

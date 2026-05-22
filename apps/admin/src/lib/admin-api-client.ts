@@ -1,7 +1,10 @@
+import { getAdminAccessToken } from "@/lib/admin-session";
+
 type QueryPrimitive = string | number | boolean | null | undefined;
 
 type RequestOptions = {
   signal?: AbortSignal;
+  auth?: boolean;
 };
 
 const DEFAULT_API_BASE_URL =
@@ -60,16 +63,39 @@ async function extractErrorMessage(response: Response): Promise<string> {
   }
 }
 
-export async function getAdminJson<T>(
+function buildHeaders(options?: RequestOptions): HeadersInit {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+
+  if (options?.auth !== false) {
+    const token = getAdminAccessToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  return headers;
+}
+
+async function requestAdminJson<T>(
+  method: string,
   pathname: string,
+  body?: unknown,
   query?: Record<string, QueryPrimitive>,
   options?: RequestOptions,
 ): Promise<T> {
+  const headers = buildHeaders(options) as Record<string, string>;
+
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(buildUrl(pathname, query), {
+    method,
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-    },
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
     signal: options?.signal,
   });
 
@@ -78,4 +104,28 @@ export async function getAdminJson<T>(
   }
 
   return (await response.json()) as T;
+}
+
+export async function getAdminJson<T>(
+  pathname: string,
+  query?: Record<string, QueryPrimitive>,
+  options?: RequestOptions,
+): Promise<T> {
+  return requestAdminJson<T>("GET", pathname, undefined, query, options);
+}
+
+export async function postAdminJson<T>(
+  pathname: string,
+  body?: unknown,
+  options?: RequestOptions,
+): Promise<T> {
+  return requestAdminJson<T>("POST", pathname, body, undefined, options);
+}
+
+export async function patchAdminJson<T>(
+  pathname: string,
+  body?: unknown,
+  options?: RequestOptions,
+): Promise<T> {
+  return requestAdminJson<T>("PATCH", pathname, body, undefined, options);
 }

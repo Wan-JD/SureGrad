@@ -7,6 +7,12 @@ export type AdminNavItem = {
 
 export const adminNavigation: AdminNavItem[] = [
   {
+    href: "/users",
+    label: "用户管理",
+    shortLabel: "用户",
+    description: "管理 App 普通用户账号，支持检索、详情查看与启用/停用。",
+  },
+  {
     href: "/schools",
     label: "学校管理",
     shortLabel: "学校",
@@ -42,5 +48,14 @@ export const adminNavigation: AdminNavItem[] = [
     label: "来源链接",
     shortLabel: "来源",
     description: "维护链接状态、来源类型、发布时间和复核时间。",
+  },
+];
+
+export const superAdminNavigation: AdminNavItem[] = [
+  {
+    href: "/admins",
+    label: "管理员账号",
+    shortLabel: "权限",
+    description: "超级管理员专属：新增后台账号、角色升降与启用/停用。",
   },
 ];

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Noto_Sans_SC } from "next/font/google";
+import { AdminAuthProvider } from "@/components/admin-auth-provider";
 import { AdminShell } from "@/components/admin-shell";
 import "./globals.css";
 
@@ -34,7 +35,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className={`${bodyFont.variable} ${headingFont.variable}`}>
       <body>
-        <AdminShell>{children}</AdminShell>
+        <AdminAuthProvider>
+          <AdminShell>{children}</AdminShell>
+        </AdminAuthProvider>
       </body>
     </html>
   );
