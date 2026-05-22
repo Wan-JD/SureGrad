@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 import 'app/bootstrap/app_bootstrap.dart';
 import 'app/theme/app_theme.dart';
@@ -7,6 +8,7 @@ import 'features/splash/presentation/splash_page.dart';
 /// Web-only entry used by tools/visual-qa to screenshot the guest splash screen.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SemanticsBinding.instance.ensureSemantics();
   final bootstrap = AppBootstrap.create();
 
   runApp(

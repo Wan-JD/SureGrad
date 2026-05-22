@@ -31,6 +31,18 @@ const pages = [
     mustSee: ["资料", "资料推荐"],
     waitFor: ".record-table",
   },
+  {
+    name: "admin-schools",
+    url: "/schools",
+    mustSee: ["学校管理", "学校档案"],
+    waitFor: ".workspace-hero",
+  },
+  {
+    name: "admin-programs",
+    url: "/programs",
+    mustSee: ["专业管理", "专业"],
+    waitFor: ".workspace-hero",
+  },
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -40,6 +52,14 @@ function waitSelectorsFor(target) {
     return [];
   }
   if (target.name === "admin-resources") {
+    return [
+      ".record-table tbody tr",
+      ".record-table",
+      ".record-list-panel",
+      ".workspace-hero",
+    ];
+  }
+  if (target.name === "admin-schools" || target.name === "admin-programs") {
     return [
       ".record-table tbody tr",
       ".record-table",
@@ -60,7 +80,12 @@ async function waitForPageReady(page, target, viewportKey) {
   for (const selector of selectors) {
     try {
       await page.waitForSelector(selector, {
-        timeout: target.name === "admin-resources" ? 25000 : 15000,
+        timeout:
+          target.name === "admin-resources" ||
+          target.name === "admin-schools" ||
+          target.name === "admin-programs"
+            ? 25000
+            : 15000,
         state: "attached",
       });
       return;

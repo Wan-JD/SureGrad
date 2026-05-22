@@ -59,12 +59,66 @@ async function withStaticServer(dir, port, handler) {
 function capturePlansFor(target) {
   const plans = [{ suffix: "", viewport: MOBILE_VIEWPORT }];
   if (
+    target.name === "mobile-guest-schools-tab" ||
+    target.name === "mobile-guest-home-tab" ||
     target.name === "mobile-guest-planning-tab" ||
     target.name === "mobile-guest-resources-tab"
   ) {
     plans.push({ suffix: "-tablet", viewport: TABLET_VIEWPORT });
   }
   return plans;
+}
+
+async function collectPageText(page) {
+  return page.evaluate(() => {
+    const parts = [];
+    for (const element of document.querySelectorAll(
+      "flt-semantics, [aria-label], [role='heading'], [role='button']",
+    )) {
+      const aria = element.getAttribute("aria-label")?.trim();
+      const text = element.textContent?.trim();
+      if (aria) {
+        parts.push(aria);
+      }
+      if (text) {
+        parts.push(text);
+      }
+    }
+    const bodyText = document.body?.innerText?.trim();
+    if (bodyText) {
+      parts.push(bodyText);
+    }
+    return parts.join("\n");
+  });
+}
+
+async function waitForFlutterSurface(page, label) {
+  try {
+    await page.waitForFunction(
+      () => {
+        const semantics = document.querySelectorAll("flt-semantics").length;
+        const text = document.body?.innerText?.trim() ?? "";
+        return semantics > 0 || text.length >= 12;
+      },
+      { timeout: 45000 },
+    );
+  } catch {
+    throw new Error(`${label}: Flutter surface did not render in time`);
+  }
+}
+
+function assertMustSeeAny(text, phrases, label) {
+  const normalized = text.replace(/\s+/g, "");
+  if (normalized.length < 4) {
+    throw new Error(`${label}: blank or white screen`);
+  }
+
+  const matched = phrases.some((phrase) => text.includes(phrase));
+  if (!matched) {
+    throw new Error(
+      `${label}: expected one of [${phrases.join(", ")}], page text was too short or unrelated`,
+    );
+  }
 }
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -77,6 +131,19 @@ run("flutter", ["build", "web", ...apiDefine], mobileDir);
 run(
   "flutter",
   ["build", "web", "-t", "lib/main_visual_qa_splash.dart", "-o", "build/web-splash"],
+  mobileDir,
+);
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
+    "lib/main_visual_qa_home.dart",
+    "-o",
+    "build/web-home",
+    ...apiDefine,
+  ],
   mobileDir,
 );
 run(
@@ -115,46 +182,77 @@ const targets = [
     dir: path.join(mobileDir, "build", "web"),
     port: 7357,
     path: "/",
+    mustSeeAny: ["择校", "院校列表加载失败", "筛选", "先把候选池缩窄"],
   },
   {
     name: "mobile-splash-guest",
     dir: path.join(mobileDir, "build", "web-splash"),
     port: 7358,
     path: "/",
+    mustSeeAny: ["SureGrad", "浏览院校", "登录", "择校"],
+  },
+  {
+    name: "mobile-guest-home-tab",
+    dir: path.join(mobileDir, "build", "web-home"),
+    port: 7361,
+    path: "/",
+    mustSeeAny: ["首页", "首页状态加载失败", "主链路状态", "还没进入主链路"],
   },
   {
     name: "mobile-guest-planning-tab",
     dir: path.join(mobileDir, "build", "web-planning"),
     port: 7359,
     path: "/",
+    mustSeeAny: ["规划", "规划加载失败", "备考阶段", "重试"],
   },
   {
     name: "mobile-guest-resources-tab",
     dir: path.join(mobileDir, "build", "web-resources"),
     port: 7360,
     path: "/",
+    mustSeeAny: ["资料", "备考资料", "资料中心暂时不可用", "重试"],
   },
 ];
+
+const failures = [];
 
 for (const target of targets) {
   await withStaticServer(target.dir, target.port, async (baseUrl) => {
     for (const plan of capturePlansFor(target)) {
-      await page.setViewportSize({
-        width: plan.viewport.width,
-        height: plan.viewport.height,
-      });
-      await page.goto(`${baseUrl}${target.path}`, {
-        waitUntil: "networkidle",
-        timeout: 90000,
-      });
-      await page.waitForTimeout(5000);
-      await page.screenshot({
-        path: path.join(outDir, `${target.name}${plan.suffix}.png`),
-        fullPage: true,
-      });
+      const label = `${target.name}${plan.suffix}`;
+      try {
+        await page.setViewportSize({
+          width: plan.viewport.width,
+          height: plan.viewport.height,
+        });
+        await page.goto(`${baseUrl}${target.path}`, {
+          waitUntil: "networkidle",
+          timeout: 90000,
+        });
+        await waitForFlutterSurface(page, label);
+        await page.waitForTimeout(1500);
+
+        const text = await collectPageText(page);
+        if (target.mustSeeAny) {
+          assertMustSeeAny(text, target.mustSeeAny, label);
+        }
+
+        await page.screenshot({
+          path: path.join(outDir, `${label}.png`),
+          fullPage: true,
+        });
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : String(error));
+      }
     }
   });
 }
 
 await browser.close();
+
+if (failures.length > 0) {
+  console.error("Mobile visual QA failed:\n" + failures.join("\n"));
+  process.exit(1);
+}
+
 console.log(`Mobile visual screenshots saved to ${outDir}`);
