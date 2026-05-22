@@ -1628,6 +1628,11 @@
 
 公开 `GET /schools` 仍仅返回 `active` 且未软删学校；停用后前台不可见。
 
+### 19.5 院系档案（管理员+，只读）
+
+- `GET /admin/departments`：运营列表，支持 `keyword`、`schoolId`、`status`、`page`、`pageSize`；响应含 `schoolName` 便于阅读
+- `GET /admin/departments/{departmentId}`：院系详情（含所属学校摘要）
+
 ## 20. 待确认接口问题
 
 以下问题建议在后端实现前由产品、客户端、后端共同确认：
