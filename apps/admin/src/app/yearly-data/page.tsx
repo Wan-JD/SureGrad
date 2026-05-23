@@ -33,8 +33,8 @@ export default async function YearlyDataPage() {
           return {
             ...dataset,
             description:
-              dataset.tableName === "program_score_lines"
-                ? "当前页签展示已采集真实批次中的分数线数据。"
+              (yearlyRecords[dataset.tableName] ?? []).length > 0
+                ? "当前页签展示已采集真实批次中的年度数据。"
                 : "当前页签暂未录入真实批次，后续采集完成后会直接在这里出现。",
             filters: buildDynamicFilters(dataset, records, ["exam_year", "source_confidence"]),
             records,

@@ -54,6 +54,8 @@ export default async function Home() {
       summary.programs += batch.counts.programs;
       summary.sourceLinks += batch.counts.sourceLinks;
       summary.scoreLines += batch.counts.scoreLines;
+      summary.admissions += batch.counts.admissions;
+      summary.examSubjects += batch.counts.examSubjects;
 
       for (const year of batch.years) {
         summary.years.add(year);
@@ -69,6 +71,8 @@ export default async function Home() {
       programs: 0,
       sourceLinks: 0,
       scoreLines: 0,
+      admissions: 0,
+      examSubjects: 0,
       missingCsv: 0,
       years: new Set<number>(),
     },
@@ -160,6 +164,14 @@ export default async function Home() {
           <article className="summary-chip">
             <strong>{collectedStats.scoreLines}</strong>
             <span>分数线记录</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.admissions}</strong>
+            <span>招生计划</span>
+          </article>
+          <article className="summary-chip">
+            <strong>{collectedStats.examSubjects}</strong>
+            <span>初试科目</span>
           </article>
           <article className="summary-chip">
             <strong>{collectedStats.years.size}</strong>

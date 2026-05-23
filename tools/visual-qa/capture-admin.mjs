@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+﻿import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -36,55 +36,55 @@ const pages = [
   {
     name: "admin-users",
     url: "/users",
-    mustSee: ["用户管理", "App 用户"],
+    mustSee: ["鐢ㄦ埛绠＄悊", "App 鐢ㄦ埛"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-admins",
     url: "/admins",
-    mustSee: ["管理员账号", "后台账号"],
+    mustSee: ["绠＄悊鍛樿处鍙?, "鍚庡彴璐﹀彿"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-home",
     url: "/",
-    mustSee: ["用户管理", "App 用户"],
+    mustSee: ["鐢ㄦ埛绠＄悊", "App 鐢ㄦ埛"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-yearly-data",
     url: "/yearly-data",
-    mustSee: ["年度数据 CSV 缺口", "采集缺口", "待补 CSV"],
+    mustSee: ["骞村害鏁版嵁 CSV 缂哄彛", "鎷涚敓璁″垝", "鍒嗘暟绾?, "鍗庝笢鐞嗗伐"],
     waitFor: ".batch-gaps-banner",
   },
   {
     name: "admin-resources",
     url: "/resources",
-    mustSee: ["资料", "资料推荐"],
+    mustSee: ["璧勬枡", "璧勬枡鎺ㄨ崘"],
     waitFor: ".record-table",
   },
   {
     name: "admin-schools",
     url: "/schools",
-    mustSee: ["学校管理", "写接口"],
+    mustSee: ["瀛︽牎绠＄悊", "鍐欐帴鍙?],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-programs",
     url: "/programs",
-    mustSee: ["专业管理", "专业"],
+    mustSee: ["涓撲笟绠＄悊", "涓撲笟"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-departments",
     url: "/departments",
-    mustSee: ["院系管理", "院系列表", "信息科学", "华东理工"],
+    mustSee: ["闄㈢郴绠＄悊", "闄㈢郴鍒楄〃", "淇℃伅绉戝", "鍗庝笢鐞嗗伐"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-source-links",
     url: "/source-links",
-    mustSee: ["来源链接管理", "来源链接"],
+    mustSee: ["鏉ユ簮閾炬帴绠＄悊", "鏉ユ簮閾炬帴"],
     waitFor: ".workspace-hero",
   },
 ];

@@ -19,7 +19,10 @@ export type CollectedBatchSummary = {
     schools: number;
     departments: number;
     programs: number;
+    admissions: number;
     scoreLines: number;
+    interviewStats: number;
+    examSubjects: number;
     sourceLinks: number;
   };
   missingTemplates: string[];
@@ -31,6 +34,7 @@ const trackedTemplates = [
   "schools.csv",
   "departments.csv",
   "programs.csv",
+  "subjects.csv",
   "program_admissions.csv",
   "program_score_lines.csv",
   "program_application_stats.csv",
@@ -39,6 +43,10 @@ const trackedTemplates = [
   "program_reference_books.csv",
   "program_source_links.csv",
 ] as const;
+
+function formatProgramRef(row: CsvRow): string {
+  return `${row.school_name} / ${row.department_name} / ${row.program_name} (${row.program_code})`;
+}
 
 function parseCsv(content: string): CsvRow[] {
   const lines = content
@@ -117,12 +125,25 @@ async function readBatchSummary(batchDirectoryName: string): Promise<CollectedBa
     .map((entry) => entry.name)
     .sort();
 
-  const [readme, schools, departments, programs, scoreLines, sourceLinks] = await Promise.all([
+  const [
+    readme,
+    schools,
+    departments,
+    programs,
+    admissions,
+    scoreLines,
+    interviewStats,
+    examSubjects,
+    sourceLinks,
+  ] = await Promise.all([
     readBatchReadme(batchPath),
     readCsvFile(batchPath, "schools.csv"),
     readCsvFile(batchPath, "departments.csv"),
     readCsvFile(batchPath, "programs.csv"),
+    readCsvFile(batchPath, "program_admissions.csv"),
     readCsvFile(batchPath, "program_score_lines.csv"),
+    readCsvFile(batchPath, "program_interview_stats.csv"),
+    readCsvFile(batchPath, "program_exam_subjects.csv"),
     readCsvFile(batchPath, "program_source_links.csv"),
   ]);
 
@@ -132,7 +153,10 @@ async function readBatchSummary(batchDirectoryName: string): Promise<CollectedBa
     ...programs.map((row) => row.school_name),
   ]);
   const years = toNumberSet([
+    ...admissions.map((row) => row.exam_year),
     ...scoreLines.map((row) => row.exam_year),
+    ...interviewStats.map((row) => row.exam_year),
+    ...examSubjects.map((row) => row.exam_year),
     ...sourceLinks.map((row) => row.exam_year),
   ]);
 
@@ -148,7 +172,10 @@ async function readBatchSummary(batchDirectoryName: string): Promise<CollectedBa
       schools: schools.length,
       departments: departments.length,
       programs: programs.length,
+      admissions: admissions.length,
       scoreLines: scoreLines.length,
+      interviewStats: interviewStats.length,
+      examSubjects: examSubjects.length,
       sourceLinks: sourceLinks.length,
     },
     missingTemplates: trackedTemplates.filter((template) => !csvFiles.includes(template)),
@@ -223,32 +250,76 @@ export async function getCollectedSourceLinkRecords(): Promise<AdminRecord[]> {
 
 export async function getCollectedYearlyDatasetRecords(): Promise<Record<string, AdminRecord[]>> {
   const batches = await getCollectedImportBatches();
-  const scoreLineGroups = await Promise.all(
-    batches.map(async (batch) => {
-      const rows = await readCsvFile(path.join(collectedRoot, batch.id), "program_score_lines.csv");
-      return rows.map<AdminRecord>((row, index) => ({
-        id: `${batch.id}:score-line:${index + 1}`,
-        program_id: `${row.school_name} / ${row.department_name} / ${row.program_name} (${row.program_code})`,
-        exam_year: Number(row.exam_year),
-        score_line_type: row.score_line_type,
-        total_score: Number(row.total_score),
-        politics_score: Number(row.politics_score),
-        english_score: Number(row.english_score),
-        subject_one_score: Number(row.subject_one_score),
-        subject_two_score: Number(row.subject_two_score),
-        notes: row.notes || `采集批次: ${batch.id}`,
-        source_confidence: row.source_confidence,
-        created_at: batch.collectedAt ?? null,
-        updated_at: batch.collectedAt ?? null,
-      }));
-    }),
-  );
+
+  const [admissionGroups, scoreLineGroups, interviewGroups] = await Promise.all([
+    Promise.all(
+      batches.map(async (batch) => {
+        const rows = await readCsvFile(path.join(collectedRoot, batch.id), "program_admissions.csv");
+        return rows.map<AdminRecord>((row, index) => ({
+          id: `${batch.id}:admission:${index + 1}`,
+          program_id: formatProgramRef(row),
+          exam_year: Number(row.exam_year),
+          planned_enrollment: Number(row.planned_enrollment),
+          recommended_exemption_count: Number(row.recommended_exemption_count || 0),
+          unified_exam_quota: Number(row.unified_exam_quota || 0),
+          actual_enrollment: row.actual_enrollment ? Number(row.actual_enrollment) : null,
+          is_cross_major_allowed: row.is_cross_major_allowed || null,
+          memo: row.memo || `采集批次: ${batch.id}`,
+          source_confidence: row.source_confidence,
+          created_at: batch.collectedAt ?? null,
+          updated_at: batch.collectedAt ?? null,
+        }));
+      }),
+    ),
+    Promise.all(
+      batches.map(async (batch) => {
+        const rows = await readCsvFile(path.join(collectedRoot, batch.id), "program_score_lines.csv");
+        return rows.map<AdminRecord>((row, index) => ({
+          id: `${batch.id}:score-line:${index + 1}`,
+          program_id: formatProgramRef(row),
+          exam_year: Number(row.exam_year),
+          score_line_type: row.score_line_type,
+          total_score: Number(row.total_score),
+          politics_score: Number(row.politics_score),
+          english_score: Number(row.english_score),
+          subject_one_score: Number(row.subject_one_score),
+          subject_two_score: Number(row.subject_two_score),
+          notes: row.notes || `采集批次: ${batch.id}`,
+          source_confidence: row.source_confidence,
+          created_at: batch.collectedAt ?? null,
+          updated_at: batch.collectedAt ?? null,
+        }));
+      }),
+    ),
+    Promise.all(
+      batches.map(async (batch) => {
+        const rows = await readCsvFile(path.join(collectedRoot, batch.id), "program_interview_stats.csv");
+        return rows.map<AdminRecord>((row, index) => ({
+          id: `${batch.id}:interview:${index + 1}`,
+          program_id: formatProgramRef(row),
+          exam_year: Number(row.exam_year),
+          retest_candidate_count: Number(row.retest_candidate_count),
+          final_admitted_count: Number(row.final_admitted_count),
+          interview_ratio: Number(row.interview_ratio),
+          retest_weight: Number(row.retest_weight),
+          initial_exam_weight: Number(row.initial_exam_weight),
+          notes: row.notes || `采集批次: ${batch.id}`,
+          source_confidence: row.source_confidence,
+          created_at: batch.collectedAt ?? null,
+          updated_at: batch.collectedAt ?? null,
+        }));
+      }),
+    ),
+  ]);
+
+  const sortByYearDesc = (left: AdminRecord, right: AdminRecord) =>
+    Number(right.exam_year) - Number(left.exam_year);
 
   return {
-    "program_admissions": [],
-    "program_score_lines": scoreLineGroups.flat().sort((left, right) => Number(right.exam_year) - Number(left.exam_year)),
-    "program_application_stats": [],
-    "program_interview_stats": [],
+    program_admissions: admissionGroups.flat().sort(sortByYearDesc),
+    program_score_lines: scoreLineGroups.flat().sort(sortByYearDesc),
+    program_application_stats: [],
+    program_interview_stats: interviewGroups.flat().sort(sortByYearDesc),
   };
 }
 
