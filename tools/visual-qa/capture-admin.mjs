@@ -48,7 +48,7 @@ const pages = [
   {
     name: "admin-home",
     url: "/",
-    mustSee: ["SureGrad 运营后台工作台", "真实采集批次概览", "待补 CSV 清单"],
+    mustSee: ["SureGrad 运营后台工作台", "真实采集批次概览", "待补 CSV 清单", "上海财经", "华东理工"],
     waitFor: ".home-hero",
   },
   {
@@ -66,7 +66,7 @@ const pages = [
   {
     name: "admin-schools",
     url: "/schools",
-    mustSee: ["学校管理", "写接口"],
+    mustSee: ["学校管理", "写接口", "华东理工", "上海财经"],
     waitFor: ".workspace-hero",
   },
   {

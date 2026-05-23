@@ -179,13 +179,13 @@
 
 ## 10. 当前并行推进线（2026-05-23）
 
-1. **ecust 初试科目**：`subjects.csv` + `program_exam_subjects.csv`（2024：101/201/301/815）已入库；视觉见 `docs/visual-qa/2026-05-23-ecust-exam-subjects-round.md`
-2. **Admin 年度数据读采集**：`/yearly-data` 展示 ecust 招生计划、分数线、复试统计 CSV；首页统计含初试科目条数；见 `docs/visual-qa/2026-05-23-admin-yearly-collected-round.md`
-3. **移动端资料/专业详情**：已对接 Live API；专业详情仍缺报录比（待 `program_application_stats`）
-4. **Admin 院系 Live**：`GET /admin/departments` 只读；视觉见 `docs/visual-qa/2026-05-22-admin-departments-live-round.md`
-5. **视觉验收**：`pnpm verify:visual`；专业详情断言含 `815` / `初试科目`
-6. **备考资料演示**：`pnpm db:seed:demo`；Admin `/resources` Live API
-7. **待补 ecust CSV**：`program_application_stats.csv`、`program_reference_books.csv`（及 `books.csv`）
+1. **双校采集入库**：`ecust-cs-2024`（完整度较高）+ `sufe-finance-2024`（骨架）均已可 `pnpm db:seed:collected` 导入；移动端择校列表应出现华东理工 + 上海财经。
+2. **ecust 初试科目**：101/201/301/815 已入库；待补报录比、参考书 CSV。
+3. **Admin 年度数据读采集**：`/yearly-data` 展示 ecust 招生计划/分数线/复试；sufe 仅骨架分数线占位。
+4. **Admin / Mobile Live**：院系、学校、专业、资料等页已接 API；专业对比仍依赖登录用户对比池（空态为正常游客态）。
+5. **视觉验收**：择校 Tab 断言含双校名；Admin 学校页含双校。
+6. **备考资料演示**：`pnpm db:seed:demo` = collected + resources + admin。
+7. **待补模板**：ecust 的 `program_application_stats`、`program_reference_books`；sufe 的年度/科目/招生等全套模板。
 
 ## 11. 下一步工作建议
 

@@ -8,4 +8,4 @@ alwaysApply: true
 1. 优先完善系统骨架与联调；非用户明确要求时不扩大数据采集。
 2. 每轮由主控执行 `pnpm verify:*` 与 `pnpm verify:visual`，审阅 `docs/.visual-qa/` 截图并写 `docs/visual-qa/` 记录。
 3. 实现工作分给子 agent；主控负责分工、验收、文档同步与合格后 push。
-4. 推送 GitHub：提交信息可用中文；禁止任何 AI/agent 署名、`Co-authored-by` 或签名；优先 `git.exe commit -F <message-file>`。
+4. 推送 GitHub：提交信息可用中文；**硬性禁止** Cursor/AI 署名（见 `git-commits.mdc`，提交后须 `git log -1` 复核）；优先 `git.exe commit -F <message-file>`。

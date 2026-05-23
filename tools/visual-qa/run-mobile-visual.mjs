@@ -272,7 +272,7 @@ const targets = [
     dir: path.join(mobileDir, "build", "web"),
     port: 7357,
     path: "/",
-    mustSeeAny: ["择校", "院校列表加载失败", "筛选", "先把候选池缩窄"],
+    mustSeeAny: ["择校", "院校列表加载失败", "筛选", "先把候选池缩窄", "华东理工", "上海财经"],
   },
   {
     name: "mobile-splash-guest",

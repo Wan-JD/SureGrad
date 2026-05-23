@@ -1,10 +1,34 @@
 ---
-description: Git commit rules for this repository
+description: 禁止 Cursor/AI 署名；Git 提交仅用用户 GitHub 身份（硬性约定，勿与「是否 commit」混淆）
 alwaysApply: true
 ---
 
-# Git commits
+# Git 提交与署名（硬性约定）
 
-- Never add `Co-authored-by: Cursor`, `Co-authored-by:`, or any AI/agent attribution to commit messages.
-- Use the user's identity only. When committing from automation, prefer `git.exe commit -F <message-file>` or `git commit-tree` if hooks inject agent trailers.
-- Do not use `--no-verify` unless fixing an unwanted agent trailer hook.
+## 禁止项（任何情况下都不做）
+
+1. **禁止**在提交信息中出现 `Co-authored-by: Cursor`、`Co-authored-by: cursoragent@cursor.com`，或任何 AI/agent/Cursor 相关署名、签名、Trailer。
+2. **禁止**在 PR 描述、changelog、或向用户展示的「建议 commit message」里附带上述署名。
+3. **禁止**把「用户未要求 commit」与「可以带 Cursor 署名」混为一谈——**是否提交**由用户/任务决定；**一旦提交**也必须零 AI 署名。
+
+## 作者身份（本仓库）
+
+- 提交作者必须是 **仓库主人的 GitHub 身份**，不是 Gitee/本地随意邮箱。
+- 本仓库已配置示例：`万骏頔 <154341837+Wan-JD@users.noreply.github.com>`（仅作识别，勿改全局 git config，用 `--local` 或单次 `-c user.name/email`）。
+- 推送使用 **`gh auth`** / GitHub HTTPS，不要用已泄露或聊天中的 token 写进仓库。
+
+## 推荐提交流程
+
+1. 用 **UTF-8 无 BOM** 的消息文件，例如 `.git/COMMIT_MSG.txt`。
+2. 优先：`git.exe commit -F <消息文件>`（避免 shell 转义问题）。
+3. 若 Cursor/钩子自动注入 `Co-authored-by`：可用 `git.exe commit -F <消息文件> --no-verify` **仅用于去掉 agent trailer**，提交后必须复核。
+4. 提交后立刻检查：`git log -1 --format=%B`，确认无 `Co-authored-by`；若有，**修正后再 push**（必要时 `rebase`/`commit --amend` + `--force-with-lease`，并先征得用户对改历史的同意）。
+
+## 与「用户规则：未要求不 commit」的关系
+
+- 用户未明确要求时：**不要**创建 commit。
+- 用户或协作规则（如 `visual-qa-and-push.mdc`）明确要求提交/推送时：**仍必须**遵守本节零署名约定。
+
+## 历史污染处理
+
+- 若发现 `main` 上已有带 Cursor 署名的提交：按用户要求用 **重写历史 + force-with-lease** 清理，重提时只用 GitHub 身份与干净 message。
