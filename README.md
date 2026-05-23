@@ -1,173 +1,156 @@
 # SureGrad
 
-中文品牌名可用于产品展示：`一研为定`
+中文品牌名：**一研为定**
 
-SureGrad 是一个 Android-first 的考研备考产品，当前 MVP 核心闭环是：
+面向考研学子的备考产品（Android 优先）。MVP 主闭环：
 
-`查院校 -> 收藏对比 -> 设定目标 -> 生成学习计划 -> 执行 Todo -> 打卡复盘`
+**查院校 → 收藏对比 → 设定目标 → 学习计划 → Todo → 打卡复盘**
 
-## 先读这里
+本仓库是 SureGrad 的 **monorepo**：移动端、管理后台、后端 API、数据采集工具链与产品文档都在同一项目中维护。
 
-如果你是新开的对话、刚接手的主控线程，或者准备分发子任务，先读：
+> 如果你是 **AI Agent / 自动化协作者**，请不要把本文件当作接班入口，请改读 [`AGENTS.md`](AGENTS.md) 与 [`docs/start-here.md`](docs/start-here.md)。
 
-1. `docs/start-here.md`
-2. `docs/project-plan.md`
-3. `docs/prd.md`
+---
 
-`docs/start-here.md` 已经整理了当前仓库的阅读顺序、真实数据采集状态、后台现状和下一步建议，优先级高于聊天记录。
+## 技术栈
 
-## 工作区规则
+| 模块 | 路径 | 技术 |
+|------|------|------|
+| 移动端 | `apps/mobile` | Flutter（Android-first，含 Web 用于部分验收） |
+| 管理后台 | `apps/admin` | Next.js 15 |
+| 后端 API | `services/api` | NestJS + PostgreSQL |
+| 数据采集 | `tools/data-import` | Python（CSV 校验、规范化、入库） |
+| 文档 | `docs/` | 产品、接口、库表、流程说明 |
 
-所有本地路径、脚本说明、文档链接和提示词统一使用：
+包管理：**pnpm**（Node 侧）；移动端另需 **Flutter** 与 **Dart**。
 
-`C:\Users\hp\Documents\SureGrad`
+---
+
+## 环境要求
+
+- Node.js 20+
+- pnpm 9+
+- PostgreSQL（本地默认：`127.0.0.1:5432`，库名 `suregrad`，用户/密码见 `tools/data-import` 配置）
+- Flutter 3.x（仅开发移动端时需要）
+- Python 3.10+（跑数据导入脚本时需要）
+
+---
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+pnpm install
+cd apps/mobile && flutter pub get && cd ../..
+```
+
+### 2. 初始化数据库（首次）
+
+```bash
+# 建表（全新库）
+python tools/data-import/apply_schema.py
+
+# 或：迁移 + 导入演示数据（华东理工 + 上财骨架 + 资料 + 管理员）
+pnpm db:seed:demo
+```
+
+### 3. 启动服务
+
+**API**（默认 `http://localhost:3000/api/v1`）：
+
+```bash
+pnpm dev:api
+```
+
+**管理后台**（默认 `http://localhost:3001`）：
+
+```bash
+pnpm dev:admin
+```
+
+演示管理员（由 `db:seed:admin` 写入）：用户名 `superadmin` / 密码 `super123`。
+
+**移动端**（需模拟器或真机）：
+
+```bash
+cd apps/mobile
+flutter run
+```
+
+Android 模拟器访问本机 API 时使用 `10.0.2.2:3000`；Web / 桌面调试使用 `localhost:3000`（见 `apps/mobile` 内 API 配置）。
+
+---
+
+## 常用命令
+
+| 命令 | 说明 |
+|------|------|
+| `pnpm verify` | API + Admin + Mobile 工程校验 |
+| `pnpm verify:api` | 后端 build / lint / test |
+| `pnpm verify:admin` | 后台 build / lint |
+| `pnpm verify:mobile` | `flutter analyze` + `flutter test` |
+| `pnpm verify:visual` | Admin Playwright + Mobile Web 截图验收 |
+| `pnpm db:seed:collected` | 导入 `ecust-cs-2024` + `sufe-finance-2024` 采集批次 |
+| `pnpm db:seed:demo` | 采集批次 + 备考资料 + 管理员账号 |
+
+CI：推送到 `main` 或开 PR 时，GitHub Actions 会跑与 `pnpm verify` 等价的校验（见 `.github/workflows/ci.yml`）。
+
+---
 
 ## 仓库结构
 
 ```text
-docs/               产品、需求、流程、架构与接班入口
-apps/mobile/        Flutter Android-first 移动端
-apps/admin/         Next.js 管理后台
-services/api/       NestJS 后端 API
-packages/shared/    共享类型与工具
-tools/data-import/  数据采集、校验、规范化与 dry-run 工具链
+apps/mobile/          Flutter 客户端
+apps/admin/           Next.js 运营后台
+services/api/         NestJS API
+tools/data-import/    CSV 采集、校验、入库
+docs/                 产品与技术文档
+packages/shared/      共享类型（如有）
 ```
 
-## 当前状态概览
+---
 
-### 文档
+## 文档索引
 
-以下基线文档已在仓库内维护：
+按 **人类读者** 常用顺序：
 
-1. `docs/project-plan.md`
-2. `docs/prd.md`
-3. `docs/ux-flow.md`
-4. `docs/database-design.md`
-5. `docs/schema.sql`
-6. `docs/api-spec.md`
-7. `docs/backend-architecture.md`
-8. `docs/mobile-architecture.md`
-9. `docs/data-import-plan.md`
-10. `docs/codex-session-prompts.md`
-11. `docs/start-here.md`
+| 文档 | 内容 |
+|------|------|
+| [`docs/project-plan.md`](docs/project-plan.md) | 项目背景与阶段目标 |
+| [`docs/prd.md`](docs/prd.md) | 产品需求 |
+| [`docs/ux-flow.md`](docs/ux-flow.md) | 移动端关键流程 |
+| [`docs/api-spec.md`](docs/api-spec.md) | HTTP API 约定 |
+| [`docs/database-design.md`](docs/database-design.md) | 领域与表说明 |
+| [`docs/schema.sql`](docs/schema.sql) | PostgreSQL DDL（事实来源） |
+| [`docs/data-import-plan.md`](docs/data-import-plan.md) | 数据采集与导入方案 |
+| [`tools/data-import/README.md`](tools/data-import/README.md) | 导入工具使用说明 |
+| [`apps/admin/README.md`](apps/admin/README.md) | 后台模块说明 |
 
-### 后端
+---
 
-`services/api` 已经不只是纯骨架，正沿着 `docs/api-spec.md` 继续把部分接口从 skeleton 推进到真实实现。
+## 演示数据说明
 
-### 移动端
+当前仓库内 **真实采集批次**（非虚构 mock）位于 `tools/data-import/collected/`：
 
-`apps/mobile` 已经具备主流程级页面和状态串联，当前阶段重点是继续提高真实联调占比与视觉验收质量。
+| 批次 | 学校 | 说明 |
+|------|------|------|
+| `ecust-cs-2024` | 华东理工大学 | 计算机科学与技术，含分数线、招生、复试、初试科目等 |
+| `sufe-finance-2024` | 上海财经大学 | 金融学骨架批次，部分字段仍为占位，待官方复核 |
 
-### 后台
+各批次目录下有 `README.md` 记录来源与口径。导入后可用 `GET /api/v1/schools` 等接口在移动端/后台验证。
 
-`apps/admin` 已经从偏开发者式样板收口到运营工作台表达，并且首页、来源链接页、年份数据页已经能看见仓库里的部分真实采集批次。
+---
 
-### 数据采集
+## 参与开发
 
-`tools/data-import` 已有可验收的校验、规范化、批次报告和 dry-run 工具链，同时已经落地第一批真实采集样例：
+1. 改 API / 后台 / 移动端后，在本地跑对应的 `pnpm verify:*`。
+2. 涉及 **页面 UI** 的改动，维护者会跑 `pnpm verify:visual` 并留存 `docs/visual-qa/` 记录。
+3. 提交信息可用中文；**不要**在 commit 中加入 AI / Cursor 署名（见仓库 `.cursor/rules/git-commits.mdc`）。
+4. 产品或接口口径变更时，同步更新 `docs/` 中相关文档。
 
-`tools/data-import/collected/ecust-cs-2024`
+---
 
-## 快速启动
+## 许可证
 
-在仓库根目录执行：
-
-```bash
-pnpm install
-pnpm dev:api
-```
-
-启动后台：
-
-```bash
-cd apps/admin
-pnpm dev
-```
-
-后台默认访问地址：
-
-```text
-http://localhost:3001
-```
-
-后台默认 API 地址：
-
-```text
-http://localhost:3000/api/v1
-```
-
-启动移动端：
-
-```bash
-cd apps/mobile
-flutter pub get
-flutter run
-```
-
-## 验证入口
-
-在仓库根目录可直接执行：
-
-```bash
-pnpm verify
-```
-
-如需分模块验收，可使用：
-
-```bash
-pnpm verify:api
-pnpm verify:admin
-pnpm verify:mobile
-```
-
-其中仓库级验证当前覆盖：
-
-1. API：`build`、`lint`、单元测试
-2. Admin：`build`、`lint`
-3. Mobile：`flutter analyze`、`flutter test`
-
-同时仓库已补上 `.github/workflows/ci.yml`，会在 `main` 推送和 Pull Request 上自动执行同一组校验。
-
-## 模块文档入口
-
-### 主控 / 接班
-
-1. `docs/start-here.md`
-2. `docs/codex-session-prompts.md`
-
-### 后端
-
-1. `docs/api-spec.md`
-2. `docs/database-design.md`
-3. `docs/schema.sql`
-4. `docs/backend-architecture.md`
-
-### 移动端
-
-1. `docs/prd.md`
-2. `docs/ux-flow.md`
-3. `docs/api-spec.md`
-4. `docs/mobile-architecture.md`
-
-### 后台
-
-1. `docs/database-design.md`
-2. `docs/schema.sql`
-3. `docs/data-import-plan.md`
-4. `apps/admin/README.md`
-
-### 数据采集
-
-1. `docs/data-import-plan.md`
-2. `docs/database-design.md`
-3. `docs/schema.sql`
-4. `tools/data-import/README.md`
-
-## 协作约定
-
-1. 新对话先读文档，再看 `git status`，不要只依赖聊天记录。
-2. 主控线程优先负责审阅、验收、统一口径、文档同步和推送时机。
-3. 详细实现尽量分发给子线程，主控不要把所有细节工作都自己做完。
-4. 涉及后台或移动端页面的改动，验收时必须补视觉检查。
-5. 每一轮迭代结束后，把“当前状态、已知缺口、下一步建议”写回仓库文档。
+尚未单独声明开源许可证；使用前请联系仓库维护者。

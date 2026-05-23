@@ -21,15 +21,17 @@
 
 如果只允许先读 15 分钟，按这个顺序：
 
-1. `docs/start-here.md`
-2. `README.md`
+1. `AGENTS.md`（Agent 硬性约定与命令速查）
+2. `docs/start-here.md`（本文件，当前状态与推进线）
 3. `docs/project-plan.md`
 4. `docs/prd.md`
 5. `docs/api-spec.md`
 6. `docs/database-design.md`
 7. `docs/schema.sql`
 
-这 7 份文件能快速回答 4 个问题：
+`README.md` 面向 **GitHub 人类读者**（环境、启动、文档索引），Agent 不必优先通读。
+
+这 7 份 Agent 向文件能快速回答 4 个问题：
 
 1. SureGrad 要解决什么问题。
 2. MVP 主闭环是什么。
@@ -40,8 +42,8 @@
 
 ### 3.1 主控 / 接班线程
 
-1. `docs/start-here.md`
-2. `README.md`
+1. `AGENTS.md`
+2. `docs/start-here.md`
 3. `docs/project-plan.md`
 4. `docs/prd.md`
 5. `docs/api-spec.md`
@@ -101,32 +103,12 @@
 
 当前仓库里已经落地的真实采集批次位于：
 
-`tools/data-import/collected/ecust-cs-2024`
+- `tools/data-import/collected/ecust-cs-2024`（华东理工 · 081200，数据较完整）
+- `tools/data-import/collected/sufe-finance-2024`（上财 · 020204，骨架批次）
 
-当前批次包含：
+**ecust-cs-2024** 已含：学校/院系/专业、分数线、招生、复试、初试科目、来源链接等；仍缺报录比、参考书等（见批次 README）。
 
-1. `schools.csv`
-2. `departments.csv`
-3. `programs.csv`
-4. `program_score_lines.csv`
-5. `program_admissions.csv`
-6. `program_interview_stats.csv`
-7. `program_source_links.csv`
-
-覆盖对象：
-
-1. 学校：华东理工大学
-2. 年份：`2024`
-3. 专业：`081200 计算机科学与技术`
-
-当前批次特点：
-
-1. 已附带批次级 `README.md`，说明官方来源和人工判断。
-2. 已优先保证真源和来源追溯，而不是先把所有字段补满。
-3. 现在可以直接通过 `tools/data-import/run_import.ps1` 产出批次级 `import-report.json` 和 `import-report.md`。
-4. 当前真实批次已覆盖 `program_admissions`、`program_interview_stats`；仍缺 `program_application_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板。
-
-**入库（2026-05-22）**：ecust 五表可通过 `pnpm db:seed:ecust` 写入 PostgreSQL（`db:migrate` + `db:import:ecust`）。全新库先执行 `docs/schema.sql`；旧库缺列时 migrate 会补齐。本机验证：`GET /api/v1/schools` 应返回华东理工大学及 2024 分数线摘要。
+**入库**：`pnpm db:seed:collected` 同时导入上述两批次；`pnpm db:seed:demo` 另含备考资料与管理员。验证：`GET /api/v1/schools` 应返回 **华东理工 + 上海财经**。
 
 **备考资料演示（2026-05-22）**：不扩大院校 CSV 采集时，可用 `pnpm db:seed:resources` 幂等写入 4 门 `subjects`（政治/英语/数学/专业课）与 6 条 `study_resources`（固定 UUID，`is_public_legal=true`、`status=active`）。与 ecust 一并演示可跑 `pnpm db:seed:demo`。本机验证：`GET /api/v1/study-resources` 应返回 ≥6 条公开合法资料。
 
@@ -216,7 +198,7 @@
 
 如果后续还会继续开新对话，提示词里至少要写清：
 
-1. 先读 `docs/start-here.md`
+1. 先读 `AGENTS.md` 与 `docs/start-here.md`
 2. 工作区路径统一使用 `C:\Users\hp\Documents\SureGrad`
 3. 再按模块补读对应文档
 4. 不要依赖聊天记录恢复现场
