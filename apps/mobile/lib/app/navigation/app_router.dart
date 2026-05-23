@@ -7,6 +7,7 @@ import '../../features/home/presentation/home_page.dart';
 import '../../features/planning/presentation/planning_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
 import '../../features/reminders/presentation/reminders_page.dart';
+import '../../features/resources/presentation/resource_detail_page.dart';
 import '../../features/resources/presentation/resources_page.dart';
 import '../../features/programs/presentation/program_detail_page.dart';
 import '../../features/schools/presentation/school_detail_page.dart';
@@ -17,6 +18,7 @@ import '../bootstrap/app_bootstrap.dart';
 import 'app_routes.dart';
 import 'login_route_args.dart';
 import 'program_detail_route_args.dart';
+import 'resource_detail_route_args.dart';
 import 'school_detail_route_args.dart';
 
 class AppRouter {
@@ -69,6 +71,14 @@ class AppRouter {
         return _page(const TodoPage(), settings);
       case AppRoutes.resources:
         return _page(const ResourcesPage(), settings);
+      case AppRoutes.resourceDetail:
+        final resourceArgs = settings.arguments is ResourceDetailRouteArgs
+            ? settings.arguments as ResourceDetailRouteArgs
+            : const ResourceDetailRouteArgs(
+                resourceId: 'resource-unavailable',
+                resourceTitle: '资料详情',
+              );
+        return _page(ResourceDetailPage(args: resourceArgs), settings);
       case AppRoutes.profile:
         return _page(const ProfilePage(), settings);
       case AppRoutes.favorites:

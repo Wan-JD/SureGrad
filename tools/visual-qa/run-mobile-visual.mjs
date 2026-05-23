@@ -158,6 +158,24 @@ const programDefine = programId
   ? [`--dart-define=SUREGRAD_PROGRAM_ID=${programId}`]
   : [];
 
+async function resolveResourceId() {
+  try {
+    const response = await fetch("http://127.0.0.1:3000/api/v1/study-resources");
+    if (!response.ok) {
+      return "";
+    }
+    const json = await response.json();
+    return json.items?.[0]?.resourceId ?? "";
+  } catch {
+    return "";
+  }
+}
+
+const resourceId = await resolveResourceId();
+const resourceDefine = resourceId
+  ? [`--dart-define=SUREGRAD_RESOURCE_ID=${resourceId}`]
+  : [];
+
 run("flutter", ["build", "web", ...apiDefine], mobileDir);
 run(
   "flutter",
@@ -230,6 +248,20 @@ run(
   ],
   mobileDir,
 );
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
+    "lib/main_visual_qa_resource_detail.dart",
+    "-o",
+    "build/web-resource-detail",
+    ...apiDefine,
+    ...resourceDefine,
+  ],
+  mobileDir,
+);
 
 const browser = await chromium.launch();
 const page = await browser.newPage(MOBILE_VIEWPORT);
@@ -280,7 +312,7 @@ const targets = [
     dir: path.join(mobileDir, "build", "web-resources"),
     port: 7360,
     path: "/",
-    mustSeeAny: ["资料", "备考资料", "资料中心暂时不可用", "重试"],
+    mustSeeAny: ["资料", "备考资料", "资料中心暂时不可用", "查看详情", "重试"],
   },
   {
     name: "mobile-program-detail",
@@ -293,6 +325,21 @@ const targets = [
       "计算机科学与技术",
       "历年分数线",
       "加入对比",
+      "重试",
+    ],
+  },
+  {
+    name: "mobile-resource-detail",
+    dir: path.join(mobileDir, "build", "web-resource-detail"),
+    port: 7364,
+    path: "/",
+    mustSeeAny: [
+      "资料详情",
+      "资料详情加载失败",
+      "政治基础精讲",
+      "资料简介",
+      "使用建议",
+      "来源链接",
       "重试",
     ],
   },

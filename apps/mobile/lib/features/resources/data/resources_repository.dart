@@ -2,6 +2,7 @@ import '../../../core/models/feature_list_item.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/api_result.dart';
+import 'resource_models.dart';
 
 class ResourcesRepository {
   const ResourcesRepository({required this.client});
@@ -9,6 +10,13 @@ class ResourcesRepository {
   final ApiClient client;
 
   String get path => '/study-resources';
+
+  String resourcePath(String resourceId) => '$path/$resourceId';
+
+  Future<ResourceDetail> fetchResourceDetail(String resourceId) async {
+    final json = _unwrap(await client.get(resourcePath(resourceId)));
+    return ResourceDetail.fromJson(json);
+  }
 
   Future<List<FeatureListItem>> fetchResources() async {
     final json = _unwrap(await client.get(path));

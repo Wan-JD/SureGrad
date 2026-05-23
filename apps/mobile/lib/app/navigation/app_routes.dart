@@ -10,6 +10,7 @@ class AppRoutes {
   static const planning = '/planning';
   static const todo = '/todo';
   static const resources = '/resources';
+  static const resourceDetail = '/resources/detail';
   static const profile = '/profile';
   static const favorites = '/favorites';
   static const comparison = '/comparison';

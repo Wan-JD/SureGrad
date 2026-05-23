@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
+import '../../../app/navigation/app_routes.dart';
 import '../../../app/navigation/app_tab.dart';
+import '../../../app/navigation/resource_detail_route_args.dart';
 import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/models/feature_list_item.dart';
 import '../../../core/network/api_exception.dart';
@@ -61,7 +63,20 @@ class _ResourcesPageState extends State<ResourcesPage> {
                   children: [
                     ResponsiveColumns(
                       children: snapshot.data!
-                          .map((item) => _ResourceItemCard(item: item))
+                          .map(
+                            (item) => _ResourceItemCard(
+                              item: item,
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.resourceDetail,
+                                  arguments: ResourceDetailRouteArgs(
+                                    resourceId: item.id,
+                                    resourceTitle: item.title,
+                                  ),
+                                );
+                              },
+                            ),
+                          )
                           .toList(),
                     ),
                   ],
@@ -82,37 +97,50 @@ class _ResourcesPageState extends State<ResourcesPage> {
 }
 
 class _ResourceItemCard extends StatelessWidget {
-  const _ResourceItemCard({required this.item});
+  const _ResourceItemCard({required this.item, required this.onTap});
 
   final FeatureListItem item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFFFCFAF5),
+    return Material(
+      color: const Color(0xFFFCFAF5),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5DECF)),
+        side: const BorderSide(color: Color(0xFFE5DECF)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item.title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 6),
-            Text(item.subtitle),
-            if (item.footnote != null) ...[
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(item.title, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 6),
+              Text(item.subtitle),
+              if (item.footnote != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  item.footnote!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF125B52),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               Text(
-                item.footnote!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                '查看详情',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: const Color(0xFF125B52),
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
