@@ -58,8 +58,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (session && (pathname === "/login" || pathname === "/")) {
-      router.replace("/users");
+    if (session && pathname === "/login") {
+      router.replace("/");
     }
   }, [isReady, pathname, router, session]);
 
@@ -77,7 +77,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
     writeAdminSession(nextSession);
     setSession(nextSession);
-    router.replace("/users");
+    router.replace("/");
   }, [router]);
 
   const logout = useCallback(() => {

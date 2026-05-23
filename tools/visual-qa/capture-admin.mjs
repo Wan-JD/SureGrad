@@ -1,4 +1,4 @@
-﻿import { chromium } from "playwright";
+import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -27,7 +27,7 @@ async function loginAsSuperAdmin(page) {
   await page.click("button.admin-login-submit");
   await loginResponse;
 
-  await page.waitForURL((url) => url.pathname === "/users", {
+  await page.waitForURL((url) => url.pathname === "/", {
     timeout: 20000,
   });
 }
@@ -36,55 +36,55 @@ const pages = [
   {
     name: "admin-users",
     url: "/users",
-    mustSee: ["鐢ㄦ埛绠＄悊", "App 鐢ㄦ埛"],
+    mustSee: ["用户管理", "App 用户"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-admins",
     url: "/admins",
-    mustSee: ["绠＄悊鍛樿处鍙?, "鍚庡彴璐﹀彿"],
+    mustSee: ["管理员账号", "后台账号"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-home",
     url: "/",
-    mustSee: ["鐢ㄦ埛绠＄悊", "App 鐢ㄦ埛"],
-    waitFor: ".workspace-hero",
+    mustSee: ["SureGrad 运营后台工作台", "真实采集批次概览", "待补 CSV 清单"],
+    waitFor: ".home-hero",
   },
   {
     name: "admin-yearly-data",
     url: "/yearly-data",
-    mustSee: ["骞村害鏁版嵁 CSV 缂哄彛", "鎷涚敓璁″垝", "鍒嗘暟绾?, "鍗庝笢鐞嗗伐"],
+    mustSee: ["年度数据 CSV 缺口", "招生计划", "分数线", "华东理工"],
     waitFor: ".batch-gaps-banner",
   },
   {
     name: "admin-resources",
     url: "/resources",
-    mustSee: ["璧勬枡", "璧勬枡鎺ㄨ崘"],
+    mustSee: ["资料", "资料推荐"],
     waitFor: ".record-table",
   },
   {
     name: "admin-schools",
     url: "/schools",
-    mustSee: ["瀛︽牎绠＄悊", "鍐欐帴鍙?],
+    mustSee: ["学校管理", "写接口"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-programs",
     url: "/programs",
-    mustSee: ["涓撲笟绠＄悊", "涓撲笟"],
+    mustSee: ["专业管理", "专业"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-departments",
     url: "/departments",
-    mustSee: ["闄㈢郴绠＄悊", "闄㈢郴鍒楄〃", "淇℃伅绉戝", "鍗庝笢鐞嗗伐"],
+    mustSee: ["院系管理", "院系列表", "信息科学", "华东理工"],
     waitFor: ".workspace-hero",
   },
   {
     name: "admin-source-links",
     url: "/source-links",
-    mustSee: ["鏉ユ簮閾炬帴绠＄悊", "鏉ユ簮閾炬帴"],
+    mustSee: ["来源链接管理", "来源链接"],
     waitFor: ".workspace-hero",
   },
 ];
