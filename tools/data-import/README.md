@@ -43,7 +43,7 @@
 
 1. 已附带批次级 `README.md`，记录官方来源与人工假设。
 2. 这一轮优先保证真源、来源追溯和模板链路跑通，不先猜测缺失数字。
-3. 当前仍缺少 `program_admissions`、`program_application_stats`、`program_interview_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板内容。
+3. ecust 批次已包含 `program_admissions`、`program_interview_stats`；仍缺 `program_application_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板内容。
 
 因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 

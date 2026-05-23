@@ -25,7 +25,9 @@
     "schools.csv",
     "departments.csv",
     "programs.csv",
+    "program_admissions.csv",
     "program_score_lines.csv",
+    "program_interview_stats.csv",
     "program_source_links.csv"
   ]
 }

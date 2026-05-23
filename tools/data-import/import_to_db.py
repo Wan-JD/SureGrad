@@ -22,7 +22,10 @@ IMPORT_ORDER = (
     "schools.csv",
     "departments.csv",
     "programs.csv",
+    "program_admissions.csv",
     "program_score_lines.csv",
+    "program_application_stats.csv",
+    "program_interview_stats.csv",
     "program_source_links.csv",
 )
 
@@ -444,6 +447,59 @@ def upsert_program(conn: Any, lookup: LookupTables, row: dict[str, str]) -> str:
     return program_id
 
 
+def parse_optional_int(value: str | None) -> int | None:
+    text = empty_to_none(value)
+    if text is None:
+        return None
+    return int(text)
+
+
+def parse_decimal(value: str | None) -> float:
+    text = (value or "").strip()
+    if not text:
+        raise ValueError("decimal value is required")
+    return float(text)
+
+
+def upsert_admission(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
+    program_id = resolve_program_id(conn, lookup, row)
+    values = {
+        "program_id": program_id,
+        "exam_year": int(row["exam_year"]),
+        "planned_enrollment": int(row["planned_enrollment"]),
+        "recommended_exemption_count": int(row.get("recommended_exemption_count") or 0),
+        "unified_exam_quota": int(row.get("unified_exam_quota") or 0),
+        "actual_enrollment": parse_optional_int(row.get("actual_enrollment")),
+        "is_cross_major_allowed": parse_bool(row.get("is_cross_major_allowed")),
+        "memo": empty_to_none(row.get("memo")),
+        "source_confidence": row["source_confidence"].strip(),
+    }
+    conn.execute(
+        """
+        INSERT INTO program_admissions (
+            program_id, exam_year, planned_enrollment, recommended_exemption_count,
+            unified_exam_quota, actual_enrollment, is_cross_major_allowed, memo,
+            source_confidence
+        ) VALUES (
+            %(program_id)s, %(exam_year)s, %(planned_enrollment)s,
+            %(recommended_exemption_count)s, %(unified_exam_quota)s, %(actual_enrollment)s,
+            %(is_cross_major_allowed)s, %(memo)s, %(source_confidence)s
+        )
+        ON CONFLICT (program_id, exam_year)
+        DO UPDATE SET
+            planned_enrollment = EXCLUDED.planned_enrollment,
+            recommended_exemption_count = EXCLUDED.recommended_exemption_count,
+            unified_exam_quota = EXCLUDED.unified_exam_quota,
+            actual_enrollment = EXCLUDED.actual_enrollment,
+            is_cross_major_allowed = EXCLUDED.is_cross_major_allowed,
+            memo = EXCLUDED.memo,
+            source_confidence = EXCLUDED.source_confidence,
+            updated_at = NOW()
+        """,
+        values,
+    )
+
+
 def upsert_score_line(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
     program_id = resolve_program_id(conn, lookup, row)
     values = {
@@ -475,6 +531,79 @@ def upsert_score_line(conn: Any, lookup: LookupTables, row: dict[str, str]) -> N
             english_score = EXCLUDED.english_score,
             subject_one_score = EXCLUDED.subject_one_score,
             subject_two_score = EXCLUDED.subject_two_score,
+            notes = EXCLUDED.notes,
+            source_confidence = EXCLUDED.source_confidence,
+            updated_at = NOW()
+        """,
+        values,
+    )
+
+
+def upsert_application_stat(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
+    program_id = resolve_program_id(conn, lookup, row)
+    values = {
+        "program_id": program_id,
+        "exam_year": int(row["exam_year"]),
+        "applicant_count": int(row["applicant_count"]),
+        "actual_exam_count": parse_optional_int(row.get("actual_exam_count")),
+        "admitted_count": int(row["admitted_count"]),
+        "application_ratio": parse_decimal(row.get("application_ratio")),
+        "notes": empty_to_none(row.get("notes")),
+        "source_confidence": row["source_confidence"].strip(),
+    }
+    conn.execute(
+        """
+        INSERT INTO program_application_stats (
+            program_id, exam_year, applicant_count, actual_exam_count, admitted_count,
+            application_ratio, notes, source_confidence
+        ) VALUES (
+            %(program_id)s, %(exam_year)s, %(applicant_count)s, %(actual_exam_count)s,
+            %(admitted_count)s, %(application_ratio)s, %(notes)s, %(source_confidence)s
+        )
+        ON CONFLICT (program_id, exam_year)
+        DO UPDATE SET
+            applicant_count = EXCLUDED.applicant_count,
+            actual_exam_count = EXCLUDED.actual_exam_count,
+            admitted_count = EXCLUDED.admitted_count,
+            application_ratio = EXCLUDED.application_ratio,
+            notes = EXCLUDED.notes,
+            source_confidence = EXCLUDED.source_confidence,
+            updated_at = NOW()
+        """,
+        values,
+    )
+
+
+def upsert_interview_stat(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
+    program_id = resolve_program_id(conn, lookup, row)
+    values = {
+        "program_id": program_id,
+        "exam_year": int(row["exam_year"]),
+        "retest_candidate_count": int(row["retest_candidate_count"]),
+        "final_admitted_count": int(row["final_admitted_count"]),
+        "interview_ratio": parse_decimal(row.get("interview_ratio")),
+        "retest_weight": parse_decimal(row.get("retest_weight")),
+        "initial_exam_weight": parse_decimal(row.get("initial_exam_weight")),
+        "notes": empty_to_none(row.get("notes")),
+        "source_confidence": row["source_confidence"].strip(),
+    }
+    conn.execute(
+        """
+        INSERT INTO program_interview_stats (
+            program_id, exam_year, retest_candidate_count, final_admitted_count,
+            interview_ratio, retest_weight, initial_exam_weight, notes, source_confidence
+        ) VALUES (
+            %(program_id)s, %(exam_year)s, %(retest_candidate_count)s, %(final_admitted_count)s,
+            %(interview_ratio)s, %(retest_weight)s, %(initial_exam_weight)s, %(notes)s,
+            %(source_confidence)s
+        )
+        ON CONFLICT (program_id, exam_year)
+        DO UPDATE SET
+            retest_candidate_count = EXCLUDED.retest_candidate_count,
+            final_admitted_count = EXCLUDED.final_admitted_count,
+            interview_ratio = EXCLUDED.interview_ratio,
+            retest_weight = EXCLUDED.retest_weight,
+            initial_exam_weight = EXCLUDED.initial_exam_weight,
             notes = EXCLUDED.notes,
             source_confidence = EXCLUDED.source_confidence,
             updated_at = NOW()
@@ -569,8 +698,17 @@ IMPORT_HANDLERS = {
     "programs.csv": lambda conn, lookup, rows: [
         upsert_program(conn, lookup, row) for row in rows
     ],
+    "program_admissions.csv": lambda conn, lookup, rows: [
+        upsert_admission(conn, lookup, row) for row in rows
+    ],
     "program_score_lines.csv": lambda conn, lookup, rows: [
         upsert_score_line(conn, lookup, row) for row in rows
+    ],
+    "program_application_stats.csv": lambda conn, lookup, rows: [
+        upsert_application_stat(conn, lookup, row) for row in rows
+    ],
+    "program_interview_stats.csv": lambda conn, lookup, rows: [
+        upsert_interview_stat(conn, lookup, row) for row in rows
     ],
     "program_source_links.csv": lambda conn, lookup, rows: [
         upsert_source_link(conn, lookup, row) for row in rows

@@ -109,7 +109,9 @@
 2. `departments.csv`
 3. `programs.csv`
 4. `program_score_lines.csv`
-5. `program_source_links.csv`
+5. `program_admissions.csv`
+6. `program_interview_stats.csv`
+7. `program_source_links.csv`
 
 覆盖对象：
 
@@ -122,7 +124,7 @@
 1. 已附带批次级 `README.md`，说明官方来源和人工判断。
 2. 已优先保证真源和来源追溯，而不是先把所有字段补满。
 3. 现在可以直接通过 `tools/data-import/run_import.ps1` 产出批次级 `import-report.json` 和 `import-report.md`。
-4. 当前真实批次还没有覆盖 `program_admissions`、`program_application_stats`、`program_interview_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板。
+4. 当前真实批次已覆盖 `program_admissions`、`program_interview_stats`；仍缺 `program_application_stats`、`program_exam_subjects`、`program_reference_books`、`subjects`、`books` 等模板。
 
 **入库（2026-05-22）**：ecust 五表可通过 `pnpm db:seed:ecust` 写入 PostgreSQL（`db:migrate` + `db:import:ecust`）。全新库先执行 `docs/schema.sql`；旧库缺列时 migrate 会补齐。本机验证：`GET /api/v1/schools` 应返回华东理工大学及 2024 分数线摘要。
 
@@ -201,7 +203,7 @@
 
 ### 11.3 移动端 / 视觉验收优先项
 
-1. 专业详情页已落地；**资料详情页**已落地（2026-05-23）。下一步优先补齐 ecust 报录比/复试 CSV，减少详情与对比中的「待补充」。
+1. 专业详情页已落地；**资料详情页**已落地（2026-05-23）。ecust 批次已补招生/复试 CSV（2026-05-23）。下一步优先补齐报录比 CSV 或初试科目模板，减少详情与对比中的「待补充」。
 2. 任何涉及 Flutter 页面结构或交互的改动，除 `flutter analyze` / `flutter test` 外，应跑 `pnpm verify:visual` 并写 `docs/visual-qa/` 记录。
 
 ### 11.4 数据采集优先项
