@@ -22,10 +22,12 @@ IMPORT_ORDER = (
     "schools.csv",
     "departments.csv",
     "programs.csv",
+    "subjects.csv",
     "program_admissions.csv",
     "program_score_lines.csv",
     "program_application_stats.csv",
     "program_interview_stats.csv",
+    "program_exam_subjects.csv",
     "program_source_links.csv",
 )
 
@@ -36,6 +38,7 @@ class LookupTables:
     schools_by_code: dict[str, str] = field(default_factory=dict)
     departments: dict[tuple[str, str], str] = field(default_factory=dict)
     programs: dict[tuple[str, str, str, str | None], str] = field(default_factory=dict)
+    subjects_by_code: dict[str, str] = field(default_factory=dict)
 
     def school_key(self, name: str, city: str) -> tuple[str, str]:
         return (name.strip(), city.strip())
@@ -612,6 +615,119 @@ def upsert_interview_stat(conn: Any, lookup: LookupTables, row: dict[str, str]) 
     )
 
 
+def upsert_subject(conn: Any, lookup: LookupTables, row: dict[str, str]) -> str:
+    name = row["name"].strip()
+    code = empty_to_none(row.get("code"))
+    category = row["category"].strip()
+
+    if code and code in lookup.subjects_by_code:
+        subject_id = lookup.subjects_by_code[code]
+        conn.execute(
+            """
+            UPDATE subjects SET
+                name = %(name)s,
+                category = %(category)s,
+                updated_at = NOW()
+            WHERE id = %(id)s
+            """,
+            {"id": subject_id, "name": name, "category": category},
+        )
+        return subject_id
+
+    existing = conn.execute(
+        """
+        SELECT id FROM subjects
+        WHERE name = %(name)s AND COALESCE(code, '') = COALESCE(%(code)s, '')
+        LIMIT 1
+        """,
+        {"name": name, "code": code},
+    ).fetchone()
+
+    if existing:
+        subject_id = str(existing["id"])
+        conn.execute(
+            """
+            UPDATE subjects SET category = %(category)s, updated_at = NOW()
+            WHERE id = %(id)s
+            """,
+            {"id": subject_id, "category": category},
+        )
+    else:
+        inserted = conn.execute(
+            """
+            INSERT INTO subjects (name, code, category)
+            VALUES (%(name)s, %(code)s, %(category)s)
+            RETURNING id
+            """,
+            {"name": name, "code": code, "category": category},
+        ).fetchone()
+        subject_id = str(inserted["id"])
+
+    if code:
+        lookup.subjects_by_code[code] = subject_id
+    return subject_id
+
+
+def resolve_subject_id(conn: Any, lookup: LookupTables, row: dict[str, str]) -> str:
+    code = empty_to_none(row.get("subject_code"))
+    if code:
+        if code in lookup.subjects_by_code:
+            return lookup.subjects_by_code[code]
+        db_row = conn.execute(
+            "SELECT id FROM subjects WHERE code = %s LIMIT 1",
+            (code,),
+        ).fetchone()
+        if db_row:
+            subject_id = str(db_row["id"])
+            lookup.subjects_by_code[code] = subject_id
+            return subject_id
+        raise ValueError(f"subject_code `{code}` not found; import subjects.csv first")
+
+    name = row["subject_name_text"].strip()
+    db_row = conn.execute(
+        "SELECT id FROM subjects WHERE name = %s LIMIT 1",
+        (name,),
+    ).fetchone()
+    if db_row:
+        return str(db_row["id"])
+    raise ValueError(f"subject `{name}` not found; import subjects.csv first")
+
+
+def upsert_exam_subject(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
+    program_id = resolve_program_id(conn, lookup, row)
+    subject_id = resolve_subject_id(conn, lookup, row)
+    values = {
+        "program_id": program_id,
+        "subject_id": subject_id,
+        "exam_year": int(row["exam_year"]),
+        "sequence_no": int(row["sequence_no"]),
+        "subject_role": row["subject_role"].strip(),
+        "subject_code_text": empty_to_none(row.get("subject_code_text")),
+        "subject_name_text": row["subject_name_text"].strip(),
+        "notes": empty_to_none(row.get("notes")),
+    }
+    conn.execute(
+        """
+        INSERT INTO program_exam_subjects (
+            program_id, subject_id, exam_year, sequence_no, subject_role,
+            subject_code_text, subject_name_text, notes
+        ) VALUES (
+            %(program_id)s, %(subject_id)s, %(exam_year)s, %(sequence_no)s,
+            %(subject_role)s, %(subject_code_text)s, %(subject_name_text)s, %(notes)s
+        )
+        ON CONFLICT (program_id, exam_year, sequence_no)
+        DO UPDATE SET
+            subject_id = EXCLUDED.subject_id,
+            subject_role = EXCLUDED.subject_role,
+            subject_code_text = EXCLUDED.subject_code_text,
+            subject_name_text = EXCLUDED.subject_name_text,
+            notes = EXCLUDED.notes,
+            updated_at = NOW()
+        """,
+        values,
+    )
+
+
 def upsert_source_link(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
     program_id = resolve_program_id(conn, lookup, row)
     exam_year = int(row["exam_year"])
@@ -698,6 +814,9 @@ IMPORT_HANDLERS = {
     "programs.csv": lambda conn, lookup, rows: [
         upsert_program(conn, lookup, row) for row in rows
     ],
+    "subjects.csv": lambda conn, lookup, rows: [
+        upsert_subject(conn, lookup, row) for row in rows
+    ],
     "program_admissions.csv": lambda conn, lookup, rows: [
         upsert_admission(conn, lookup, row) for row in rows
     ],
@@ -709,6 +828,9 @@ IMPORT_HANDLERS = {
     ],
     "program_interview_stats.csv": lambda conn, lookup, rows: [
         upsert_interview_stat(conn, lookup, row) for row in rows
+    ],
+    "program_exam_subjects.csv": lambda conn, lookup, rows: [
+        upsert_exam_subject(conn, lookup, row) for row in rows
     ],
     "program_source_links.csv": lambda conn, lookup, rows: [
         upsert_source_link(conn, lookup, row) for row in rows

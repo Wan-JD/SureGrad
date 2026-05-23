@@ -25,9 +25,11 @@
     "schools.csv",
     "departments.csv",
     "programs.csv",
+    "subjects.csv",
     "program_admissions.csv",
     "program_score_lines.csv",
     "program_interview_stats.csv",
+    "program_exam_subjects.csv",
     "program_source_links.csv"
   ]
 }

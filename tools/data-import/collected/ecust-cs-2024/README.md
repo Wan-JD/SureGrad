@@ -10,7 +10,8 @@
 4. 分数线 `program_score_lines.csv`
 5. 招生人数 `program_admissions.csv`
 6. 复试比 `program_interview_stats.csv`
-7. 来源链接 `program_source_links.csv`
+7. 初试科目 `subjects.csv` + `program_exam_subjects.csv`
+8. 来源链接 `program_source_links.csv`
 
 ## 官方来源
 
@@ -30,4 +31,5 @@
 4. `tuition_per_year=8000.00` 依据 2024 招生简章中的全日制学术学位硕士学费标准整理。
 5. `program_admissions.csv` 中计划/实际招生与推免、统考人数来自学院学位授权点建设年度报告（2024）表 5-1/5-2，口径为 `official`。
 6. `program_interview_stats.csv` 中最终录取 18 人取自年报普通招考人数；复试人数与复试比为 `estimated`，复试权重 50/50 依据学院复试录取实施细则。
-7. 本批次仍未填写报录比、考试科目和参考书，是因为官方未披露完整报考人数或尚未完成对应模板采集。
+7. `program_exam_subjects.csv` 中 2024 年业务课为 `815 计算机专业基础综合`（学院自命题），依据招生专业目录；2025 年起学院调整为 `408`，见学院 2024-04-29 说明。
+8. 本批次仍未填写报录比与参考书，是因为官方未披露完整报考人数或尚未完成对应模板采集。

@@ -179,13 +179,13 @@
 
 ## 10. 当前并行推进线（2026-05-23）
 
-1. **移动端资料详情**：`/resources/detail` 对接 `GET /study-resources/{id}`，列表卡片可跳转；视觉见 `docs/visual-qa/2026-05-23-resource-detail-round.md`
-2. **移动端专业详情**：`/programs/detail` 对接 `GET /programs/{id}`，院校详情可跳转；视觉见 `docs/visual-qa/2026-05-22-program-detail-round.md`
-3. **Admin 院系 Live**：`GET /admin/departments` 只读列表/详情，`/departments` 工作台接库；视觉见 `docs/visual-qa/2026-05-22-admin-departments-live-round.md`
-4. **响应式布局**：Admin 1080px 抽屉 + 720px 表格卡片化；Mobile `NavigationRail`（≥600px）+ `ResponsivePageBody`
-5. **视觉验收**：`capture-admin.mjs` 每页 desktop/tablet/mobile；`run-mobile-visual.mjs` 含 `mobile-program-detail`、`mobile-resource-detail`
-6. **备考资料演示**：`pnpm db:seed:resources` / `db:seed:demo`；Admin `/resources` Live API
-7. **API**：`study-resources` 分页 COUNT 修复；延续 reminders、对比、游客冷启动等
+1. **ecust 初试科目**：`subjects.csv` + `program_exam_subjects.csv`（2024：101/201/301/815）已入库；视觉见 `docs/visual-qa/2026-05-23-ecust-exam-subjects-round.md`
+2. **Admin 年度数据读采集**：`/yearly-data` 展示 ecust 招生计划、分数线、复试统计 CSV；首页统计含初试科目条数；见 `docs/visual-qa/2026-05-23-admin-yearly-collected-round.md`
+3. **移动端资料/专业详情**：已对接 Live API；专业详情仍缺报录比（待 `program_application_stats`）
+4. **Admin 院系 Live**：`GET /admin/departments` 只读；视觉见 `docs/visual-qa/2026-05-22-admin-departments-live-round.md`
+5. **视觉验收**：`pnpm verify:visual`；专业详情断言含 `815` / `初试科目`
+6. **备考资料演示**：`pnpm db:seed:demo`；Admin `/resources` Live API
+7. **待补 ecust CSV**：`program_application_stats.csv`、`program_reference_books.csv`（及 `books.csv`）
 
 ## 11. 下一步工作建议
 
@@ -203,7 +203,7 @@
 
 ### 11.3 移动端 / 视觉验收优先项
 
-1. 专业详情页已落地；**资料详情页**已落地（2026-05-23）。ecust 批次已补招生/复试 CSV（2026-05-23）。下一步优先补齐报录比 CSV 或初试科目模板，减少详情与对比中的「待补充」。
+1. 专业详情页已落地；**资料详情页**已落地（2026-05-23）。ecust 批次已补招生/复试/初试科目 CSV（2026-05-23）。下一步优先补齐 `program_application_stats`（报录比，需官方报考人数）或参考书模板，减少详情与对比中的「待补充」。
 2. 任何涉及 Flutter 页面结构或交互的改动，除 `flutter analyze` / `flutter test` 外，应跑 `pnpm verify:visual` 并写 `docs/visual-qa/` 记录。
 
 ### 11.4 数据采集优先项
