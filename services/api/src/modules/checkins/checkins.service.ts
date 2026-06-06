@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   addDays,
   formatDateOnly,
@@ -6,7 +10,6 @@ import {
   getWeekStartDate,
   parseDateOnly,
 } from '../../common/utils/date.util';
-import { buildSkeletonResponse } from '../../common/utils/build-skeleton-response';
 import { CreateCheckinDto } from './dto/create-checkin.dto';
 import { QueryStudyStatsDto } from './dto/query-study-stats.dto';
 import { UpdateCheckinDto } from './dto/update-checkin.dto';
@@ -89,22 +92,44 @@ export class CheckinsService {
     };
   }
 
-  update(userId: string, checkinId: string, dto: UpdateCheckinDto) {
-    return buildSkeletonResponse({
-      domain: 'checkins',
-      action: 'update',
-      message:
-        'Check-in update route is scaffolded, but edit constraints still need product confirmation.',
-      nextSteps: [
-        'Load check-in ownership and day constraints.',
-        'Apply partial updates safely.',
-      ],
-      payload: {
-        userId,
-        checkinId,
-        ...dto,
-      },
+  async update(userId: string, checkinId: string, dto: UpdateCheckinDto) {
+    const today = getTodayDate();
+    const checkin = await this.checkinsRepository.findCheckinById(checkinId);
+
+    if (!checkin || checkin.checkinDate !== today) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    const todayCheckin = await this.checkinsRepository.findTodayCheckin(
+      userId,
+      today,
+    );
+    if (!todayCheckin || todayCheckin.checkinId !== checkinId) {
+      throw new NotFoundException('NOT_FOUND');
+    }
+
+    await this.checkinsRepository.updateCheckin(checkinId, {
+      totalStudyMinutes: dto.totalStudyMinutes,
+      primarySubjectId: dto.primarySubjectId,
+      reflection: dto.reflection,
+      moodTag: dto.moodTag,
     });
+
+    const [updatedCheckin, streakDates] = await Promise.all([
+      this.checkinsRepository.findCheckinById(checkinId),
+      this.checkinsRepository.findCheckinDatesBeforeOrOn(userId, today),
+    ]);
+
+    return {
+      checkinId,
+      checkinDate: today,
+      totalStudyMinutes: updatedCheckin?.totalStudyMinutes ?? null,
+      primarySubjectId: updatedCheckin?.primarySubjectId ?? null,
+      primarySubjectName: updatedCheckin?.primarySubjectName ?? null,
+      reflection: updatedCheckin?.reflection ?? null,
+      moodTag: updatedCheckin?.moodTag ?? null,
+      continuousDays: this.computeContinuousCheckinDays(streakDates, today),
+    };
   }
 
   async getOverview(userId: string, query: QueryStudyStatsDto) {

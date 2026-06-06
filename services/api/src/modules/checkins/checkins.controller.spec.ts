@@ -12,6 +12,7 @@ import {
   CurrentTargetRecord,
   TodayCheckinRecord,
   TodoStatusSummary,
+  UpdateDailyCheckinInput,
 } from './repositories/checkins.repository';
 import { StudyCheckinsController } from './study-checkins.controller';
 import { StudyStatsController } from './study-stats.controller';
@@ -224,6 +225,40 @@ describe('CheckinsControllers', () => {
       getCurrentPlan: jest
         .fn<CheckinsRepository['getCurrentPlan']>()
         .mockImplementation(() => Promise.resolve(plan)),
+      findCheckinById: jest
+        .fn<CheckinsRepository['findCheckinById']>()
+        .mockImplementation((checkinId: string) =>
+          Promise.resolve(
+            mutableTodayRecord?.checkinId === checkinId
+              ? { ...mutableTodayRecord }
+              : null,
+          ),
+        ),
+      updateCheckin: jest
+        .fn<CheckinsRepository['updateCheckin']>()
+        .mockImplementation(
+          (checkinId: string, input: UpdateDailyCheckinInput) => {
+            if (mutableTodayRecord?.checkinId === checkinId) {
+              if (input.totalStudyMinutes !== undefined) {
+                mutableTodayRecord.totalStudyMinutes = input.totalStudyMinutes;
+              }
+              if (input.primarySubjectId !== undefined) {
+                mutableTodayRecord.primarySubjectId = input.primarySubjectId;
+                mutableTodayRecord.primarySubjectName = input.primarySubjectId
+                  ? 'New Subject'
+                  : null;
+              }
+              if (input.reflection !== undefined) {
+                mutableTodayRecord.reflection = input.reflection;
+              }
+              if (input.moodTag !== undefined) {
+                mutableTodayRecord.moodTag = input.moodTag;
+              }
+              upsertCheckinRangeRecord(mutableTodayRecord);
+            }
+            return Promise.resolve();
+          },
+        ),
     } as unknown as jest.Mocked<CheckinsRepository>;
   };
 
@@ -500,6 +535,76 @@ describe('CheckinsControllers', () => {
       .get('/api/v1/study-stats/overview?range=month')
       .set('Authorization', `Bearer ${token}`)
       .expect(400);
+
+    await app.close();
+  });
+
+  it('updates today checkin fields', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    const updateResponse = await request(getHttpServer(app))
+      .patch(`/api/v1/study-checkins/${todayCheckin.checkinId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        totalStudyMinutes: 180,
+        reflection: 'Updated reflection',
+        moodTag: 'productive',
+      })
+      .expect(200);
+
+    expect(updateResponse.body).toMatchObject({
+      checkinId: todayCheckin.checkinId,
+      checkinDate: today,
+      totalStudyMinutes: 180,
+      reflection: 'Updated reflection',
+      moodTag: 'productive',
+      continuousDays: 2,
+    });
+
+    await app.close();
+  });
+
+  it('rejects update for a checkin that does not belong to the user', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    await request(getHttpServer(app))
+      .patch('/api/v1/study-checkins/non-existent-id')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ totalStudyMinutes: 60 })
+      .expect(404);
+
+    await app.close();
+  });
+
+  it('requires auth for checkin update', async () => {
+    const { app } = await createApp();
+
+    await request(getHttpServer(app))
+      .patch(`/api/v1/study-checkins/${todayCheckin.checkinId}`)
+      .send({ totalStudyMinutes: 60 })
+      .expect(401);
+
+    await app.close();
+  });
+
+  it('allows partial updates', async () => {
+    const { app, tokenService } = await createApp();
+    const token = tokenService.createToken(userId, 'access');
+
+    const updateResponse = await request(getHttpServer(app))
+      .patch(`/api/v1/study-checkins/${todayCheckin.checkinId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ moodTag: 'relaxed' })
+      .expect(200);
+
+    expect(updateResponse.body).toMatchObject({
+      checkinId: todayCheckin.checkinId,
+      totalStudyMinutes: 120,
+      reflection: '状态不错',
+      moodTag: 'relaxed',
+    });
 
     await app.close();
   });

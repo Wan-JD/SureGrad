@@ -55,6 +55,13 @@ export interface CreateDailyCheckinInput {
   moodTag: string | null;
 }
 
+export interface UpdateDailyCheckinInput {
+  totalStudyMinutes?: number;
+  primarySubjectId?: string | null;
+  reflection?: string;
+  moodTag?: string | null;
+}
+
 @Injectable()
 export class CheckinsRepository {
   constructor(private readonly dataSource: DataSource) {}
@@ -142,6 +149,58 @@ export class CheckinsRepository {
     }
 
     return record;
+  }
+
+  async findCheckinById(checkinId: string): Promise<TodayCheckinRecord | null> {
+    const row = await this.dataSource
+      .createQueryBuilder()
+      .from('study_checkins', 'checkin')
+      .leftJoin(
+        'subjects',
+        'subject',
+        'subject.id = checkin.primary_subject_id',
+      )
+      .select([
+        'checkin.id AS "checkinId"',
+        'checkin.checkin_date AS "checkinDate"',
+        'checkin.total_study_minutes AS "totalStudyMinutes"',
+        'checkin.completed_todo_count AS "completedTodoCount"',
+        'checkin.primary_subject_id AS "primarySubjectId"',
+        'subject.name AS "primarySubjectName"',
+        'checkin.reflection AS "reflection"',
+        'checkin.mood_tag AS "moodTag"',
+      ])
+      .where('checkin.id = :checkinId', { checkinId })
+      .getRawOne<TodayCheckinRecord>();
+
+    return row ? mapTodayCheckinRecord(row) : null;
+  }
+
+  async updateCheckin(
+    checkinId: string,
+    input: UpdateDailyCheckinInput,
+  ): Promise<void> {
+    const values: Record<string, unknown> = {};
+
+    if (input.totalStudyMinutes !== undefined) {
+      values.total_study_minutes = input.totalStudyMinutes;
+    }
+    if (input.primarySubjectId !== undefined) {
+      values.primary_subject_id = input.primarySubjectId;
+    }
+    if (input.reflection !== undefined) {
+      values.reflection = input.reflection;
+    }
+    if (input.moodTag !== undefined) {
+      values.mood_tag = input.moodTag;
+    }
+
+    await this.dataSource
+      .createQueryBuilder()
+      .update('study_checkins')
+      .set(values)
+      .where('id = :checkinId', { checkinId })
+      .execute();
   }
 
   findCheckinsByDateRange(
