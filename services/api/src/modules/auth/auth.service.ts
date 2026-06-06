@@ -1,12 +1,15 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { MockTokenService } from '../../common/auth/mock-token.service';
 import { maskPhone } from '../../common/utils/mask-phone.util';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { LoginWithOtpDto } from './dto/login-with-otp.dto';
+import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 
 @Injectable()
@@ -14,19 +17,32 @@ export class AuthService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly mockTokenService: MockTokenService,
+    private readonly otpService: OtpService,
   ) {}
 
   sendOtp(dto: SendOtpDto) {
-    return {
-      sent: dto.scene === 'login',
-      expireSeconds: 300,
-      retryAfterSeconds: 60,
-    };
+    try {
+      const result = this.otpService.issue(dto.phone);
+      return {
+        sent: true,
+        expireSeconds: result.expireSeconds,
+        retryAfterSeconds: result.retryAfterSeconds,
+      };
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'RATE_LIMITED') {
+        throw new HttpException(
+          'Too many OTP requests. Try again later.',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      throw err;
+    }
   }
 
   async loginWithOtp(dto: LoginWithOtpDto) {
-    if (dto.otpCode !== '123456') {
-      throw new BadRequestException('OTP_INVALID');
+    const verification = this.otpService.verify(dto.phone, dto.otpCode);
+    if (!verification.valid) {
+      throw new BadRequestException(verification.reason ?? 'OTP_INVALID');
     }
 
     let user = await this.usersRepository.findUserByPhone(dto.phone);
@@ -60,6 +76,24 @@ export class AuthService {
         nickname: user.nickname,
         avatarUrl: user.avatarUrl,
       },
+    };
+  }
+
+  async refreshToken(refreshToken: string) {
+    const parsed = this.mockTokenService.parseToken(refreshToken);
+    if (!parsed || parsed.tokenType !== 'refresh') {
+      throw new BadRequestException('INVALID_REFRESH_TOKEN');
+    }
+
+    const user = await this.usersRepository.findUserById(parsed.userId);
+    if (!user || user.status === 'disabled') {
+      throw new ForbiddenException('FORBIDDEN');
+    }
+
+    return {
+      accessToken: this.mockTokenService.createToken(user.id, 'access'),
+      refreshToken: this.mockTokenService.createToken(user.id, 'refresh'),
+      expiresIn: 7 * 24 * 60 * 60,
     };
   }
 }
