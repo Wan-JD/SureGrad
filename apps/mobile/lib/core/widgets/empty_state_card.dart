@@ -34,12 +34,23 @@ class EmptyStateCard extends StatelessWidget {
                 height: 44,
                 width: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F1EE),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF125B52), Color(0xFF1E7A67)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF125B52).withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.inbox_outlined,
-                  color: Color(0xFF125B52),
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 16),
@@ -48,7 +59,19 @@ class EmptyStateCard extends StatelessWidget {
               Text(message, style: Theme.of(context).textTheme.bodyMedium),
               if (actionLabel != null && onAction != null) ...[
                 const SizedBox(height: 16),
-                FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+                FilledButton.icon(
+                  onPressed: onAction,
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                  label: Text(actionLabel!),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF125B52),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ],
             ],
           ),

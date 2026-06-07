@@ -135,10 +135,21 @@ class _LoginPageState extends State<LoginPage> {
                     TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: '手机号',
                         hintText: '输入 13800138000',
-                        prefixIcon: Icon(Icons.phone_android_rounded),
+                        prefixIcon: const Icon(Icons.phone_android_rounded),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE4DDD2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF125B52), width: 2),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -154,10 +165,21 @@ class _LoginPageState extends State<LoginPage> {
                                 RegExp(r'[A-Za-z0-9]'),
                               ),
                             ],
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: '验证码',
                               hintText: '输入图片中的字符',
-                              prefixIcon: Icon(Icons.password_rounded),
+                              prefixIcon: const Icon(Icons.password_rounded),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE4DDD2)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF125B52), width: 2),
+                              ),
                             ),
                           ),
                         ),
