@@ -79,7 +79,7 @@ class _SchoolListPageState extends State<SchoolListPage> {
                   const SizedBox(height: 16),
                   SectionCard(
                     title: '筛选',
-                    subtitle: '这里已经直接把参数发给真实 /schools 接口。',
+                    subtitle: '支持按城市、学位类型和数学科目筛选。',
                     children: [
                       TextField(
                         controller: _searchController,
@@ -143,7 +143,7 @@ class _SchoolListPageState extends State<SchoolListPage> {
                   if (repository.recentSchools.isNotEmpty) ...[
                     SectionCard(
                       title: '最近浏览',
-                      subtitle: '这是前端的轻量会话内记录，不伪造任何后端业务状态。',
+                      subtitle: '本次会话内浏览过的院校。',
                       children: [
                         SizedBox(
                           height: 132,
@@ -312,7 +312,7 @@ class _ListHero extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              '这一页现在直接消费真实 /schools 响应，不再走 MockAppStore。',
+              '浏览院校、筛选专业、对比分数线，找到最适合你的目标。',
               style: TextStyle(color: Color(0xFFD2EDE5), fontSize: 16),
             ),
           ],
