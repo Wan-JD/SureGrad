@@ -24,6 +24,11 @@ export class AdminSchoolsController {
     return this.adminSchoolsService.list(query);
   }
 
+  @Get('facets')
+  facets() {
+    return this.adminSchoolsService.facets();
+  }
+
   @Get(':schoolId')
   findOne(@Param('schoolId') schoolId: string) {
     return this.adminSchoolsService.findOne(schoolId);

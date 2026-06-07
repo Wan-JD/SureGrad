@@ -186,13 +186,54 @@ export const schoolsLiveColumns: AdminColumn[] = [
 ];
 
 export const schoolsLiveFields: AdminField[] = [
-  { key: "id", label: "school_id", type: "uuid", required: true, description: "School id." },
-  { key: "name", label: "school_name", type: "string", required: true, description: "School name." },
-  { key: "short_name", label: "short_name", type: "string", description: "Short display name." },
-  { key: "province", label: "province", type: "string", required: true, description: "Province." },
-  { key: "city", label: "city", type: "string", required: true, description: "City." },
-  { key: "school_level", label: "school_level", type: "string", required: true, description: "School level tag." },
-  { key: "school_type", label: "school_type", type: "string", required: true, description: "School type tag." },
+  {
+    key: "id",
+    label: "school_id",
+    type: "uuid",
+    required: true,
+    description: "School id.",
+  },
+  {
+    key: "name",
+    label: "school_name",
+    type: "string",
+    required: true,
+    description: "School name.",
+  },
+  {
+    key: "short_name",
+    label: "short_name",
+    type: "string",
+    description: "Short display name.",
+  },
+  {
+    key: "province",
+    label: "province",
+    type: "string",
+    required: true,
+    description: "Province.",
+  },
+  {
+    key: "city",
+    label: "city",
+    type: "string",
+    required: true,
+    description: "City.",
+  },
+  {
+    key: "school_level",
+    label: "school_level",
+    type: "string",
+    required: true,
+    description: "School level tag.",
+  },
+  {
+    key: "school_type",
+    label: "school_type",
+    type: "string",
+    required: true,
+    description: "School type tag.",
+  },
   {
     key: "has_graduate_school",
     label: "has_graduate_school",
@@ -254,7 +295,8 @@ export const schoolsLiveDetailSections: AdminDetailSection[] = [
   },
   {
     title: "Program Coverage",
-    description: "High-level program coverage to keep the drawer useful before write actions exist.",
+    description:
+      "High-level program coverage to keep the drawer useful before write actions exist.",
     fields: ["program_count", "hot_programs"],
   },
 ];
@@ -271,13 +313,55 @@ export const programsLiveColumns: AdminColumn[] = [
 ];
 
 export const programsLiveFields: AdminField[] = [
-  { key: "id", label: "program_id", type: "uuid", required: true, description: "Program id." },
-  { key: "school_name", label: "school_name", type: "string", required: true, description: "School label from the current selector." },
-  { key: "department_id", label: "department_id", type: "uuid", required: true, description: "Department id." },
-  { key: "department_name", label: "department_name", type: "string", required: true, description: "Department name." },
-  { key: "name", label: "program_name", type: "string", required: true, description: "Program name." },
-  { key: "code", label: "program_code", type: "string", required: true, description: "Program code." },
-  { key: "degree_type", label: "degree_type", type: "string", required: true, description: "Degree type." },
+  {
+    key: "id",
+    label: "program_id",
+    type: "uuid",
+    required: true,
+    description: "Program id.",
+  },
+  {
+    key: "school_name",
+    label: "school_name",
+    type: "string",
+    required: true,
+    description: "School label from the current selector.",
+  },
+  {
+    key: "department_id",
+    label: "department_id",
+    type: "uuid",
+    required: true,
+    description: "Department id.",
+  },
+  {
+    key: "department_name",
+    label: "department_name",
+    type: "string",
+    required: true,
+    description: "Department name.",
+  },
+  {
+    key: "name",
+    label: "program_name",
+    type: "string",
+    required: true,
+    description: "Program name.",
+  },
+  {
+    key: "code",
+    label: "program_code",
+    type: "string",
+    required: true,
+    description: "Program code.",
+  },
+  {
+    key: "degree_type",
+    label: "degree_type",
+    type: "string",
+    required: true,
+    description: "Degree type.",
+  },
   {
     key: "discipline_category",
     label: "discipline_category",
@@ -333,8 +417,20 @@ export const resourcesLiveColumns: AdminColumn[] = [
 ];
 
 export const resourcesLiveFields: AdminField[] = [
-  { key: "id", label: "id", type: "uuid", required: true, description: "资料主键 ID。" },
-  { key: "title", label: "title", type: "string", required: true, description: "资料标题。" },
+  {
+    key: "id",
+    label: "id",
+    type: "uuid",
+    required: true,
+    description: "资料主键 ID。",
+  },
+  {
+    key: "title",
+    label: "title",
+    type: "string",
+    required: true,
+    description: "资料标题。",
+  },
   {
     key: "resource_type",
     label: "resource_type",
@@ -396,12 +492,14 @@ export const resourcesLiveFields: AdminField[] = [
 export const resourcesLiveDetailSections: AdminDetailSection[] = [
   {
     title: "Resource Identity",
-    description: "Live list fields that identify the study resource in admin review.",
+    description:
+      "Live list fields that identify the study resource in admin review.",
     fields: ["id", "title", "resource_type", "subject_name", "stage_tag"],
   },
   {
     title: "Recommendation Copy",
-    description: "Provider, summary, and usage advice returned by the detail endpoint.",
+    description:
+      "Provider, summary, and usage advice returned by the detail endpoint.",
     fields: ["provider_name", "summary", "usage_advice"],
   },
   {
@@ -475,12 +573,40 @@ export type AdminSchoolsResponse = {
   pageSize: number;
 };
 
-export async function listAdminSchools(query: AdminSchoolsQuery, signal?: AbortSignal) {
-  return getAdminJson<AdminSchoolsResponse>("/admin/schools", query, { signal });
+export type AdminSchoolFacetOption = {
+  value: string;
+  count: number;
+};
+
+export type AdminSchoolFacets = {
+  provinces: AdminSchoolFacetOption[];
+  cities: AdminSchoolFacetOption[];
+  schoolLevels: AdminSchoolFacetOption[];
+  schoolTypes: AdminSchoolFacetOption[];
+  statuses: AdminSchoolFacetOption[];
+};
+
+export async function listAdminSchools(
+  query: AdminSchoolsQuery,
+  signal?: AbortSignal,
+) {
+  return getAdminJson<AdminSchoolsResponse>("/admin/schools", query, {
+    signal,
+  });
+}
+
+export async function getAdminSchoolFacets(signal?: AbortSignal) {
+  return getAdminJson<AdminSchoolFacets>("/admin/schools/facets", undefined, {
+    signal,
+  });
 }
 
 export async function getAdminSchool(schoolId: string, signal?: AbortSignal) {
-  return getAdminJson<AdminSchoolSummary>(`/admin/schools/${schoolId}`, undefined, { signal });
+  return getAdminJson<AdminSchoolSummary>(
+    `/admin/schools/${schoolId}`,
+    undefined,
+    { signal },
+  );
 }
 
 export type AdminDepartmentSummary = {
@@ -519,14 +645,59 @@ export const departmentsLiveColumns: AdminColumn[] = [
 ];
 
 export const departmentsLiveFields: AdminField[] = [
-  { key: "id", label: "department_id", type: "uuid", required: true, description: "Department id." },
-  { key: "school_id", label: "school_name", type: "string", required: true, description: "Owning school label." },
-  { key: "raw_school_id", label: "school_id", type: "uuid", required: true, description: "Owning school id." },
-  { key: "name", label: "department_name", type: "string", required: true, description: "Department name." },
-  { key: "code", label: "department_code", type: "string", description: "Department code." },
-  { key: "website", label: "website", type: "text", description: "Department website." },
-  { key: "status", label: "status", type: "string", required: true, description: "Display status." },
-  { key: "updated_at", label: "updated_at", type: "string", description: "Last updated timestamp." },
+  {
+    key: "id",
+    label: "department_id",
+    type: "uuid",
+    required: true,
+    description: "Department id.",
+  },
+  {
+    key: "school_id",
+    label: "school_name",
+    type: "string",
+    required: true,
+    description: "Owning school label.",
+  },
+  {
+    key: "raw_school_id",
+    label: "school_id",
+    type: "uuid",
+    required: true,
+    description: "Owning school id.",
+  },
+  {
+    key: "name",
+    label: "department_name",
+    type: "string",
+    required: true,
+    description: "Department name.",
+  },
+  {
+    key: "code",
+    label: "department_code",
+    type: "string",
+    description: "Department code.",
+  },
+  {
+    key: "website",
+    label: "website",
+    type: "text",
+    description: "Department website.",
+  },
+  {
+    key: "status",
+    label: "status",
+    type: "string",
+    required: true,
+    description: "Display status.",
+  },
+  {
+    key: "updated_at",
+    label: "updated_at",
+    type: "string",
+    description: "Last updated timestamp.",
+  },
 ];
 
 export const departmentsLiveDetailSections: AdminDetailSection[] = [
@@ -551,10 +722,15 @@ export async function listAdminDepartments(
   query: AdminDepartmentsQuery,
   signal?: AbortSignal,
 ) {
-  return getAdminJson<AdminDepartmentsResponse>("/admin/departments", query, { signal });
+  return getAdminJson<AdminDepartmentsResponse>("/admin/departments", query, {
+    signal,
+  });
 }
 
-export async function getAdminDepartment(departmentId: string, signal?: AbortSignal) {
+export async function getAdminDepartment(
+  departmentId: string,
+  signal?: AbortSignal,
+) {
   return getAdminJson<AdminDepartmentSummary>(
     `/admin/departments/${departmentId}`,
     undefined,
@@ -563,11 +739,15 @@ export async function getAdminDepartment(departmentId: string, signal?: AbortSig
 }
 
 export async function listSchools(query: SchoolsQuery, signal?: AbortSignal) {
-  return getAdminJson<PaginatedResponse<SchoolListItem>>("/schools", query, { signal });
+  return getAdminJson<PaginatedResponse<SchoolListItem>>("/schools", query, {
+    signal,
+  });
 }
 
 export async function getSchoolDetail(schoolId: string, signal?: AbortSignal) {
-  return getAdminJson<SchoolDetail>(`/schools/${schoolId}`, undefined, { signal });
+  return getAdminJson<SchoolDetail>(`/schools/${schoolId}`, undefined, {
+    signal,
+  });
 }
 
 export async function listSchoolPrograms(
@@ -582,19 +762,35 @@ export async function listSchoolPrograms(
   );
 }
 
-export async function listStudyResources(query: StudyResourcesQuery, signal?: AbortSignal) {
-  return getAdminJson<PaginatedResponse<StudyResourceListItem>>("/study-resources", query, {
-    signal,
-  });
+export async function listStudyResources(
+  query: StudyResourcesQuery,
+  signal?: AbortSignal,
+) {
+  return getAdminJson<PaginatedResponse<StudyResourceListItem>>(
+    "/study-resources",
+    query,
+    {
+      signal,
+    },
+  );
 }
 
-export async function getStudyResourceDetail(resourceId: string, signal?: AbortSignal) {
-  return getAdminJson<StudyResourceDetail>(`/study-resources/${resourceId}`, undefined, {
-    signal,
-  });
+export async function getStudyResourceDetail(
+  resourceId: string,
+  signal?: AbortSignal,
+) {
+  return getAdminJson<StudyResourceDetail>(
+    `/study-resources/${resourceId}`,
+    undefined,
+    {
+      signal,
+    },
+  );
 }
 
-function formatScoreLineSummary(summary: SchoolListItem["scoreLineSummary"]): string | null {
+function formatScoreLineSummary(
+  summary: SchoolListItem["scoreLineSummary"],
+): string | null {
   if (!summary) {
     return null;
   }
@@ -622,7 +818,9 @@ function formatInterviewSummary(
   return `${summary.examYear} / ${summary.interviewRatio.toFixed(2)} / ${summary.retestCandidateCount}->${summary.finalAdmittedCount}`;
 }
 
-function formatMatchedPrograms(programs: SchoolListItem["matchedPrograms"]): string | null {
+function formatMatchedPrograms(
+  programs: SchoolListItem["matchedPrograms"],
+): string | null {
   if (!programs.length) {
     return null;
   }
@@ -632,7 +830,9 @@ function formatMatchedPrograms(programs: SchoolListItem["matchedPrograms"]): str
     .join(", ");
 }
 
-function formatHotPrograms(programs: SchoolDetail["hotPrograms"]): string | null {
+function formatHotPrograms(
+  programs: SchoolDetail["hotPrograms"],
+): string | null {
   if (!programs.length) {
     return null;
   }
@@ -640,7 +840,9 @@ function formatHotPrograms(programs: SchoolDetail["hotPrograms"]): string | null
   return programs
     .map((program) => {
       const scoreLine = formatScoreLineSummary(program.scoreLineSummary);
-      const application = formatApplicationSummary(program.applicationRatioSummary);
+      const application = formatApplicationSummary(
+        program.applicationRatioSummary,
+      );
       const summaryBits = [scoreLine, application].filter(Boolean).join(" | ");
 
       return summaryBits
@@ -705,7 +907,10 @@ export function formatAdminValue(value: AdminScalar | undefined): string {
   return text;
 }
 
-export function getAdminTone(key: string, value: AdminScalar | undefined): string {
+export function getAdminTone(
+  key: string,
+  value: AdminScalar | undefined,
+): string {
   if (value === null || value === undefined) {
     return "muted";
   }
@@ -751,12 +956,25 @@ export function getAdminTone(key: string, value: AdminScalar | undefined): strin
   return "default";
 }
 
-export function getAdminField(fields: AdminField[], key: string): AdminField | undefined {
+export function getAdminField(
+  fields: AdminField[],
+  key: string,
+): AdminField | undefined {
   return fields.find((field) => field.key === key);
 }
 
-export function getAdminPrimaryLabel(record: AdminRecord, fallback: string): string {
-  const candidates = ["name", "program_name", "school_name", "title", "short_name", "code"];
+export function getAdminPrimaryLabel(
+  record: AdminRecord,
+  fallback: string,
+): string {
+  const candidates = [
+    "name",
+    "program_name",
+    "school_name",
+    "title",
+    "short_name",
+    "code",
+  ];
 
   for (const key of candidates) {
     const value = record[key];
@@ -790,7 +1008,10 @@ export function getAdminRecordMeta(record: AdminRecord): string[] {
     .map((value) => formatAdminValue(value));
 }
 
-export function filterRecordsBySearch(records: AdminRecord[], searchTerm: string): AdminRecord[] {
+export function filterRecordsBySearch(
+  records: AdminRecord[],
+  searchTerm: string,
+): AdminRecord[] {
   const normalized = searchTerm.trim().toLowerCase();
 
   if (!normalized) {
@@ -804,17 +1025,24 @@ export function filterRecordsBySearch(records: AdminRecord[], searchTerm: string
   );
 }
 
-export function toSelectOptions(values: Array<string | number | boolean | null | undefined>) {
+export function toSelectOptions(
+  values: Array<string | number | boolean | null | undefined>,
+) {
   return Array.from(
     new Set(
       values
-        .filter((value): value is string | number | boolean => value !== null && value !== undefined && value !== "")
+        .filter(
+          (value): value is string | number | boolean =>
+            value !== null && value !== undefined && value !== "",
+        )
         .map((value) => String(value)),
     ),
   ).sort((left, right) => left.localeCompare(right, "en", { numeric: true }));
 }
 
-export function mapAdminDepartmentToRecord(item: AdminDepartmentSummary): AdminRecord {
+export function mapAdminDepartmentToRecord(
+  item: AdminDepartmentSummary,
+): AdminRecord {
   return {
     id: item.departmentId,
     name: item.name,
@@ -856,7 +1084,9 @@ export function mapSchoolListItemToRecord(item: SchoolListItem): AdminRecord {
     school_type: item.schoolType,
     matched_programs: formatMatchedPrograms(item.matchedPrograms),
     score_line_summary: formatScoreLineSummary(item.scoreLineSummary),
-    application_ratio_summary: formatApplicationSummary(item.applicationRatioSummary),
+    application_ratio_summary: formatApplicationSummary(
+      item.applicationRatioSummary,
+    ),
     missing_flags: formatMissingFlags(item.missingFlags),
     is_favorited: item.isFavorited,
   };
@@ -881,7 +1111,9 @@ export function mapSchoolDetailToRecord(detail: SchoolDetail): AdminRecord {
   };
 }
 
-export function mapStudyResourceListItemToRecord(item: StudyResourceListItem): AdminRecord {
+export function mapStudyResourceListItemToRecord(
+  item: StudyResourceListItem,
+): AdminRecord {
   return {
     id: item.resourceId,
     title: item.title,
@@ -896,7 +1128,9 @@ export function mapStudyResourceListItemToRecord(item: StudyResourceListItem): A
   };
 }
 
-export function mapStudyResourceDetailToRecord(detail: StudyResourceDetail): AdminRecord {
+export function mapStudyResourceDetailToRecord(
+  detail: StudyResourceDetail,
+): AdminRecord {
   return {
     ...mapStudyResourceListItemToRecord(detail),
     usage_advice: detail.usageAdvice,
@@ -918,7 +1152,9 @@ export function mapProgramListItemToRecord(
     discipline_category: item.disciplineCategory,
     research_direction: item.researchDirection,
     score_line_summary: formatScoreLineSummary(item.scoreLineSummary),
-    application_ratio_summary: formatApplicationSummary(item.applicationRatioSummary),
+    application_ratio_summary: formatApplicationSummary(
+      item.applicationRatioSummary,
+    ),
     interview_ratio_summary: formatInterviewSummary(item.interviewRatioSummary),
     is_favorited: item.isFavorited,
     is_in_comparison: item.isInComparison,

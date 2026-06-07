@@ -39,6 +39,10 @@ export class AdminSchoolsService {
     };
   }
 
+  facets() {
+    return this.adminSchoolsRepository.findFacets();
+  }
+
   async create(dto: CreateSchoolDto) {
     const school = this.adminSchoolsRepository.create({
       name: dto.name.trim(),

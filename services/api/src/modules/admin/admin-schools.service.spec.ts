@@ -6,6 +6,7 @@ describe('AdminSchoolsService', () => {
   const adminSchoolsRepository = {
     findById: jest.fn(),
     findPage: jest.fn(),
+    findFacets: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
   } as unknown as jest.Mocked<AdminSchoolsRepository>;
@@ -55,5 +56,23 @@ describe('AdminSchoolsService', () => {
     await expect(
       service.update('missing', { status: 'inactive' }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('returns school facets from the repository', async () => {
+    adminSchoolsRepository.findFacets.mockResolvedValue({
+      provinces: [{ value: '北京市', count: 92 }],
+      cities: [{ value: '北京市', count: 92 }],
+      schoolLevels: [{ value: '本科', count: 1365 }],
+      schoolTypes: [{ value: '未分类', count: 2914 }],
+      statuses: [{ value: 'active', count: 2919 }],
+    });
+
+    await expect(service.facets()).resolves.toEqual({
+      provinces: [{ value: '北京市', count: 92 }],
+      cities: [{ value: '北京市', count: 92 }],
+      schoolLevels: [{ value: '本科', count: 1365 }],
+      schoolTypes: [{ value: '未分类', count: 2914 }],
+      statuses: [{ value: 'active', count: 2919 }],
+    });
   });
 });

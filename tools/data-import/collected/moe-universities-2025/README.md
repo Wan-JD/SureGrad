@@ -40,6 +40,14 @@
 
 ## 本地校验
 
+如需从教育部官方 Excel 附件重新生成本批次：
+
+```powershell
+python tools/data-import/scripts/parse_moe_universities_2025.py --input output/moe-universities-2025.xls
+```
+
+该脚本会校验总数 `2919`、本科 `1365`、专科 `1554`、省级小节计数、学校标识码唯一性和 `name + city` 唯一性。
+
 ```powershell
 python tools/data-import/validate_csv.py tools/data-import/collected/moe-universities-2025
 ```

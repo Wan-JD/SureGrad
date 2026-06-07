@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LiveOperationsWorkspace, type FilterControl } from "@/components/live-operations-workspace";
+import {
+  LiveOperationsWorkspace,
+  type FilterControl,
+} from "@/components/live-operations-workspace";
 import { patchAdminJson } from "@/lib/admin-api-client";
 import { getAdminOperationsPage } from "@/lib/admin-operations";
 import {
+  getAdminSchoolFacets,
   getAdminSchool,
   listAdminSchools,
-  listSchools,
   mapAdminSchoolToRecord,
   schoolsLiveColumns,
   schoolsLiveDetailSections,
   schoolsLiveFields,
-  toSelectOptions,
-  type SchoolListItem,
+  type AdminSchoolFacets,
 } from "@/lib/admin-live-data";
 
 const page = getAdminOperationsPage("schools");
@@ -41,8 +43,25 @@ type DetailState = {
   error: string | null;
 };
 
-function buildOptionList(allLabel: string, values: string[]) {
-  return [{ label: allLabel, value: "" }, ...values.map((value) => ({ label: value, value }))];
+const emptyFacets: AdminSchoolFacets = {
+  provinces: [],
+  cities: [],
+  schoolLevels: [],
+  schoolTypes: [],
+  statuses: [],
+};
+
+function buildOptionList(
+  allLabel: string,
+  values: Array<{ value: string; count: number }>,
+) {
+  return [
+    { label: allLabel, value: "" },
+    ...values.map((option) => ({
+      label: `${option.value} (${option.count})`,
+      value: option.value,
+    })),
+  ];
 }
 
 export function SchoolsLiveWorkspace() {
@@ -67,19 +86,19 @@ export function SchoolsLiveWorkspace() {
     loading: false,
     error: null,
   });
-  const [optionSource, setOptionSource] = useState<SchoolListItem[]>([]);
+  const [facets, setFacets] = useState<AdminSchoolFacets>(emptyFacets);
   const [reloadToken, setReloadToken] = useState(0);
   const [detailReloadToken, setDetailReloadToken] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    void listSchools({ page: 1, pageSize: 50 }, controller.signal)
+    void getAdminSchoolFacets(controller.signal)
       .then((response) => {
-        setOptionSource(response.items);
+        setFacets(response);
       })
       .catch(() => {
-        setOptionSource([]);
+        setFacets(emptyFacets);
       });
 
     return () => controller.abort();
@@ -101,7 +120,9 @@ export function SchoolsLiveWorkspace() {
         city: query.city,
         schoolLevel: query.schoolLevel,
         schoolType: query.schoolType,
-        status: query.status ? (query.status as "active" | "inactive") : undefined,
+        status: query.status
+          ? (query.status as "active" | "inactive")
+          : undefined,
         page: 1,
         pageSize: 50,
       },
@@ -137,7 +158,9 @@ export function SchoolsLiveWorkspace() {
       return;
     }
 
-    const hasSelected = listState.records.some((record) => String(record.id) === selectedId);
+    const hasSelected = listState.records.some(
+      (record) => String(record.id) === selectedId,
+    );
     if (!hasSelected) {
       setSelectedId(String(listState.records[0].id));
     }
@@ -185,30 +208,29 @@ export function SchoolsLiveWorkspace() {
   }, [detailReloadToken, selectedId]);
 
   const provinceOptions = useMemo(
-    () => buildOptionList("全部省份", toSelectOptions(optionSource.map((item) => item.province))),
-    [optionSource],
+    () => buildOptionList("全部省份", facets.provinces),
+    [facets.provinces],
   );
 
-  const cityOptions = useMemo(() => {
-    const visibleCities = optionSource
-      .filter((item) => !query.province || item.province === query.province)
-      .map((item) => item.city);
-
-    return buildOptionList("全部城市", toSelectOptions(visibleCities));
-  }, [optionSource, query.province]);
+  const cityOptions = useMemo(
+    () => buildOptionList("全部城市", facets.cities),
+    [facets.cities],
+  );
 
   const levelOptions = useMemo(
-    () => buildOptionList("全部层级", toSelectOptions(optionSource.map((item) => item.schoolLevel))),
-    [optionSource],
+    () => buildOptionList("全部层级", facets.schoolLevels),
+    [facets.schoolLevels],
   );
 
   const typeOptions = useMemo(
-    () => buildOptionList("全部类型", toSelectOptions(optionSource.map((item) => item.schoolType))),
-    [optionSource],
+    () => buildOptionList("全部类型", facets.schoolTypes),
+    [facets.schoolTypes],
   );
 
   const selectedRecord = useMemo(
-    () => listState.records.find((record) => String(record.id) === selectedId) ?? null,
+    () =>
+      listState.records.find((record) => String(record.id) === selectedId) ??
+      null,
     [listState.records, selectedId],
   );
 
@@ -217,7 +239,8 @@ export function SchoolsLiveWorkspace() {
       return;
     }
 
-    const nextStatus = selectedRecord.raw_status === "active" ? "inactive" : "active";
+    const nextStatus =
+      selectedRecord.raw_status === "active" ? "inactive" : "active";
     setSaving(true);
     setListState((current) => ({ ...current, error: null }));
 
@@ -248,7 +271,8 @@ export function SchoolsLiveWorkspace() {
           { label: "启用", value: "active" },
           { label: "停用", value: "inactive" },
         ],
-        onChange: (value) => setQuery((current) => ({ ...current, status: value })),
+        onChange: (value) =>
+          setQuery((current) => ({ ...current, status: value })),
       },
       {
         key: "province",
@@ -268,21 +292,24 @@ export function SchoolsLiveWorkspace() {
         label: "城市",
         value: query.city,
         options: cityOptions,
-        onChange: (value) => setQuery((current) => ({ ...current, city: value })),
+        onChange: (value) =>
+          setQuery((current) => ({ ...current, city: value })),
       },
       {
         key: "schoolLevel",
         label: "层级",
         value: query.schoolLevel,
         options: levelOptions,
-        onChange: (value) => setQuery((current) => ({ ...current, schoolLevel: value })),
+        onChange: (value) =>
+          setQuery((current) => ({ ...current, schoolLevel: value })),
       },
       {
         key: "schoolType",
         label: "类型",
         value: query.schoolType,
         options: typeOptions,
-        onChange: (value) => setQuery((current) => ({ ...current, schoolType: value })),
+        onChange: (value) =>
+          setQuery((current) => ({ ...current, schoolType: value })),
       },
     ],
     [cityOptions, levelOptions, provinceOptions, query, typeOptions],
@@ -309,52 +336,53 @@ export function SchoolsLiveWorkspace() {
       </section>
 
       <LiveOperationsWorkspace
-      page={page}
-      dataset={{
-        title: scaffoldDataset.title,
-        description: scaffoldDataset.description,
-        tableName: scaffoldDataset.tableName,
-        templateName: scaffoldDataset.templateName,
-        importActions: scaffoldDataset.importActions,
-        revisionActions: scaffoldDataset.revisionActions,
-        columns: schoolsLiveColumns,
-        fields: schoolsLiveFields,
-        detailSections: schoolsLiveDetailSections,
-      }}
-      search={{
-        value: query.q,
-        placeholder: "按学校名称或关联专业搜索",
-        onChange: (value) => setQuery((current) => ({ ...current, q: value })),
-        helpText: "搜索会直接命中后端学校列表接口。",
-      }}
-      filters={filters}
-      records={listState.records}
-      totalRecords={listState.total}
-      selectedId={selectedId}
-      onSelect={setSelectedId}
-      onResetFilters={() =>
-        setQuery({
-          q: "",
-          province: "",
-          city: "",
-          schoolLevel: "",
-          schoolType: "",
-          status: "",
-        })
-      }
-      listLoading={listState.loading}
-      listError={listState.error}
-      listLoadingCopy="正在从后端加载学校数据。"
-      listEmptyCopy="当前筛选条件下没有匹配的学校。"
-      onRetryList={() => setReloadToken((value) => value + 1)}
-      detailRecord={detailState.record}
-      detailLoading={detailState.loading}
-      detailError={detailState.error}
-      detailLoadingCopy="正在从后端加载学校详情。"
-      detailEmptyCopy="请选择一所学校查看详情。"
-      onRetryDetail={() => setDetailReloadToken((value) => value + 1)}
-      listScopeCopy="列表与详情来自 /admin/schools，支持启用/停用写操作。"
-    />
+        page={page}
+        dataset={{
+          title: scaffoldDataset.title,
+          description: scaffoldDataset.description,
+          tableName: scaffoldDataset.tableName,
+          templateName: scaffoldDataset.templateName,
+          importActions: scaffoldDataset.importActions,
+          revisionActions: scaffoldDataset.revisionActions,
+          columns: schoolsLiveColumns,
+          fields: schoolsLiveFields,
+          detailSections: schoolsLiveDetailSections,
+        }}
+        search={{
+          value: query.q,
+          placeholder: "按学校名称或关联专业搜索",
+          onChange: (value) =>
+            setQuery((current) => ({ ...current, q: value })),
+          helpText: "搜索会直接命中后端学校列表接口。",
+        }}
+        filters={filters}
+        records={listState.records}
+        totalRecords={listState.total}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        onResetFilters={() =>
+          setQuery({
+            q: "",
+            province: "",
+            city: "",
+            schoolLevel: "",
+            schoolType: "",
+            status: "",
+          })
+        }
+        listLoading={listState.loading}
+        listError={listState.error}
+        listLoadingCopy="正在从后端加载学校数据。"
+        listEmptyCopy="当前筛选条件下没有匹配的学校。"
+        onRetryList={() => setReloadToken((value) => value + 1)}
+        detailRecord={detailState.record}
+        detailLoading={detailState.loading}
+        detailError={detailState.error}
+        detailLoadingCopy="正在从后端加载学校详情。"
+        detailEmptyCopy="请选择一所学校查看详情。"
+        onRetryDetail={() => setDetailReloadToken((value) => value + 1)}
+        listScopeCopy="列表与详情来自 /admin/schools，支持启用/停用写操作。"
+      />
     </div>
   );
 }

@@ -3,6 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SchoolEntity } from '../../../database/entities/school.entity';
 
+type FacetRow = {
+  value: string | null;
+  count: string;
+};
+
 @Injectable()
 export class AdminSchoolsRepository {
   constructor(
@@ -22,6 +27,46 @@ export class AdminSchoolsRepository {
 
   save(school: SchoolEntity) {
     return this.schoolsRepository.save(school);
+  }
+
+  async findFacets() {
+    const baseQuery = () =>
+      this.schoolsRepository
+        .createQueryBuilder('school')
+        .where('school.deletedAt IS NULL');
+
+    const readFacet = async (column: string) => {
+      const rows = await baseQuery()
+        .select(`school.${column}`, 'value')
+        .addSelect('COUNT(1)', 'count')
+        .andWhere(`school.${column} IS NOT NULL`)
+        .andWhere(`school.${column} <> ''`)
+        .groupBy(`school.${column}`)
+        .orderBy(`school.${column}`, 'ASC')
+        .getRawMany<FacetRow>();
+
+      return rows.map((row) => ({
+        value: row.value ?? '',
+        count: Number(row.count),
+      }));
+    };
+
+    const [provinces, cities, schoolLevels, schoolTypes, statuses] =
+      await Promise.all([
+        readFacet('province'),
+        readFacet('city'),
+        readFacet('schoolLevel'),
+        readFacet('schoolType'),
+        readFacet('status'),
+      ]);
+
+    return {
+      provinces,
+      cities,
+      schoolLevels,
+      schoolTypes,
+      statuses,
+    };
   }
 
   async findPage(params: {
