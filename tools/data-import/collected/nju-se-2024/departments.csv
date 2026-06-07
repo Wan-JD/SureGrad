@@ -1,2 +1,2 @@
-school_name,name
-南京大学,计算机科学与技术系
+school_name,school_code,department_name,department_code,website,status
+南京大学,,计算机科学与技术系,,https://cs.nju.edu.cn/,active

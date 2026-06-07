@@ -13,17 +13,14 @@ const parseCorsOrigin = (value: string): CorsOriginSetting => {
     .filter(Boolean);
 };
 
-/** Flutter Web visual harness (127.0.0.1:7357–7360) and local admin UI. */
+/** Local development frontends, including admin and Flutter Web visual harnesses. */
 export const isDevelopmentExtraCorsOrigin = (origin: string): boolean => {
   try {
     const url = new URL(origin);
     if (url.protocol !== 'http:') {
       return false;
     }
-    if (url.hostname === '127.0.0.1') {
-      return true;
-    }
-    return url.hostname === 'localhost' && url.port === '3001';
+    return url.hostname === '127.0.0.1' || url.hostname === 'localhost';
   } catch {
     return false;
   }

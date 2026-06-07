@@ -1,3 +1,3 @@
-school_name,department_name,program_code,program_name,source_type,source_name,url,source_confidence,notes
-浙江大学,计算机科学与技术学院,081200,计算机科学与技术,official_notice,浙江大学研究生招生网,https://grs.zju.edu.cn/yjszs/,official,学院公告。
-浙江大学,计算机科学与技术学院,081200,计算机科学与技术,catalog,2024年硕士研究生招生专业目录,https://grs.zju.edu.cn/yjszs/redir.php?catalog_id=17,official,专业目录。
+school_name,department_name,program_code,program_name,research_direction,exam_year,source_type,title,url,publisher_name,published_at,last_verified_at,status,source_confidence,notes
+浙江大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,official_notice,浙江大学研究生招生网,https://grs.zju.edu.cn/yjszs/,浙江大学研究生招生网,,2026-06-07 19:50:00+08:00,active,official,学院公告入口；需继续补具体公告页。
+浙江大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,catalog,2024年硕士研究生招生专业目录,https://grs.zju.edu.cn/yjszs/redir.php?catalog_id=17,浙江大学研究生招生网,,2026-06-07 19:50:00+08:00,active,official,专业目录入口；需继续补具体可复核附件。

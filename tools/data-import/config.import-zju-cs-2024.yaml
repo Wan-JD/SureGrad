@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "input_dir": "./collected/sufe-finance-2024",
-  "normalized_dir": "./.out/collected-sufe-finance-2024-normalized",
-  "report_dir": "./.out/reports/sufe-finance-2024",
+  "input_dir": "./collected/zju-cs-2024",
+  "normalized_dir": "./.out/collected-zju-cs-2024-normalized",
+  "report_dir": "./.out/reports/zju-cs-2024",
   "validation": {
     "strict_header_order": true,
     "require_all_templates": false,

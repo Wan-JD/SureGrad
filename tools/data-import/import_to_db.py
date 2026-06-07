@@ -542,6 +542,28 @@ def upsert_score_line(conn: Any, lookup: LookupTables, row: dict[str, str]) -> N
     )
 
 
+def replace_score_lines(conn: Any, lookup: LookupTables, rows: list[dict[str, str]]) -> None:
+    seen_scope: set[tuple[str, int]] = set()
+
+    for row in rows:
+        program_id = resolve_program_id(conn, lookup, row)
+        exam_year = int(row["exam_year"])
+        scope = (program_id, exam_year)
+        if scope in seen_scope:
+            continue
+        conn.execute(
+            """
+            DELETE FROM program_score_lines
+            WHERE program_id = %s AND exam_year = %s
+            """,
+            (program_id, exam_year),
+        )
+        seen_scope.add(scope)
+
+    for row in rows:
+        upsert_score_line(conn, lookup, row)
+
+
 def upsert_application_stat(conn: Any, lookup: LookupTables, row: dict[str, str]) -> None:
     program_id = resolve_program_id(conn, lookup, row)
     values = {
@@ -820,9 +842,7 @@ IMPORT_HANDLERS = {
     "program_admissions.csv": lambda conn, lookup, rows: [
         upsert_admission(conn, lookup, row) for row in rows
     ],
-    "program_score_lines.csv": lambda conn, lookup, rows: [
-        upsert_score_line(conn, lookup, row) for row in rows
-    ],
+    "program_score_lines.csv": replace_score_lines,
     "program_application_stats.csv": lambda conn, lookup, rows: [
         upsert_application_stat(conn, lookup, row) for row in rows
     ],
@@ -866,6 +886,14 @@ def run_import(config_path: Path, report_dir: Path | None = None) -> dict[str, A
     lookup = LookupTables()
 
     with connect(settings) as conn:
+        conn.execute(
+            """
+            DELETE FROM program_score_lines
+            WHERE total_score = 0
+              AND source_confidence <> 'official'
+            """
+        )
+
         for filename in files_to_import:
             path = input_dir / filename
             if not path.exists():

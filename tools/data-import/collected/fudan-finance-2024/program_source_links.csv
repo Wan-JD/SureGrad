@@ -1,3 +1,2 @@
-school_name,department_name,program_code,program_name,source_type,source_name,url,source_confidence,notes
-复旦大学,经济学院,020204,金融学,official_notice,复旦大学研究生院,https://gsao.fudan.edu.cn/,official,学院公告。
-复旦大学,经济学院,020204,金融学,catalog,2024年硕士研究生招生专业目录,https://gsao.fudan.edu.cn/,official,专业目录。
+school_name,department_name,program_code,program_name,research_direction,exam_year,source_type,title,url,publisher_name,published_at,last_verified_at,status,source_confidence,notes
+复旦大学,经济学院,020204,金融学,,2024,official_notice,复旦大学研究生院,https://gsao.fudan.edu.cn/,复旦大学研究生院,,2026-06-07 19:50:00+08:00,active,official,学院公告入口；需继续补具体公告页。

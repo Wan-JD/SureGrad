@@ -305,8 +305,8 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 
 推荐按以下顺序继续：
 
-1. 第二批次 **sufe-finance-2024** 已可 `pnpm db:import:sufe` 入库（骨架数据）；`pnpm db:seed:collected` 同时导入 ecust + sufe。
-2. 继续补齐 `ecust-cs-2024` / `sufe-finance-2024` 缺失模板并复核数字字段（sufe 分数线仍为占位）。
+1. `pnpm db:seed:collected` 已同时导入 5 校批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
+2. 当前只保留可用官方来源核实的分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350；复旦/南大未核实分数线保持缺口。
 2. 每个批次都要保留来源链接、核验时间和批次 README。
 3. 采集完成后至少跑一次 `run_import.ps1`，让 `import-report.json` 和 `import-report.md` 一起沉淀下来。
 4. 后续补正式导入器时，保持 `schema.sql` 作为字段与约束的事实来源。

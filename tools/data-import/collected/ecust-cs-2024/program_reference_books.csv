@@ -1,3 +1,1 @@
-school_name,department_name,program_code,program_name,research_direction,exam_year,subject_name,book_title,author,publisher,edition,is_official_required,memo,source_confidence
-华东理工大学,信息科学与工程学院,081200,计算机科学与技术,,2024,数据结构,数据结构（C语言版）,严蔚敏,清华大学出版社,第1版,false,初试科目815参考书目（以学校专业目录为准）；该书为经典教材，多校通用。,estimated
-华东理工大学,信息科学与工程学院,081200,计算机科学与技术,,2024,数据结构,数据结构,严蔚敏 吴伟民,清华大学出版社,第2版,false,部分年份指定版本；以最新专业目录为准。,estimated
+school_name,department_name,program_code,program_name,research_direction,exam_year,subject_role,book_title,book_author,book_publisher,book_isbn,is_required,notes
