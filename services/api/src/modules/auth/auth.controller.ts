@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginWithOtpDto } from './dto/login-with-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
+import { VerifyCaptchaDto } from './dto/verify-captcha.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +19,18 @@ export class AuthController {
   @HttpCode(200)
   loginWithOtp(@Body() dto: LoginWithOtpDto) {
     return this.authService.loginWithOtp(dto);
+  }
+
+  @Post('captcha/issue')
+  @HttpCode(200)
+  issueCaptcha() {
+    return this.authService.issueCaptcha();
+  }
+
+  @Post('login/captcha')
+  @HttpCode(200)
+  loginWithCaptcha(@Body() dto: VerifyCaptchaDto & { phone: string }) {
+    return this.authService.loginWithCaptcha(dto);
   }
 
   @Post('refresh')

@@ -7,14 +7,19 @@ class AuthRepository {
 
   final AuthApi api;
 
-  Future<ApiResult<OtpSendResult>> sendOtp({required String phone}) {
-    return api.sendOtp(phone: phone);
+  Future<ApiResult<CaptchaResult>> issueCaptcha() {
+    return api.issueCaptcha();
   }
 
-  Future<ApiResult<AuthSession>> signInWithOtp({
+  Future<ApiResult<AuthSession>> signInWithCaptcha({
     required String phone,
-    required String otpCode,
+    required String captchaId,
+    required String code,
   }) {
-    return api.loginWithOtp(phone: phone, otpCode: otpCode);
+    return api.loginWithCaptcha(
+      phone: phone,
+      captchaId: captchaId,
+      code: code,
+    );
   }
 }

@@ -1,6 +1,7 @@
-import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_routes.dart';
@@ -21,9 +22,16 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
+  final _codeController = TextEditingController();
   LoginController? _controller;
-  int _countdown = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller?.loadCaptcha();
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -36,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     _phoneController.dispose();
-    _otpController.dispose();
+    _codeController.dispose();
     _controller?.dispose();
     super.dispose();
   }
@@ -57,9 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton.filledTonal(
-                    onPressed: () {
-                      Navigator.of(context).maybePop();
-                    },
+                    onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
                 ),
@@ -88,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: const Text(
-                            'SureGrad Android MVP',
+                            'SureGrad',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -103,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          '当前拦截点会在登录成功后回到$routeLabel，继续刚才的动作，不会把你扔回首页。',
+                          '登录成功后会回到$routeLabel，继续刚才的动作。',
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: const Color(0xFFD5EEE8)),
                         ),
@@ -112,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                           spacing: 8,
                           runSpacing: 8,
                           children: const [
-                            _HeroChip(label: '手机号验证码'),
+                            _HeroChip(label: '图形验证码'),
                             _HeroChip(label: '返回原触发页'),
                             _HeroChip(label: '游客先浏览也可以'),
                           ],
@@ -124,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 18),
                 SectionCard(
                   title: '验证码登录',
-                  subtitle: '发送验证码后，输入收到的 6 位数字完成登录。',
+                  subtitle: '输入手机号和图片验证码完成登录。',
                   children: [
                     TextField(
                       controller: _phoneController,
@@ -141,51 +147,68 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         Expanded(
                           child: TextField(
-                            controller: _otpController,
-                            keyboardType: TextInputType.number,
+                            controller: _codeController,
+                            keyboardType: TextInputType.text,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Za-z0-9]'),
+                              ),
+                            ],
                             decoration: const InputDecoration(
                               labelText: '验证码',
-                              hintText: '输入 123456',
+                              hintText: '输入图片中的字符',
                               prefixIcon: Icon(Icons.password_rounded),
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
-                        SizedBox(
-                          width: 128,
-                          child: OutlinedButton(
-                            onPressed: _countdown > 0 || controller.isSendingOtp
-                                ? null
-                                : () async {
-                                    final messenger = ScaffoldMessenger.of(
-                                      context,
-                                    );
-                                    final sent = await controller.sendOtp(
-                                      _phoneController.text,
-                                    );
-                                    if (!sent || !mounted) {
-                                      return;
-                                    }
-                                    setState(() => _countdown = 59);
-                                    final message = controller.otpFeedbackText;
-                                    if (message != null) {
-                                      messenger.showSnackBar(
-                                        SnackBar(content: Text(message)),
-                                      );
-                                    }
-                                    unawaited(_tickCountdown());
-                                  },
-                            child: Text(
-                              controller.isSendingOtp
-                                  ? '发送中...'
-                                  : _countdown > 0
-                                  ? '$_countdown s'
-                                  : '获取验证码',
+                        GestureDetector(
+                          onTap: controller.isLoadingCaptcha
+                              ? null
+                              : () => controller.loadCaptcha(),
+                          child: Container(
+                            width: 100,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0F0F0),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFD8D3CA)),
                             ),
+                            child: controller.isLoadingCaptcha
+                                ? const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  )
+                                : controller.captcha != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          'data:image/svg+xml;base64,${_toBase64(controller.captcha!.image)}',
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stack) => const Center(
+                                            child: Text('加载失败', style: TextStyle(fontSize: 12)),
+                                          ),
+                                        ),
+                                      )
+                                    : const Center(
+                                        child: Text('点击获取', style: TextStyle(fontSize: 12)),
+                                      ),
                           ),
                         ),
                       ],
                     ),
+                    if (controller.captchaFeedbackText != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        controller.captchaFeedbackText!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF4A6962),
+                        ),
+                      ),
+                    ],
                     if (controller.errorText != null) ...[
                       const SizedBox(height: 12),
                       Container(
@@ -219,25 +242,20 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: controller.isSubmitting
                           ? null
                           : () async {
-                              final sessionStore = AppScope.of(
-                                context,
-                              ).sessionStore;
+                              final sessionStore = AppScope.of(context).sessionStore;
                               final navigator = Navigator.of(context);
                               final session = await controller.submit(
                                 phone: _phoneController.text,
-                                otpCode: _otpController.text,
+                                code: _codeController.text,
                               );
-                              if (session == null || !mounted) {
-                                return;
-                              }
+                              if (session == null || !mounted) return;
 
                               _commitSession(
                                 sessionStore: sessionStore,
                                 phoneNumber: _phoneController.text.trim(),
                                 session: session,
                               );
-                              final targetRoute = session.isNewUser ||
-                                      !session.profileCompleted
+                              final targetRoute = session.isNewUser || !session.profileCompleted
                                   ? AppRoutes.firstTimeSetup
                                   : widget.args.redirectTo;
                               navigator.pushNamedAndRemoveUntil(
@@ -263,14 +281,14 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 const SizedBox(height: 18),
-                const SectionCard(
-                  title: '这页现在解决什么',
+                SectionCard(
+                  title: '登录说明',
                   children: [
                     _SmallPoint('拦截收藏、对比、规划、Todo 等受限动作'),
-                    SizedBox(height: 8),
-                    _SmallPoint('网络失败时保留已填手机号和验证码'),
-                    SizedBox(height: 8),
-                    _SmallPoint('登录成功后跳回原触发页继续，而不是强制回首页'),
+                    const SizedBox(height: 8),
+                    _SmallPoint('登录成功后跳回原触发页继续'),
+                    const SizedBox(height: 8),
+                    _SmallPoint('新用户登录后引导完善备考档案'),
                   ],
                 ),
               ],
@@ -298,16 +316,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _tickCountdown() async {
-    while (mounted && _countdown > 0) {
-      await Future<void>.delayed(const Duration(seconds: 1));
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _countdown -= 1;
-      });
-    }
+  String _toBase64(String svg) {
+    return base64Encode(utf8.encode(svg));
   }
 
   String _routeLabel(String routeName) {
@@ -334,7 +344,6 @@ class _LoginPageState extends State<LoginPage> {
 
 class _HeroChip extends StatelessWidget {
   const _HeroChip({required this.label});
-
   final String label;
 
   @override
@@ -359,7 +368,6 @@ class _HeroChip extends StatelessWidget {
 
 class _SmallPoint extends StatelessWidget {
   const _SmallPoint(this.text);
-
   final String text;
 
   @override
@@ -369,11 +377,7 @@ class _SmallPoint extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(top: 4),
-          child: Icon(
-            Icons.check_circle_rounded,
-            size: 16,
-            color: Color(0xFF125B52),
-          ),
+          child: Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF125B52)),
         ),
         const SizedBox(width: 10),
         Expanded(child: Text(text)),

@@ -1,3 +1,20 @@
+class CaptchaResult {
+  const CaptchaResult({
+    required this.captchaId,
+    required this.image,
+  });
+
+  final String captchaId;
+  final String image;
+
+  factory CaptchaResult.fromJson(Map<String, dynamic> json) {
+    return CaptchaResult(
+      captchaId: json['captchaId'] as String? ?? '',
+      image: json['image'] as String? ?? '',
+    );
+  }
+}
+
 class AuthSession {
   const AuthSession({
     required this.accessToken,

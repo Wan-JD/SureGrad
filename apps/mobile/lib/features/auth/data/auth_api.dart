@@ -7,33 +7,35 @@ class AuthApi {
 
   final ApiClient client;
 
-  String get sendOtpPath => '/auth/otp/send';
-  String get loginPath => '/auth/login/otp';
+  String get captchaPath => '/auth/captcha/issue';
+  String get loginCaptchaPath => '/auth/login/captcha';
 
-  Future<ApiResult<OtpSendResult>> sendOtp({required String phone}) async {
-    final result = await client.post(
-      sendOtpPath,
-      body: <String, dynamic>{'phone': phone, 'scene': 'login'},
-    );
+  Future<ApiResult<CaptchaResult>> issueCaptcha() async {
+    final result = await client.post(captchaPath);
 
     if (result is ApiFailure<Map<String, dynamic>>) {
       return ApiFailure(
-        _mapSendOtpError(result.message, result.statusCode),
+        result.message,
         statusCode: result.statusCode,
       );
     }
 
     final payload = (result as ApiSuccess<Map<String, dynamic>>).data;
-    return ApiSuccess(OtpSendResult.fromJson(payload));
+    return ApiSuccess(CaptchaResult.fromJson(payload));
   }
 
-  Future<ApiResult<AuthSession>> loginWithOtp({
+  Future<ApiResult<AuthSession>> loginWithCaptcha({
     required String phone,
-    required String otpCode,
+    required String captchaId,
+    required String code,
   }) async {
     final result = await client.post(
-      loginPath,
-      body: <String, dynamic>{'phone': phone, 'otpCode': otpCode},
+      loginCaptchaPath,
+      body: <String, dynamic>{
+        'phone': phone,
+        'captchaId': captchaId,
+        'code': code,
+      },
     );
 
     if (result is ApiFailure<Map<String, dynamic>>) {
@@ -47,20 +49,13 @@ class AuthApi {
     return ApiSuccess(AuthSession.fromJson(payload));
   }
 
-  String _mapSendOtpError(String message, int? statusCode) {
-    if (statusCode == 500) {
-      return '验证码发送接口当前返回 500，请先检查后端服务。';
-    }
-    return message;
-  }
-
   String _mapLoginError(String message, int? statusCode) {
     switch (message) {
-      case 'OTP_INVALID':
+      case 'CAPTCHA_INVALID':
         return '验证码错误，请重新输入。';
-      case 'OTP_EXPIRED':
-        return '验证码已过期，请重新获取。';
-      case 'OTP_NOT_FOUND':
+      case 'CAPTCHA_EXPIRED':
+        return '验证码已过期，请点击图片刷新。';
+      case 'CAPTCHA_NOT_FOUND':
         return '请先获取验证码。';
       case 'FORBIDDEN':
         return '当前账号不可用，请联系管理员。';

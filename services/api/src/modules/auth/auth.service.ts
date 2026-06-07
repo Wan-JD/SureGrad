@@ -8,9 +8,11 @@ import {
 import { MockTokenService } from '../../common/auth/mock-token.service';
 import { maskPhone } from '../../common/utils/mask-phone.util';
 import { UsersRepository } from '../users/repositories/users.repository';
+import { CaptchaService } from './captcha.service';
 import { LoginWithOtpDto } from './dto/login-with-otp.dto';
 import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
+import { VerifyCaptchaDto } from './dto/verify-captcha.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +20,7 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
     private readonly mockTokenService: MockTokenService,
     private readonly otpService: OtpService,
+    private readonly captchaService: CaptchaService,
   ) {}
 
   sendOtp(dto: SendOtpDto) {
@@ -94,6 +97,50 @@ export class AuthService {
       accessToken: this.mockTokenService.createToken(user.id, 'access'),
       refreshToken: this.mockTokenService.createToken(user.id, 'refresh'),
       expiresIn: 7 * 24 * 60 * 60,
+    };
+  }
+
+  issueCaptcha() {
+    return this.captchaService.issue();
+  }
+
+  async loginWithCaptcha(dto: VerifyCaptchaDto & { phone: string }) {
+    const verification = this.captchaService.verify(dto.captchaId, dto.code);
+    if (!verification.valid) {
+      throw new BadRequestException(verification.reason ?? 'CAPTCHA_INVALID');
+    }
+
+    let user = await this.usersRepository.findUserByPhone(dto.phone);
+    const isNewUser = !user;
+
+    if (!user) {
+      user = this.usersRepository.createUser(
+        dto.phone,
+        `SureGrad${dto.phone.slice(-4)}`,
+      );
+    }
+
+    if (user.status === 'disabled') {
+      throw new ForbiddenException('FORBIDDEN');
+    }
+
+    user.lastLoginAt = new Date();
+    user = await this.usersRepository.saveUser(user);
+
+    const profile = await this.usersRepository.findProfileByUserId(user.id);
+
+    return {
+      accessToken: this.mockTokenService.createToken(user.id, 'access'),
+      refreshToken: this.mockTokenService.createToken(user.id, 'refresh'),
+      expiresIn: 7 * 24 * 60 * 60,
+      isNewUser,
+      profileCompleted: Boolean(profile?.onboardingCompleted),
+      user: {
+        userId: user.id,
+        phoneMasked: maskPhone(user.phone),
+        nickname: user.nickname,
+        avatarUrl: user.avatarUrl,
+      },
     };
   }
 }

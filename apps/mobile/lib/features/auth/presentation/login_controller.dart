@@ -10,59 +10,50 @@ class LoginController extends ChangeNotifier {
   final AuthRepository repository;
 
   bool _isSubmitting = false;
-  bool _isSendingOtp = false;
+  bool _isLoadingCaptcha = false;
   String? _errorText;
-  String? _otpFeedbackText;
+  String? _captchaFeedbackText;
+  CaptchaResult? _captcha;
 
   bool get isSubmitting => _isSubmitting;
-  bool get isSendingOtp => _isSendingOtp;
+  bool get isLoadingCaptcha => _isLoadingCaptcha;
   String? get errorText => _errorText;
-  String? get otpFeedbackText => _otpFeedbackText;
+  String? get captchaFeedbackText => _captchaFeedbackText;
+  CaptchaResult? get captcha => _captcha;
 
-  int? _otpExpireSeconds;
-  int? _otpRetryAfterSeconds;
-
-  int? get otpExpireSeconds => _otpExpireSeconds;
-  int? get otpRetryAfterSeconds => _otpRetryAfterSeconds;
-
-  Future<bool> sendOtp(String phone) async {
-    if (phone.trim().isEmpty) {
-      _errorText = '请输入手机号。';
-      _otpFeedbackText = null;
-      notifyListeners();
-      return false;
-    }
-
-    _isSendingOtp = true;
+  Future<bool> loadCaptcha() async {
+    _isLoadingCaptcha = true;
     _errorText = null;
-    _otpFeedbackText = null;
+    _captchaFeedbackText = null;
     notifyListeners();
 
-    final result = await repository.sendOtp(phone: phone.trim());
-    _isSendingOtp = false;
+    final result = await repository.issueCaptcha();
+    _isLoadingCaptcha = false;
 
-    if (result is ApiFailure<OtpSendResult>) {
+    if (result is ApiFailure<CaptchaResult>) {
       _errorText = result.message;
       notifyListeners();
       return false;
     }
 
-    final payload = (result as ApiSuccess<OtpSendResult>).data;
-    _otpExpireSeconds = payload.expireSeconds;
-    _otpRetryAfterSeconds = payload.retryAfterSeconds;
-    _otpFeedbackText = payload.sent
-        ? '验证码已发送，${payload.expireSeconds} 秒内有效。'
-        : '验证码发送失败，请稍后重试。';
+    _captcha = (result as ApiSuccess<CaptchaResult>).data;
+    _captchaFeedbackText = '验证码已刷新，请输入图片中的字符。';
     notifyListeners();
-    return payload.sent;
+    return true;
   }
 
   Future<AuthSession?> submit({
     required String phone,
-    required String otpCode,
+    required String code,
   }) async {
-    if (phone.trim().isEmpty || otpCode.trim().isEmpty) {
+    if (phone.trim().isEmpty || code.trim().isEmpty) {
       _errorText = '请输入手机号和验证码。';
+      notifyListeners();
+      return null;
+    }
+
+    if (_captcha == null) {
+      _errorText = '请先获取验证码。';
       notifyListeners();
       return null;
     }
@@ -71,9 +62,10 @@ class LoginController extends ChangeNotifier {
     _errorText = null;
     notifyListeners();
 
-    final result = await repository.signInWithOtp(
+    final result = await repository.signInWithCaptcha(
       phone: phone.trim(),
-      otpCode: otpCode.trim(),
+      captchaId: _captcha!.captchaId,
+      code: code.trim(),
     );
 
     _isSubmitting = false;
