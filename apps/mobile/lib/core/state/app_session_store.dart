@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum PendingAuthActionType {
   favoriteSchool,
@@ -42,6 +43,35 @@ class AppSessionStore extends ChangeNotifier {
   String? get refreshToken => _refreshToken;
   bool get profileCompleted => _profileCompleted;
 
+  Future<void> loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+    _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    _phoneNumber = prefs.getString('phoneNumber');
+    _userId = prefs.getString('userId');
+    _nickname = prefs.getString('nickname');
+    _phoneMasked = prefs.getString('phoneMasked');
+    _avatarUrl = prefs.getString('avatarUrl');
+    _accessToken = prefs.getString('accessToken');
+    _refreshToken = prefs.getString('refreshToken');
+    _profileCompleted = prefs.getBool('profileCompleted') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> _saveToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', _hasSeenOnboarding);
+    await prefs.setBool('isLoggedIn', _isLoggedIn);
+    await prefs.setString('phoneNumber', _phoneNumber ?? '');
+    await prefs.setString('userId', _userId ?? '');
+    await prefs.setString('nickname', _nickname ?? '');
+    await prefs.setString('phoneMasked', _phoneMasked ?? '');
+    await prefs.setString('avatarUrl', _avatarUrl ?? '');
+    await prefs.setString('accessToken', _accessToken ?? '');
+    await prefs.setString('refreshToken', _refreshToken ?? '');
+    await prefs.setBool('profileCompleted', _profileCompleted);
+  }
+
   void signIn({
     required String phoneNumber,
     required String userId,
@@ -62,6 +92,7 @@ class AppSessionStore extends ChangeNotifier {
     _refreshToken = refreshToken;
     _profileCompleted = profileCompleted;
     notifyListeners();
+    _saveToPrefs();
   }
 
   void updateProfileCompletion(bool value) {
@@ -70,6 +101,7 @@ class AppSessionStore extends ChangeNotifier {
     }
     _profileCompleted = value;
     notifyListeners();
+    _saveToPrefs();
   }
 
   void completeOnboarding() {
@@ -78,6 +110,7 @@ class AppSessionStore extends ChangeNotifier {
     }
     _hasSeenOnboarding = true;
     notifyListeners();
+    _saveToPrefs();
   }
 
   void signOut() {
@@ -93,6 +126,7 @@ class AppSessionStore extends ChangeNotifier {
     _profileCompleted = false;
     _pendingAuthAction = null;
     notifyListeners();
+    _saveToPrefs();
   }
 
   void stagePendingAuthAction(PendingAuthAction action) {
