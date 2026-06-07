@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
+import '../../../app/navigation/app_routes.dart';
 import '../../../core/layout/responsive_breakpoints.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/empty_state_card.dart';
@@ -119,6 +120,27 @@ class _TodoPageState extends State<TodoPage> {
                             value:
                                 snapshot.data!.overview.currentPlanTitle ??
                                 '尚未生成',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SectionCard(
+                        title: '快捷入口',
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('今日打卡'),
+                            subtitle: const Text('记录学习时长和复盘。'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => Navigator.of(context).pushNamed(AppRoutes.checkin),
+                          ),
+                          const Divider(),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('学习统计'),
+                            subtitle: const Text('查看学习时长、完成率和科目分布。'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => Navigator.of(context).pushNamed(AppRoutes.stats),
                           ),
                         ],
                       ),

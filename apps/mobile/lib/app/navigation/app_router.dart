@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../features/auth/presentation/login_page.dart';
+import '../../features/checkins/presentation/checkin_page.dart';
+import '../../features/checkins/presentation/stats_page.dart';
 import '../../features/comparison/presentation/comparison_page.dart';
 import '../../features/favorites/presentation/favorites_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/planning/presentation/planning_page.dart';
+import '../../features/planning/presentation/route_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
 import '../../features/reminders/presentation/reminders_page.dart';
 import '../../features/resources/presentation/resource_detail_page.dart';
@@ -108,6 +111,21 @@ class AppRouter {
           return _redirectToLogin(settings);
         }
         return _page(const RemindersPage(), settings);
+      case AppRoutes.checkin:
+        if (!_bootstrap.sessionStore.isLoggedIn) {
+          return _redirectToLogin(settings);
+        }
+        return _page(const CheckinPage(), settings);
+      case AppRoutes.stats:
+        if (!_bootstrap.sessionStore.isLoggedIn) {
+          return _redirectToLogin(settings);
+        }
+        return _page(const StatsPage(), settings);
+      case AppRoutes.route:
+        if (!_bootstrap.sessionStore.isLoggedIn) {
+          return _redirectToLogin(settings);
+        }
+        return _page(const RoutePage(), settings);
       default:
         return _page(
           Scaffold(

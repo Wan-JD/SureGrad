@@ -113,6 +113,19 @@ class _PlanningPageState extends State<PlanningPage> {
         ];
       case MainJourneyState.hasPlan:
         return [
+          SectionCard(
+            title: '快捷入口',
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('学习路线'),
+                subtitle: const Text('查看完整阶段路线和科目安排。'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).pushNamed(AppRoutes.route),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           ResponsiveColumns(
             children: [
               SectionCard(

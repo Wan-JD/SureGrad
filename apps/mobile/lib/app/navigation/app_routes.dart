@@ -17,6 +17,9 @@ class AppRoutes {
   static const favorites = '/favorites';
   static const comparison = '/comparison';
   static const reminders = '/reminders';
+  static const checkin = '/checkin';
+  static const stats = '/stats';
+  static const route = '/route';
 
   static String fromTab(AppTab tab) {
     switch (tab) {
