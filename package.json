@@ -26,8 +26,9 @@
     "db:import:zju": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-zju-cs-2024.yaml --report-dir tools/data-import/.out/reports/zju-cs-2024",
     "db:import:fudan": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-fudan-finance-2024.yaml --report-dir tools/data-import/.out/reports/fudan-finance-2024",
     "db:import:nju": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-nju-se-2024.yaml --report-dir tools/data-import/.out/reports/nju-se-2024",
+    "db:import:moe-universities": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-moe-universities-2025.yaml --report-dir tools/data-import/.out/reports/moe-universities-2025",
     "db:seed:ecust": "pnpm db:migrate && pnpm db:import:ecust",
-    "db:seed:collected": "pnpm db:migrate && pnpm db:import:ecust && pnpm db:import:sufe && pnpm db:import:zju && pnpm db:import:fudan && pnpm db:import:nju",
+    "db:seed:collected": "pnpm db:migrate && pnpm db:import:moe-universities && pnpm db:import:ecust && pnpm db:import:sufe && pnpm db:import:zju && pnpm db:import:fudan && pnpm db:import:nju",
     "db:seed:resources": "python tools/data-import/seed_study_resources.py",
     "db:seed:admin": "python tools/data-import/seed_admin_users.py",
     "db:seed:demo": "pnpm db:seed:collected && pnpm db:seed:resources && pnpm db:seed:admin"

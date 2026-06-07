@@ -103,12 +103,18 @@
 
 当前仓库里已经落地的真实采集批次位于：
 
+- `tools/data-import/collected/moe-universities-2025`（教育部 2025 全国普通高等学校名单，2919 所学校基础条目）
 - `tools/data-import/collected/ecust-cs-2024`（华东理工 · 081200，数据较完整）
 - `tools/data-import/collected/sufe-finance-2024`（上财 · 020204，骨架批次）
+- `tools/data-import/collected/zju-cs-2024`（浙大 · 081200，骨架批次）
+- `tools/data-import/collected/fudan-finance-2024`（复旦 · 020204，骨架批次）
+- `tools/data-import/collected/nju-se-2024`（南大 · 083500，骨架批次）
 
 **ecust-cs-2024** 已含：学校/院系/专业、分数线、招生、复试、初试科目、来源链接等；仍缺报录比、参考书等（见批次 README）。
 
-**入库**：`pnpm db:seed:collected` 同时导入上述两批次；`pnpm db:seed:demo` 另含备考资料与管理员。验证：`GET /api/v1/schools` 应返回 **华东理工 + 上海财经**。
+**moe-universities-2025** 只使用教育部附件字段：学校名称、学校标识码、所在地、办学层次、主管部门和备注；`school_type=未分类`、`has_graduate_school=false`、官网/研究生院空值都是系统占位，不是官方事实。
+
+**入库**：`pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 5 校精采批次覆盖已逐校核验的官网、研究生院链接和学校类型；`pnpm db:seed:demo` 另含备考资料与管理员。验证：`GET /api/v1/schools` 总数应为 **2919**，5 校仍保留更细的已核验字段。
 
 **备考资料演示（2026-05-22）**：不扩大院校 CSV 采集时，可用 `pnpm db:seed:resources` 幂等写入 4 门 `subjects`（政治/英语/数学/专业课）与 6 条 `study_resources`（固定 UUID，`is_public_legal=true`、`status=active`）。与 ecust 一并演示可跑 `pnpm db:seed:demo`。本机验证：`GET /api/v1/study-resources` 应返回 ≥6 条公开合法资料。
 
@@ -166,7 +172,7 @@
 3. **引导页（Onboarding）**：3 页 PageView 滑动引导（择校/规划/打卡）；"跳过"进游客浏览，"开始使用"进登录页。
 4. **首次目标设置页**：新用户登录后自动跳转，收集备考年份、身份类型、目标专业、每日学习时长，调用 `PUT /user-profiles/me` 写入后端。
 5. **独立页面拆分**：打卡页、学习统计页、学习路线页已从 Todo/规划页拆分为独立页面，Todo 和规划页通过快捷入口跳转。
-6. **5 校采集入库**：华东理工（cs）、上财（finance）、浙大（cs）、复旦（finance）、南大（se）已通过 CSV 校验并接入 `pnpm db:seed:collected`；API `GET /api/v1/schools` 可返回 5 校。当前只保留 3 条已核实 official 分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350；复旦/南大暂缺分数线，不用错配数字填充。
+6. **真实学校库扩容**：教育部 2025 全国普通高等学校名单 2919 所已生成 `schools.csv` 并接入 `pnpm db:seed:collected`；5 校精采批次在其后导入，保留已逐校核验字段。当前只保留 3 条已核实 official 分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350；复旦/南大暂缺分数线，不用错配数字填充。
 7. **Admin 视觉验收**：2026-06-07 再次通过 27 张截图；3002 端口后台登录已可用，API 开发环境 CORS 已放行本机 localhost/127.0.0.1 联调端口。
 8. **Mobile 视觉验收**：21 项测试全绿，mobile + tablet 双视口确认无问题。
 9. **数据准确性原则**：所有采集数据严格区分 `official`（可溯源）与 `estimated`（待核实），不猜测数字。

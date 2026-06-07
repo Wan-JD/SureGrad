@@ -8,9 +8,9 @@
 4. 批次级跨文件关联校验
 5. 批次级导入报告生成
 6. Windows dry-run 串行执行和 JSON / Markdown 报告
-7. PostgreSQL 批次入库（`import_to_db.py`，ecust 五表最小闭环）
+7. PostgreSQL 批次入库（`import_to_db.py`，支持学校、院系、专业、分数线、招生、复试、科目、来源链接等已接入模板）
 
-数据库写入已支持 ecust 批次五表（`schools` → `departments` → `programs` → `program_score_lines` → `program_source_links`），其它模板后续按同模式扩展。
+数据库写入已支持 `schools` → `departments` → `programs` 及多个年度/来源模板；当前真实数据可通过 `pnpm db:seed:collected` 一次导入。
 
 在继续改这一条线之前，先读：
 
@@ -21,11 +21,18 @@
 
 ## 0. 当前真实采集状态
 
-当前仓库已经落地一批人工核验过的真实采集样例：
+当前仓库已经落地多批人工核验过的真实采集数据：
 
-`tools/data-import/collected/ecust-cs-2024`
+1. `tools/data-import/collected/moe-universities-2025`：教育部 2025 全国普通高等学校名单，2919 所学校基础条目。
+2. `tools/data-import/collected/ecust-cs-2024`：华东理工大学 081200 计算机科学与技术。
+3. `tools/data-import/collected/sufe-finance-2024`：上海财经大学金融方向骨架批次。
+4. `tools/data-import/collected/zju-cs-2024`：浙江大学 081200 计算机科学与技术。
+5. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
+6. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
 
-当前批次包含：
+`moe-universities-2025` 只使用教育部附件中的学校名称、学校标识码、所在地、办学层次、主管部门和备注；不包含分数线、招生计划、报录比、专业目录、官网或研究生院链接。
+
+`ecust-cs-2024` 当前批次包含：
 
 1. `schools.csv`
 2. `departments.csv`
@@ -33,7 +40,7 @@
 4. `program_score_lines.csv`
 5. `program_source_links.csv`
 
-覆盖范围：
+`ecust-cs-2024` 覆盖范围：
 
 1. 学校：华东理工大学
 2. 年份：`2024`
@@ -44,6 +51,7 @@
 1. 已附带批次级 `README.md`，记录官方来源与人工假设。
 2. 这一轮优先保证真源、来源追溯和模板链路跑通，不先猜测缺失数字。
 3. ecust 批次已包含 `program_admissions`、`program_interview_stats`、`subjects`、`program_exam_subjects`；仍缺 `program_application_stats`、`program_reference_books`、`books` 等模板内容。
+4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
 
 因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 
@@ -286,27 +294,21 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 
 ## 7. 当前未覆盖的能力
 
-仍然缺少：
+仍然缺少或需要继续补强：
 
-1. `build_lookup_tables.py`
-2. `import_schools.py`
-3. `import_departments.py`
-4. `import_subjects.py`
-5. `import_books.py`
-6. `import_programs.py`
-7. 年度数据入库脚本
-8. 考试科目与参考书关系入库脚本
-9. 来源链接巡检脚本
-10. 正式数据库导入执行器
+1. 来源链接巡检脚本。
+2. 更多官方批次的自动采集/转换脚本沉淀。
+3. 更多学校的 `program_application_stats`、`program_reference_books`、`books` 等模板内容。
+4. 对学校官网、研究生院链接、学校类型、是否有研究生院等字段的逐校官方复核。
 
-所以这里现在是“可验收的前置工具链 + 批次报告层”，还不是“可入库的完整导入器”。
+所以这里现在是“可入库的真实批次工具链 + 持续扩充的数据采集层”。
 
 ## 8. 下一步建议
 
 推荐按以下顺序继续：
 
-1. `pnpm db:seed:collected` 已同时导入 5 校批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
+1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单，并导入 5 校精采批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
 2. 当前只保留可用官方来源核实的分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350；复旦/南大未核实分数线保持缺口。
-2. 每个批次都要保留来源链接、核验时间和批次 README。
-3. 采集完成后至少跑一次 `run_import.ps1`，让 `import-report.json` 和 `import-report.md` 一起沉淀下来。
-4. 后续补正式导入器时，保持 `schema.sql` 作为字段与约束的事实来源。
+3. 每个批次都要保留来源链接、核验时间和批次 README。
+4. 采集完成后至少跑一次 `validate_csv.py`；需要沉淀报告时再跑 `run_import.ps1`。
+5. 继续保持 `schema.sql` 作为字段与约束的事实来源。
