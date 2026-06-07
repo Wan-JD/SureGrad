@@ -94,7 +94,7 @@
 
 最近几轮已经推进到“骨架之上继续补真实联调与真实数据”的阶段，方向上不是从零搭架子，而是继续把以下 4 条线收实：
 
-1. 后端：OTP 认证闭环已实现（发送/登录/刷新 + 频率限制 + 测试覆盖），其余接口继续从 skeleton 推进到真实实现。
+1. 后端：OTP 认证闭环已实现（发送/登录/刷新 + 频率限制 + 测试覆盖）；打卡更新接口已从骨架实现为真实逻辑（归属校验 + 今日限制 + 部分更新 + 连续天数），无剩余骨架响应。
 2. 移动端：主路径已经不是纯页面占位，登录拦截、收藏、对比、提醒、Todo/打卡闭环都在继续细化。
 3. 后台：已从开发者式样板转向运营工作台表达，并接入了一部分仓库内真实采集数据。
 4. 数据导入：校验、规范化、批次报告、dry-run 工具链可验收，且已经有第一批真实采集样例。
@@ -161,14 +161,14 @@
 
 ## 10. 当前并行推进线（2026-06-07）
 
-1. **OTP 认证闭环**：`OtpService` + `AuthService` + `AuthController` 已落地；支持发送验证码（含冷却 + 每小时频率限制）、验证码登录（自动注册 + 禁用用户拦截）、刷新 token；`otp.service.spec.ts` + `auth.service.spec.ts` 共 23 项测试全绿；`pnpm verify:api` 100/100 通过。
-2. **双校采集入库**：`ecust-cs-2024`（完整度较高）+ `sufe-finance-2024`（骨架）均已可 `pnpm db:seed:collected` 导入；移动端择校列表应出现华东理工 + 上海财经。
-3. **ecust 初试科目**：101/201/301/815 已入库；待补报录比、参考书 CSV。
-4. **Admin 年度数据读采集**：`/yearly-data` 展示 ecust 招生计划/分数线/复试；sufe 仅骨架分数线占位。
-5. **Admin / Mobile Live**：院系、学校、专业、资料等页已接 API；专业对比仍依赖登录用户对比池（空态为正常游客态）。
-6. **视觉验收**：择校 Tab 断言含双校名；Admin 学校页含双校。
-7. **备考资料演示**：`pnpm db:seed:demo` = collected + resources + admin。
-8. **待补模板**：ecust 的 `program_application_stats`、`program_reference_books`；sufe 的年度/科目/招生等全套模板。
+1. **OTP 认证闭环**：`OtpService` + `AuthService` + `AuthController` 已落地；支持发送验证码（含冷却 + 每小时频率限制）、验证码登录（自动注册 + 禁用用户拦截）、刷新 token；`otp.service.spec.ts` + `auth.service.spec.ts` 共 23 项测试全绿。
+2. **打卡更新接口**：`CheckinsService.update` 已从骨架实现为真实逻辑（归属校验 + 仅允许修改今日打卡 + 部分更新 + 连续天数计算）；`checkins.controller.spec` 新增 4 项测试；`pnpm verify:api` 104/104 通过。
+3. **双校采集入库**：`ecust-cs-2024` + `sufe-finance-2024` 均已可 `pnpm db:seed:demo` 完整导入。
+4. **sufe 批次扩充**：新增 `subjects.csv`、`program_exam_subjects.csv`（101/201/303/431）、`program_admissions.csv`（58 人计划）、`program_interview_stats.csv`（差额复试 1:1.2）。
+5. **ecust 批次扩充**：新增 `program_application_stats.csv`（占位待官方公布）、`program_reference_books.csv`（数据结构经典教材）。
+6. **Admin 视觉验收**：27 张截图（9 页面 × 3 视口）全量通过，`docs/visual-qa/admin-qa-2026-06-06.md`。
+7. **Mobile 视觉验收**：21 项测试全绿，mobile + tablet 双视口截图确认无视觉问题，`docs/visual-qa/mobile-qa-2026-06-06.md`。
+8. **待补模板**：ecust 的报录比数据（待官方公布）；sufe 的报录比、参考书等模板。
 
 ## 11. 下一步工作建议
 
