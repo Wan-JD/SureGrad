@@ -51,7 +51,7 @@ type DatasetMeta = {
   detailSections: AdminDetailSection[];
 };
 
-const hiddenFieldKeys = new Set(["id", "school_id", "department_id", "program_id"]);
+const hiddenFieldKeys = new Set(["id", "school_id", "department_id", "program_id", "raw_school_id", "raw_department_id", "raw_program_id"]);
 
 const businessLabelMap: Record<string, string> = {
   name: "名称",

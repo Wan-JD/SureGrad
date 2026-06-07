@@ -413,18 +413,18 @@ export const resourcesLiveDetailSections: AdminDetailSection[] = [
 
 export const programsLiveDetailSections: AdminDetailSection[] = [
   {
-    title: "Program Identity",
-    description: "The school-scoped program record returned by the live list endpoint.",
-    fields: ["id", "school_name", "department_id", "department_name", "name", "code"],
+    title: "专业信息",
+    description: "专业基础信息，来自 PostgreSQL Live API。",
+    fields: ["school_name", "department_name", "name", "code"],
   },
   {
-    title: "Recruitment Profile",
-    description: "Degree and discipline metadata available without static mock records.",
+    title: "招生属性",
+    description: "学位类型、学科门类和研究方向等元数据。",
     fields: ["degree_type", "discipline_category", "research_direction"],
   },
   {
-    title: "Latest Year Snapshot",
-    description: "Live yearly summaries currently exposed through the school programs endpoint.",
+    title: "年度数据概览",
+    description: "来自接口的最新年份汇总数据。",
     fields: [
       "score_line_summary",
       "application_ratio_summary",
@@ -432,8 +432,8 @@ export const programsLiveDetailSections: AdminDetailSection[] = [
     ],
   },
   {
-    title: "User Flags",
-    description: "Current favorite and comparison states from the API response.",
+    title: "用户状态",
+    description: "当前用户的收藏和对比状态。",
     fields: ["is_favorited", "is_in_comparison"],
   },
 ];
@@ -531,9 +531,9 @@ export const departmentsLiveFields: AdminField[] = [
 
 export const departmentsLiveDetailSections: AdminDetailSection[] = [
   {
-    title: "院系归属",
-    description: "院系与学校的归属关系来自 PostgreSQL Live API。",
-    fields: ["id", "school_id", "raw_school_id", "name", "code", "status"],
+    title: "院系信息",
+    description: "院系基础信息，来自 PostgreSQL Live API。",
+    fields: ["name", "code", "status"],
   },
   {
     title: "站点信息",
