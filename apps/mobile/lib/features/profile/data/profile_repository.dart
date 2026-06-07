@@ -55,4 +55,22 @@ class ProfileRepository {
     }
     return json;
   }
+
+  Future<void> updateProfile({
+    required int examYear,
+    required String identityType,
+    required String intendedDiscipline,
+    required double dailyStudyHours,
+  }) async {
+    final result = await api.updateProfile(
+      examYear: examYear,
+      identityType: identityType,
+      intendedDiscipline: intendedDiscipline,
+      dailyStudyHours: dailyStudyHours,
+      onboardingCompleted: true,
+    );
+    if (result is ApiFailure<Map<String, dynamic>>) {
+      throw ApiException(result.message, statusCode: result.statusCode);
+    }
+  }
 }

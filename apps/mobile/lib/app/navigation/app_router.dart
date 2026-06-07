@@ -12,6 +12,7 @@ import '../../features/resources/presentation/resources_page.dart';
 import '../../features/programs/presentation/program_detail_page.dart';
 import '../../features/schools/presentation/school_detail_page.dart';
 import '../../features/schools/presentation/school_list_page.dart';
+import '../../features/onboarding/presentation/first_time_setup_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
 import '../../features/todo/presentation/todo_page.dart';
@@ -43,6 +44,8 @@ class AppRouter {
         return _page(const SplashPage(), settings);
       case AppRoutes.onboarding:
         return _page(const OnboardingPage(), settings);
+      case AppRoutes.firstTimeSetup:
+        return _page(const FirstTimeSetupPage(), settings);
       case AppRoutes.login:
         final args = settings.arguments is LoginRouteArgs
             ? settings.arguments as LoginRouteArgs

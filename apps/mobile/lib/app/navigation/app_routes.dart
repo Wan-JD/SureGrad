@@ -3,6 +3,7 @@ import 'app_tab.dart';
 class AppRoutes {
   static const splash = '/';
   static const onboarding = '/onboarding';
+  static const firstTimeSetup = '/first-time-setup';
   static const login = '/login';
   static const home = '/home';
   static const schools = '/schools';

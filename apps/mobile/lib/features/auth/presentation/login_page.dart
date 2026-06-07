@@ -236,10 +236,16 @@ class _LoginPageState extends State<LoginPage> {
                                 phoneNumber: _phoneController.text.trim(),
                                 session: session,
                               );
+                              final targetRoute = session.isNewUser ||
+                                      !session.profileCompleted
+                                  ? AppRoutes.firstTimeSetup
+                                  : widget.args.redirectTo;
                               navigator.pushNamedAndRemoveUntil(
-                                widget.args.redirectTo,
+                                targetRoute,
                                 (_) => false,
-                                arguments: widget.args.redirectArguments,
+                                arguments: targetRoute == AppRoutes.firstTimeSetup
+                                    ? null
+                                    : widget.args.redirectArguments,
                               );
                             },
                       child: Text(controller.isSubmitting ? '登录中...' : '登录并继续'),
