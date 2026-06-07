@@ -55,11 +55,15 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _complete() {
     AppScope.of(context).sessionStore.completeOnboarding();
-    Navigator.of(context).pushReplacementNamed(AppRoutes.schools);
+    Navigator.of(context).pushReplacementNamed(
+      AppRoutes.login,
+      arguments: const LoginRouteArgs(redirectTo: AppRoutes.schools),
+    );
   }
 
   void _skip() {
-    _complete();
+    AppScope.of(context).sessionStore.completeOnboarding();
+    Navigator.of(context).pushReplacementNamed(AppRoutes.schools);
   }
 
   @override
