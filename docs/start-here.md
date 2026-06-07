@@ -161,14 +161,14 @@
 
 ## 10. 当前并行推进线（2026-06-07）
 
-1. **OTP 认证闭环**：`OtpService` + `AuthService` + `AuthController` 已落地；支持发送验证码（含冷却 + 每小时频率限制）、验证码登录（自动注册 + 禁用用户拦截）、刷新 token；`otp.service.spec.ts` + `auth.service.spec.ts` 共 23 项测试全绿。
-2. **打卡更新接口**：`CheckinsService.update` 已从骨架实现为真实逻辑（归属校验 + 仅允许修改今日打卡 + 部分更新 + 连续天数计算）；`checkins.controller.spec` 新增 4 项测试；`pnpm verify:api` 104/104 通过。
-3. **双校采集入库**：`ecust-cs-2024` + `sufe-finance-2024` 均已可 `pnpm db:seed:demo` 完整导入。
-4. **sufe 批次扩充**：新增 `subjects.csv`、`program_exam_subjects.csv`（101/201/303/431）、`program_admissions.csv`（58 人计划）、`program_interview_stats.csv`（差额复试 1:1.2）。
-5. **ecust 批次扩充**：新增 `program_application_stats.csv`（占位待官方公布）、`program_reference_books.csv`（数据结构经典教材）。
-6. **Admin 视觉验收**：27 张截图（9 页面 × 3 视口）全量通过，`docs/visual-qa/admin-qa-2026-06-06.md`。
-7. **Mobile 视觉验收**：21 项测试全绿，mobile + tablet 双视口截图确认无视觉问题，`docs/visual-qa/mobile-qa-2026-06-06.md`。
-8. **待补模板**：ecust 的报录比数据（待官方公布）；sufe 的报录比、参考书等模板。
+1. **OTP 认证闭环**：`OtpService` + `AuthService` + `AuthController` 已落地；支持发送验证码（含冷却 + 每小时频率限制）、验证码登录（自动注册 + 禁用用户拦截）、刷新 token；23 项测试全绿。
+2. **打卡更新接口**：`CheckinsService.update` 已从骨架实现为真实逻辑（归属校验 + 仅允许修改今日打卡 + 部分更新 + 连续天数计算）；4 项新增测试；`pnpm verify:api` 104/104 通过。
+3. **引导页（Onboarding）**：3 页 PageView 滑动引导（择校/规划/打卡）+ 进度指示器 + 跳过/登录按钮；首次启动自动展示。
+4. **首次目标设置页**：新用户登录后自动跳转，收集备考年份、身份类型、目标专业、每日学习时长，调用 `PUT /user-profiles/me` 写入后端。
+5. **5 校采集入库**：华东理工（cs）、上财（finance）、浙大（cs）、复旦（finance）、南大（se）；保留的数据均为可确认的公开信息，未经官方核实的数字已删除。
+6. **Admin 视觉验收**：27 张截图通过；详情面板已隐藏内部 ID，标签统一为中文。
+7. **Mobile 视觉验收**：21 项测试全绿，mobile + tablet 双视口确认无问题。
+8. **数据准确性原则**：所有采集数据严格区分 `official`（可溯源）与 `estimated`（待核实），不猜测数字。
 
 ## 11. 下一步工作建议
 
