@@ -1,0 +1,2 @@
+school_name,department_name,program_name,program_code,degree_type,discipline_category,research_direction,exam_math_required,duration_years,tuition_per_year,notes,status
+浙江大学,计算机科学与技术学院,计算机科学与技术,081200,academic,工学,,true,2.5,8000.00,学制 2.5 年。,active

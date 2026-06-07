@@ -1,0 +1,5 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,sequence_no,subject_role,subject_code_text,subject_name_text,subject_code,notes
+浙江大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,1,public,101,思想政治理论,101,统考
+浙江大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,2,public,201,英语一,201,统考
+浙江大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,3,public,301,数学一,301,统考
+浙江大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,4,major,408,计算机专业基础综合,408,统考
