@@ -586,6 +586,52 @@ export type AdminSchoolFacets = {
   statuses: AdminSchoolFacetOption[];
 };
 
+export type AdminDataCoverageSummary = {
+  generatedAt: string;
+  schools: {
+    total: number;
+    withOfficialWebsite: number;
+    missingOfficialWebsite: number;
+    withGraduateWebsite: number;
+    missingGraduateWebsite: number;
+    classifiedSchoolType: number;
+    unclassifiedSchoolType: number;
+    withPrograms: number;
+    withoutPrograms: number;
+  };
+  programs: {
+    total: number;
+    withSourceLinks: number;
+    withoutSourceLinks: number;
+    withAdmissions: number;
+    withoutAdmissions: number;
+    withScoreLines: number;
+    withoutScoreLines: number;
+    withApplicationStats: number;
+    withoutApplicationStats: number;
+    withInterviewStats: number;
+    withoutInterviewStats: number;
+    withExamSubjects: number;
+    withoutExamSubjects: number;
+    withReferenceBooks: number;
+    withoutReferenceBooks: number;
+  };
+  sourceLinks: {
+    total: number;
+    official: number;
+    pending: number;
+    invalid: number;
+  };
+  yearlyRecords: {
+    admissions: number;
+    scoreLines: number;
+    applicationStats: number;
+    interviewStats: number;
+    examSubjects: number;
+    referenceBooks: number;
+  };
+};
+
 export async function listAdminSchools(
   query: AdminSchoolsQuery,
   signal?: AbortSignal,
@@ -599,6 +645,14 @@ export async function getAdminSchoolFacets(signal?: AbortSignal) {
   return getAdminJson<AdminSchoolFacets>("/admin/schools/facets", undefined, {
     signal,
   });
+}
+
+export async function getAdminDataCoverageSummary(signal?: AbortSignal) {
+  return getAdminJson<AdminDataCoverageSummary>(
+    "/admin/data-coverage",
+    undefined,
+    { signal },
+  );
 }
 
 export async function getAdminSchool(schoolId: string, signal?: AbortSignal) {

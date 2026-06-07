@@ -7,6 +7,8 @@ import { AdminUserEntity } from '../../database/entities/admin-user.entity';
 import { DepartmentEntity } from '../../database/entities/department.entity';
 import { SchoolEntity } from '../../database/entities/school.entity';
 import { UserEntity } from '../../database/entities/user.entity';
+import { AdminDataCoverageController } from './admin-data-coverage.controller';
+import { AdminDataCoverageService } from './admin-data-coverage.service';
 import { AdminDepartmentsController } from './admin-departments.controller';
 import { AdminDepartmentsService } from './admin-departments.service';
 import { AdminSchoolsController } from './admin-schools.controller';
@@ -17,6 +19,7 @@ import { AdminAuthController } from './admin-auth.controller';
 import { AdminAuthService } from './admin-auth.service';
 import { AdminStaffController } from './admin-staff.controller';
 import { AdminStaffService } from './admin-staff.service';
+import { AdminDataCoverageRepository } from './repositories/admin-data-coverage.repository';
 import { AdminUsersRepository } from './repositories/admin-users.repository';
 import { AdminDepartmentsRepository } from './repositories/admin-departments.repository';
 import { AdminSchoolsRepository } from './repositories/admin-schools.repository';
@@ -35,6 +38,7 @@ import { AppUsersAdminRepository } from './repositories/app-users-admin.reposito
     AdminAuthController,
     AdminAppUsersController,
     AdminStaffController,
+    AdminDataCoverageController,
     AdminSchoolsController,
     AdminDepartmentsController,
   ],
@@ -45,8 +49,10 @@ import { AppUsersAdminRepository } from './repositories/app-users-admin.reposito
     AdminAuthService,
     AdminAppUsersService,
     AdminStaffService,
+    AdminDataCoverageService,
     AdminSchoolsService,
     AdminDepartmentsService,
+    AdminDataCoverageRepository,
     AdminUsersRepository,
     AppUsersAdminRepository,
     AdminSchoolsRepository,

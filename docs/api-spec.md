@@ -1622,13 +1622,24 @@
 ### 19.4 学校档案（管理员+）
 
 - `GET /admin/schools`：运营列表，支持 `keyword`、`province`、`city`、`schoolLevel`、`schoolType`、`status`
+- `GET /admin/schools/facets`：返回全库筛选项聚合（省份、城市、层级、类型、状态），每项包含 `value` 与 `count`
 - `GET /admin/schools/{schoolId}`：学校详情（含停用）
 - `POST /admin/schools`：新建学校
 - `PATCH /admin/schools/{schoolId}`：修订学校字段或 `status`（`active` / `inactive`）
 
 公开 `GET /schools` 仍仅返回 `active` 且未软删学校；停用后前台不可见。
 
-### 19.5 院系档案（管理员+，只读）
+### 19.5 数据覆盖缺口（管理员+）
+
+- `GET /admin/data-coverage`：返回数据库覆盖缺口聚合，用于后台首页看板
+  - `schools`：学校总量、官网/研究生院链接、学校类型、专业覆盖缺口
+  - `programs`：来源链接、招生计划、分数线、报录比、复试统计、初试科目、参考书覆盖缺口
+  - `sourceLinks`：来源链接总量、official 数量、pending/invalid 数量
+  - `yearlyRecords`：年度子表记录数
+
+该接口只做库内事实统计，不推断未采字段。
+
+### 19.6 院系档案（管理员+，只读）
 
 - `GET /admin/departments`：运营列表，支持 `keyword`、`schoolId`、`status`、`page`、`pageSize`；响应含 `schoolName` 便于阅读
 - `GET /admin/departments/{departmentId}`：院系详情（含所属学校摘要）

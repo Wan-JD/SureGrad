@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { BatchMissingTemplates, CollectedBatchGapsBanner } from "@/components/batch-missing-templates";
+import {
+  BatchMissingTemplates,
+  CollectedBatchGapsBanner,
+} from "@/components/batch-missing-templates";
+import { DataCoverageDashboard } from "@/components/data-coverage-dashboard";
 import { adminNavigation } from "@/config/admin-navigation";
 import { getCollectedImportBatches } from "@/lib/collected-import-batches";
 
@@ -77,7 +81,9 @@ export default async function Home() {
       years: new Set<number>(),
     },
   );
-  const batchesNeedingCsv = collectedBatches.filter((batch) => batch.missingTemplates.length > 0).length;
+  const batchesNeedingCsv = collectedBatches.filter(
+    (batch) => batch.missingTemplates.length > 0,
+  ).length;
 
   return (
     <div className="page-stack">
@@ -91,7 +97,9 @@ export default async function Home() {
           </p>
           <div className="hero-chip-row">
             <span className="hero-chip">工作台页面: 6</span>
-            <span className="hero-chip">主链路: 学校 -&gt; 院系 -&gt; 专业</span>
+            <span className="hero-chip">
+              主链路: 学校 -&gt; 院系 -&gt; 专业
+            </span>
             <span className="hero-chip">年份页签: 4</span>
           </div>
         </div>
@@ -99,12 +107,16 @@ export default async function Home() {
           <div className="home-hero-card">
             <span className="eyebrow">Operations</span>
             <h3>统一列表、筛选与详情</h3>
-            <p>每个模块都沿用相同的筛选栏、列表和只读详情布局，演示时可以稳定说明运营动作与后续接入方式。</p>
+            <p>
+              每个模块都沿用相同的筛选栏、列表和只读详情布局，演示时可以稳定说明运营动作与后续接入方式。
+            </p>
           </div>
           <div className="home-hero-card muted">
             <span className="eyebrow">Coverage</span>
             <h3>资料推荐与来源治理并行</h3>
-            <p>资料推荐页现在和来源链接页并列纳入工作台，既能展示推荐清单，也能说明与科目、阶段和状态治理的关系。</p>
+            <p>
+              资料推荐页现在和来源链接页并列纳入工作台，既能展示推荐清单，也能说明与科目、阶段和状态治理的关系。
+            </p>
           </div>
         </div>
       </section>
@@ -115,7 +127,9 @@ export default async function Home() {
             <span className="eyebrow">Modules</span>
             <h2>核心运营入口</h2>
           </div>
-          <p>首页把六类模块统一展开，进入后台时可以直接从业务视角选择入口，不需要再区分哪些页面属于占位态。</p>
+          <p>
+            首页把六类模块统一展开，进入后台时可以直接从业务视角选择入口，不需要再区分哪些页面属于占位态。
+          </p>
         </div>
         <div className="module-grid">
           {adminNavigation.map((item) => (
@@ -131,13 +145,19 @@ export default async function Home() {
         </div>
       </section>
 
+      <DataCoverageDashboard />
+
       <section className="section-card">
         <div className="section-heading">
           <div>
             <span className="eyebrow">Collected</span>
             <h2>真实采集批次概览</h2>
           </div>
-          <p>首页直接读取 `tools/data-import/collected`，让运营一眼看到每个真实批次还缺哪些 CSV 才能进入完整校验。</p>
+          <p>
+            首页直接读取
+            `tools/data-import/collected`，让运营一眼看到每个真实批次还缺哪些
+            CSV 才能进入完整校验。
+          </p>
         </div>
         <CollectedBatchGapsBanner
           batches={collectedBatches}
@@ -194,27 +214,42 @@ export default async function Home() {
                   <span className="eyebrow">Batch</span>
                   <h3>{batch.title}</h3>
                 </div>
-                <span className="status-pill">{batch.collectedAt ?? "未标注日期"}</span>
+                <span className="status-pill">
+                  {batch.collectedAt ?? "未标注日期"}
+                </span>
               </div>
               <p className="collected-copy">
-                学校 {batch.counts.schools} 条，专业 {batch.counts.programs} 条，来源链接 {batch.counts.sourceLinks} 条，分数线
+                学校 {batch.counts.schools} 条，专业 {batch.counts.programs}{" "}
+                条，来源链接 {batch.counts.sourceLinks} 条，分数线
                 {batch.counts.scoreLines} 条。
               </p>
               <div className="hero-chip-row">
-                <span className="hero-chip">年份: {batch.years.join(" / ") || "待补"}</span>
-                <span className="hero-chip">已放入: {batch.csvFiles.length} 份 CSV</span>
+                <span className="hero-chip">
+                  年份: {batch.years.join(" / ") || "待补"}
+                </span>
+                <span className="hero-chip">
+                  已放入: {batch.csvFiles.length} 份 CSV
+                </span>
                 {batch.missingTemplates.length > 0 ? (
-                  <span className="hero-chip warn">待补 {batch.missingTemplates.length} 份</span>
+                  <span className="hero-chip warn">
+                    待补 {batch.missingTemplates.length} 份
+                  </span>
                 ) : (
                   <span className="hero-chip ok">模板已齐</span>
                 )}
               </div>
               <BatchMissingTemplates batch={batch} />
               <div className="collected-actions">
-                <Link href="/source-links" className="module-card collected-action">
+                <Link
+                  href="/source-links"
+                  className="module-card collected-action"
+                >
                   查看来源治理
                 </Link>
-                <Link href="/yearly-data" className="module-card collected-action">
+                <Link
+                  href="/yearly-data"
+                  className="module-card collected-action"
+                >
                   查看年份数据
                 </Link>
               </div>
@@ -243,7 +278,9 @@ export default async function Home() {
             <span className="eyebrow">Flow</span>
             <h2>运营工作流视角</h2>
           </div>
-          <p>首页同时说明数据链路和运营动作，减少进入各页后重新理解模块边界的成本。</p>
+          <p>
+            首页同时说明数据链路和运营动作，减少进入各页后重新理解模块边界的成本。
+          </p>
         </div>
         <div className="home-rail-grid">
           {workflowSteps.map((item) => (

@@ -24,11 +24,12 @@
 当前仓库已经落地多批人工核验过的真实采集数据：
 
 1. `tools/data-import/collected/moe-universities-2025`：教育部 2025 全国普通高等学校名单，2919 所学校基础条目。
-2. `tools/data-import/collected/ecust-cs-2024`：华东理工大学 081200 计算机科学与技术。
-3. `tools/data-import/collected/sufe-finance-2024`：上海财经大学金融方向骨架批次。
-4. `tools/data-import/collected/zju-cs-2024`：浙江大学 081200 计算机科学与技术。
-5. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
-6. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
+2. `tools/data-import/collected/official-school-websites-2026-06-07`：8 所高校官方主页与研究生招生/研究生院入口补全批次。
+3. `tools/data-import/collected/ecust-cs-2024`：华东理工大学 081200 计算机科学与技术。
+4. `tools/data-import/collected/sufe-finance-2024`：上海财经大学金融方向骨架批次。
+5. `tools/data-import/collected/zju-cs-2024`：浙江大学 081200 计算机科学与技术。
+6. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
+7. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
 
 `moe-universities-2025` 只使用教育部附件中的学校名称、学校标识码、所在地、办学层次、主管部门和备注；不包含分数线、招生计划、报录比、专业目录、官网或研究生院链接。
 
@@ -51,7 +52,7 @@
 1. 已附带批次级 `README.md`，记录官方来源与人工假设。
 2. 这一轮优先保证真源、来源追溯和模板链路跑通，不先猜测缺失数字。
 3. ecust 批次已包含 `program_admissions`、`program_interview_stats`、`subjects`、`program_exam_subjects`；仍缺 `program_application_stats`、`program_reference_books`、`books` 等模板内容。
-4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
+4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入官网补全批次和 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
 
 因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 
