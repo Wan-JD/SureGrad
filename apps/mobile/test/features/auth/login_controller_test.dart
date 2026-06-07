@@ -31,7 +31,7 @@ void main() {
 
       expect(sent, isTrue);
       expect(controller.errorText, isNull);
-      expect(controller.otpFeedbackText, '验证码已通过真实接口发送。当前后端演示验证码仍为 123456。');
+      expect(controller.otpFeedbackText, '验证码已发送，300 秒内有效。');
     });
 
     test('submit surfaces mapped OTP error text', () async {
@@ -54,7 +54,7 @@ void main() {
       );
 
       expect(session, isNull);
-      expect(controller.errorText, '验证码错误，请输入后端当前接受的 123456。');
+      expect(controller.errorText, '验证码错误，请重新输入。');
     });
   });
 }

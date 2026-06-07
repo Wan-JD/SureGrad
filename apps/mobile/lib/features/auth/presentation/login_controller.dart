@@ -19,6 +19,12 @@ class LoginController extends ChangeNotifier {
   String? get errorText => _errorText;
   String? get otpFeedbackText => _otpFeedbackText;
 
+  int? _otpExpireSeconds;
+  int? _otpRetryAfterSeconds;
+
+  int? get otpExpireSeconds => _otpExpireSeconds;
+  int? get otpRetryAfterSeconds => _otpRetryAfterSeconds;
+
   Future<bool> sendOtp(String phone) async {
     if (phone.trim().isEmpty) {
       _errorText = '请输入手机号。';
@@ -42,8 +48,10 @@ class LoginController extends ChangeNotifier {
     }
 
     final payload = (result as ApiSuccess<OtpSendResult>).data;
+    _otpExpireSeconds = payload.expireSeconds;
+    _otpRetryAfterSeconds = payload.retryAfterSeconds;
     _otpFeedbackText = payload.sent
-        ? '验证码已通过真实接口发送。当前后端演示验证码仍为 123456。'
+        ? '验证码已发送，${payload.expireSeconds} 秒内有效。'
         : '验证码发送失败，请稍后重试。';
     notifyListeners();
     return payload.sent;

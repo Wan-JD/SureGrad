@@ -21,7 +21,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _phoneController = TextEditingController();
-  final _otpController = TextEditingController(text: '123456');
+  final _otpController = TextEditingController();
   LoginController? _controller;
   int _countdown = 0;
 
@@ -124,8 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 18),
                 SectionCard(
                   title: '验证码登录',
-                  subtitle:
-                      '这里已经改成真实调用 /auth/otp/send 和 /auth/login/otp。当前后端演示验证码仍为 123456。',
+                  subtitle: '发送验证码后，输入收到的 6 位数字完成登录。',
                   children: [
                     TextField(
                       controller: _phoneController,

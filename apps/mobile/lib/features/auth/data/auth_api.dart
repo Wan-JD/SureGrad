@@ -57,12 +57,16 @@ class AuthApi {
   String _mapLoginError(String message, int? statusCode) {
     switch (message) {
       case 'OTP_INVALID':
-        return '验证码错误，请输入后端当前接受的 123456。';
+        return '验证码错误，请重新输入。';
+      case 'OTP_EXPIRED':
+        return '验证码已过期，请重新获取。';
+      case 'OTP_NOT_FOUND':
+        return '请先获取验证码。';
       case 'FORBIDDEN':
         return '当前账号不可用，请联系管理员。';
       default:
         if (statusCode == 500) {
-          return '登录接口当前返回 500。后端日志显示实体元数据未加载，前端不会伪造登录成功。';
+          return '登录接口异常，请稍后重试。';
         }
         return message;
     }
