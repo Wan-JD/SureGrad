@@ -12,6 +12,7 @@ import '../../features/resources/presentation/resources_page.dart';
 import '../../features/programs/presentation/program_detail_page.dart';
 import '../../features/schools/presentation/school_detail_page.dart';
 import '../../features/schools/presentation/school_list_page.dart';
+import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
 import '../../features/todo/presentation/todo_page.dart';
 import '../bootstrap/app_bootstrap.dart';
@@ -26,14 +27,22 @@ class AppRouter {
 
   final AppBootstrap _bootstrap;
 
-  /// Cold start: logged-in users land on home; guests land on the schools tab.
-  String get initialRoute =>
-      _bootstrap.sessionStore.isLoggedIn ? AppRoutes.home : AppRoutes.schools;
+  /// Cold start: new users see onboarding; logged-in users land on home; guests land on schools tab.
+  String get initialRoute {
+    if (!_bootstrap.sessionStore.hasSeenOnboarding) {
+      return AppRoutes.onboarding;
+    }
+    return _bootstrap.sessionStore.isLoggedIn
+        ? AppRoutes.home
+        : AppRoutes.schools;
+  }
 
   Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.splash:
         return _page(const SplashPage(), settings);
+      case AppRoutes.onboarding:
+        return _page(const OnboardingPage(), settings);
       case AppRoutes.login:
         final args = settings.arguments is LoginRouteArgs
             ? settings.arguments as LoginRouteArgs

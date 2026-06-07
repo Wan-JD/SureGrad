@@ -8,17 +8,17 @@ import 'package:suregrad_mobile/app/navigation/app_routes.dart';
 import 'package:suregrad_mobile/features/splash/presentation/splash_page.dart';
 
 void main() {
-  testWidgets('guest cold start lands on schools tab', (
+  testWidgets('guest cold start lands on onboarding', (
     WidgetTester tester,
   ) async {
     final bootstrap = AppBootstrap.create();
-    expect(AppRouter(bootstrap).initialRoute, AppRoutes.schools);
+    expect(AppRouter(bootstrap).initialRoute, AppRoutes.onboarding);
 
     await tester.pumpWidget(SureGradApp(bootstrap: bootstrap));
     await tester.pump();
 
-    expect(find.text('择校'), findsNWidgets(2));
-    expect(find.text('先逛院校'), findsNothing);
+    expect(find.text('择校不再盲选'), findsOneWidget);
+    expect(find.text('跳过'), findsOneWidget);
   });
 
   testWidgets('splash offers browse schools before login for guests', (

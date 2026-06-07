@@ -20,6 +20,7 @@ class PendingAuthAction {
 
 class AppSessionStore extends ChangeNotifier {
   bool _isLoggedIn = false;
+  bool _hasSeenOnboarding = false;
   String? _phoneNumber;
   String? _userId;
   String? _nickname;
@@ -31,6 +32,7 @@ class AppSessionStore extends ChangeNotifier {
   PendingAuthAction? _pendingAuthAction;
 
   bool get isLoggedIn => _isLoggedIn;
+  bool get hasSeenOnboarding => _hasSeenOnboarding;
   String? get phoneNumber => _phoneNumber;
   String? get userId => _userId;
   String? get nickname => _nickname;
@@ -70,8 +72,17 @@ class AppSessionStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  void completeOnboarding() {
+    if (_hasSeenOnboarding) {
+      return;
+    }
+    _hasSeenOnboarding = true;
+    notifyListeners();
+  }
+
   void signOut() {
     _isLoggedIn = false;
+    _hasSeenOnboarding = false;
     _phoneNumber = null;
     _userId = null;
     _nickname = null;
