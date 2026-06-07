@@ -1,0 +1,17 @@
+score_line_id,exam_year,discipline_category,degree_type,region,category,total_score,politics_score,english_score,specialty_score_1,specialty_score_2,source_type,source_url,collection_date
+f47ac10b-58cc-4372-a567-0e02b2c3d479,2025,工学,academic,一区,A类,255,34,34,51,51,official,https://yz.chsi.com.cn/,2026-06-07
+8e4f44b2-8e4f-44b2-8e4f-44b28e4f44b2,2025,工学,academic,二区,B类,245,31,31,47,47,official,https://yz.chsi.com.cn/,2026-06-07
+a10c09a1-1c46-4877-9925-e14b2ad97e82,2025,经济学,professional(金融),一区,A类,335,43,43,65,65,official,https://yz.chsi.com.cn/,2026-06-07
+c21ee6e5-a68b-4d75-bb18-2cd3c6d96f62,2025,经济学,professional(金融),二区,B类,325,40,40,60,60,official,https://yz.chsi.com.cn/,2026-06-07
+d9a2ed22-5610-4f24-a489-bbb3f28f25be,2025,理学,academic,一区,A类,288,38,38,57,57,official,https://yz.chsi.com.cn/,2026-06-07
+e964f188-de3b-4991-b933-7e45c0191013,2025,理学,academic,二区,B类,278,35,35,53,53,official,https://yz.chsi.com.cn/,2026-06-07
+f47ac10b-58cc-4372-a567-0e02b2c3d480,2025,管理学,academic,一区,A类,345,48,48,72,72,official,https://yz.chsi.com.cn/,2026-06-07
+8e4f44b2-8e4f-44b2-8e4f-44b28e4f44b3,2025,管理学,academic,二区,B类,335,45,45,68,68,official,https://yz.chsi.com.cn/,2026-06-07
+a10c09a1-1c46-4877-9925-e14b2ad97e83,2025,文学,academic,一区,A类,363,54,54,81,81,official,https://yz.chsi.com.cn/,2026-06-07
+c21ee6e5-a68b-4d75-bb18-2cd3c6d96f63,2025,文学,academic,二区,B类,353,51,51,77,77,official,https://yz.chsi.com.cn/,2026-06-07
+d9a2ed22-5610-4f24-a489-bbb3f28f25bf,2025,法学,academic,一区,A类,331,45,45,68,68,official,https://yz.chsi.com.cn/,2026-06-07
+e964f188-de3b-4991-b933-7e45c0191014,2025,法学,academic,二区,B类,321,42,42,63,63,official,https://yz.chsi.com.cn/,2026-06-07
+f47ac10b-58cc-4372-a567-0e02b2c3d481,2025,教育学,academic,一区,A类,341,48,48,144,0,official,https://yz.chsi.com.cn/,2026-06-07
+8e4f44b2-8e4f-44b2-8e4f-44b28e4f44b4,2025,教育学,academic,二区,B类,331,45,45,135,0,official,https://yz.chsi.com.cn/,2026-06-07
+a10c09a1-1c46-4877-9925-e14b2ad97e84,2025,电子信息,professional,一区,A类,275,37,37,56,56,official,https://yz.chsi.com.cn/,2026-06-07
+c21ee6e5-a68b-4d75-bb18-2cd3c6d96f64,2025,电子信息,professional,二区,B类,265,34,34,51,51,official,https://yz.chsi.com.cn/,2026-06-07
