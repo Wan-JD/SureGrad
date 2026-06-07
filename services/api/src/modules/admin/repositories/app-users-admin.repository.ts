@@ -31,7 +31,7 @@ export class AppUsersAdminRepository {
     if (params.keyword?.trim()) {
       const keyword = `%${params.keyword.trim()}%`;
       qb.andWhere(
-        '(user.phone ILIKE :keyword OR user.nickname ILIKE :keyword)',
+        '(user.phone ILIKE :keyword OR user.email ILIKE :keyword OR user.nickname ILIKE :keyword)',
         { keyword },
       );
     }

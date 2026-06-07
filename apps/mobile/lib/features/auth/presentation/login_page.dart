@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../app/bootstrap/app_bootstrap.dart';
 import '../../../app/navigation/app_routes.dart';
@@ -21,17 +20,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _phoneController = TextEditingController();
+  final _accountController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _nicknameController = TextEditingController();
   final _codeController = TextEditingController();
   LoginController? _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller?.loadCaptcha();
-    });
-  }
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void didChangeDependencies() {
@@ -43,7 +39,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _accountController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _nicknameController.dispose();
     _codeController.dispose();
     _controller?.dispose();
     super.dispose();
@@ -59,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
         child: AnimatedBuilder(
           animation: controller,
           builder: (context, _) {
+            final isRegister = controller.isRegisterMode;
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
               children: [
@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(32),
+                    borderRadius: BorderRadius.circular(28),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
@@ -103,25 +103,15 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 22),
                         Text(
-                          '登录后继续你的择校闭环',
+                          isRegister ? '创建账号，保存你的择校进度' : '登录后继续你的择校闭环',
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(color: Colors.white, height: 1.1),
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          '登录成功后会回到$routeLabel，继续刚才的动作。',
+                          '成功后会回到$routeLabel，继续刚才的动作。',
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: const Color(0xFFD5EEE8)),
-                        ),
-                        const SizedBox(height: 18),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: const [
-                            _HeroChip(label: '图形验证码'),
-                            _HeroChip(label: '返回原触发页'),
-                            _HeroChip(label: '游客先浏览也可以'),
-                          ],
                         ),
                       ],
                     ),
@@ -129,188 +119,164 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 18),
                 SectionCard(
-                  title: '验证码登录',
-                  subtitle: '输入手机号和图片验证码完成登录。',
+                  title: isRegister ? '注册账号' : '账号登录',
+                  subtitle: isRegister
+                      ? '手机号或邮箱均可注册，密码会加密存储。'
+                      : '使用手机号或邮箱加密码登录。',
                   children: [
-                    TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: '手机号',
-                        hintText: '输入 13800138000',
-                        prefixIcon: const Icon(Icons.phone_android_rounded),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    SegmentedButton<AuthMode>(
+                      segments: const [
+                        ButtonSegment(
+                          value: AuthMode.login,
+                          icon: Icon(Icons.login_rounded),
+                          label: Text('登录'),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE4DDD2)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF125B52), width: 2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _codeController,
-                            keyboardType: TextInputType.text,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[A-Za-z0-9]'),
-                              ),
-                            ],
-                            decoration: InputDecoration(
-                              labelText: '验证码',
-                              hintText: '输入图片中的字符',
-                              prefixIcon: const Icon(Icons.password_rounded),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE4DDD2)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF125B52), width: 2),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        GestureDetector(
-                          onTap: controller.isLoadingCaptcha
-                              ? null
-                              : () => controller.loadCaptcha(),
-                          child: Container(
-                            width: 100,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF0F0F0),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFD8D3CA)),
-                            ),
-                            child: controller.isLoadingCaptcha
-                                ? const Center(
-                                    child: SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                  )
-                                : controller.captcha != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          'data:image/svg+xml;base64,${_toBase64(controller.captcha!.image)}',
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stack) => const Center(
-                                            child: Text('加载失败', style: TextStyle(fontSize: 12)),
-                                          ),
-                                        ),
-                                      )
-                                    : const Center(
-                                        child: Text('点击获取', style: TextStyle(fontSize: 12)),
-                                      ),
-                          ),
+                        ButtonSegment(
+                          value: AuthMode.register,
+                          icon: Icon(Icons.person_add_alt_1_rounded),
+                          label: Text('注册'),
                         ),
                       ],
+                      selected: {controller.mode},
+                      onSelectionChanged: controller.isSubmitting
+                          ? null
+                          : (selection) {
+                              final mode = selection.first;
+                              controller.setMode(mode);
+                              if (mode == AuthMode.register &&
+                                  controller.captcha == null) {
+                                controller.loadCaptcha();
+                              }
+                            },
                     ),
-                    if (controller.captchaFeedbackText != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        controller.captchaFeedbackText!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF4A6962),
+                    const SizedBox(height: 16),
+                    _AuthTextField(
+                      controller: _accountController,
+                      labelText: '手机号或邮箱',
+                      hintText: '13800138000 / name@example.com',
+                      keyboardType: TextInputType.emailAddress,
+                      icon: Icons.alternate_email_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    if (isRegister) ...[
+                      _AuthTextField(
+                        controller: _nicknameController,
+                        labelText: '昵称',
+                        hintText: '可选',
+                        icon: Icons.badge_outlined,
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    _AuthTextField(
+                      controller: _passwordController,
+                      labelText: '密码',
+                      hintText: '至少 8 位',
+                      icon: Icons.lock_outline_rounded,
+                      obscureText: _obscurePassword,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_rounded
+                              : Icons.visibility_off_rounded,
                         ),
                       ),
+                    ),
+                    if (isRegister) ...[
+                      const SizedBox(height: 14),
+                      _AuthTextField(
+                        controller: _confirmPasswordController,
+                        labelText: '确认密码',
+                        hintText: '再次输入密码',
+                        icon: Icons.lock_reset_rounded,
+                        obscureText: _obscureConfirmPassword,
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
+                            });
+                          },
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_rounded
+                                : Icons.visibility_off_rounded,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _AuthTextField(
+                              controller: _codeController,
+                              labelText: '图形验证码',
+                              hintText: '输入图片字符',
+                              icon: Icons.verified_user_outlined,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[A-Za-z0-9]'),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          _CaptchaImage(controller: controller),
+                        ],
+                      ),
+                      if (controller.captchaFeedbackText != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          controller.captchaFeedbackText!,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: const Color(0xFF4A6962)),
+                        ),
+                      ],
                     ],
                     if (controller.errorText != null) ...[
                       const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFEFEA),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.error_outline_rounded,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                controller.errorText!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      _ErrorBanner(message: controller.errorText!),
                     ],
                     const SizedBox(height: 18),
-                    FilledButton(
+                    FilledButton.icon(
                       onPressed: controller.isSubmitting
                           ? null
-                          : () async {
-                              final sessionStore = AppScope.of(context).sessionStore;
-                              final navigator = Navigator.of(context);
-                              final session = await controller.submit(
-                                phone: _phoneController.text,
-                                code: _codeController.text,
-                              );
-                              if (session == null || !mounted) return;
-
-                              _commitSession(
-                                sessionStore: sessionStore,
-                                phoneNumber: _phoneController.text.trim(),
-                                session: session,
-                              );
-                              final targetRoute = session.isNewUser || !session.profileCompleted
-                                  ? AppRoutes.firstTimeSetup
-                                  : widget.args.redirectTo;
-                              navigator.pushNamedAndRemoveUntil(
-                                targetRoute,
-                                (_) => false,
-                                arguments: targetRoute == AppRoutes.firstTimeSetup
-                                    ? null
-                                    : widget.args.redirectArguments,
-                              );
-                            },
-                      child: Text(controller.isSubmitting ? '登录中...' : '登录并继续'),
+                          : () => _submit(controller),
+                      icon: controller.isSubmitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Icon(
+                              isRegister
+                                  ? Icons.person_add_alt_1_rounded
+                                  : Icons.login_rounded,
+                            ),
+                      label: Text(
+                        controller.isSubmitting
+                            ? '处理中...'
+                            : isRegister
+                            ? '注册并继续'
+                            : '登录并继续',
+                      ),
                     ),
                     const SizedBox(height: 10),
-                    OutlinedButton(
+                    OutlinedButton.icon(
                       onPressed: () {
                         Navigator.of(context).pushNamedAndRemoveUntil(
                           AppRoutes.schools,
                           (_) => false,
                         );
                       },
-                      child: const Text('先以游客身份浏览'),
+                      icon: const Icon(Icons.explore_outlined),
+                      label: const Text('先以游客身份浏览'),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                SectionCard(
-                  title: '登录说明',
-                  children: [
-                    _SmallPoint('拦截收藏、对比、规划、Todo 等受限动作'),
-                    const SizedBox(height: 8),
-                    _SmallPoint('登录成功后跳回原触发页继续'),
-                    const SizedBox(height: 8),
-                    _SmallPoint('新用户登录后引导完善备考档案'),
                   ],
                 ),
               ],
@@ -321,25 +287,62 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Future<void> _submit(LoginController controller) async {
+    final sessionStore = AppScope.of(context).sessionStore;
+    final navigator = Navigator.of(context);
+    final AuthSession? session;
+    if (controller.isRegisterMode) {
+      session = await controller.register(
+        account: _accountController.text,
+        password: _passwordController.text,
+        confirmPassword: _confirmPasswordController.text,
+        nickname: _nicknameController.text,
+        code: _codeController.text,
+      );
+    } else {
+      session = await controller.login(
+        account: _accountController.text,
+        password: _passwordController.text,
+      );
+    }
+    if (session == null || !mounted) {
+      return;
+    }
+
+    _commitSession(
+      sessionStore: sessionStore,
+      account: _accountController.text.trim(),
+      session: session,
+    );
+    final targetRoute = session.isNewUser || !session.profileCompleted
+        ? AppRoutes.firstTimeSetup
+        : widget.args.redirectTo;
+    navigator.pushNamedAndRemoveUntil(
+      targetRoute,
+      (_) => false,
+      arguments: targetRoute == AppRoutes.firstTimeSetup
+          ? null
+          : widget.args.redirectArguments,
+    );
+  }
+
   void _commitSession({
     required AppSessionStore sessionStore,
-    required String phoneNumber,
+    required String account,
     required AuthSession session,
   }) {
     sessionStore.signIn(
-      phoneNumber: phoneNumber,
+      account: account,
+      phoneNumber: account,
       userId: session.user.userId,
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       profileCompleted: session.profileCompleted,
       nickname: session.user.nickname,
       phoneMasked: session.user.phoneMasked,
+      accountLabel: session.user.accountLabel,
       avatarUrl: session.user.avatarUrl,
     );
-  }
-
-  String _toBase64(String svg) {
-    return base64Encode(utf8.encode(svg));
   }
 
   String _routeLabel(String routeName) {
@@ -364,46 +367,125 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class _HeroChip extends StatelessWidget {
-  const _HeroChip({required this.label});
-  final String label;
+class _CaptchaImage extends StatelessWidget {
+  const _CaptchaImage({required this.controller});
+
+  final LoginController controller;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
+    return GestureDetector(
+      onTap: controller.isLoadingCaptcha ? null : controller.loadCaptcha,
+      child: Container(
+        width: 112,
+        height: 54,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F0F0),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFD8D3CA)),
+        ),
+        child: controller.isLoadingCaptcha
+            ? const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : controller.captcha != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SvgPicture.string(
+                  controller.captcha!.image,
+                  fit: BoxFit.cover,
+                ),
+              )
+            : const Center(
+                child: Text('点击获取', style: TextStyle(fontSize: 12)),
+              ),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
+    );
+  }
+}
+
+class _AuthTextField extends StatelessWidget {
+  const _AuthTextField({
+    required this.controller,
+    required this.labelText,
+    required this.hintText,
+    required this.icon,
+    this.keyboardType,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.inputFormatters,
+  });
+
+  final TextEditingController controller;
+  final String labelText;
+  final String hintText;
+  final IconData icon;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final List<TextInputFormatter>? inputFormatters;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      inputFormatters: inputFormatters,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE4DDD2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF125B52), width: 2),
         ),
       ),
     );
   }
 }
 
-class _SmallPoint extends StatelessWidget {
-  const _SmallPoint(this.text);
-  final String text;
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 4),
-          child: Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF125B52)),
-        ),
-        const SizedBox(width: 10),
-        Expanded(child: Text(text)),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEFEA),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

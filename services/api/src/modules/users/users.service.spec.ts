@@ -19,6 +19,7 @@ describe('UsersService', () => {
       user: {
         id: 'user-1',
         phone: '13800138000',
+        email: null,
         nickname: 'Test User',
         avatarUrl: 'https://example.com/avatar.png',
       },
@@ -33,11 +34,37 @@ describe('UsersService', () => {
     await expect(service.getMe('user-1')).resolves.toEqual({
       userId: 'user-1',
       phoneMasked: '138****8000',
+      emailMasked: null,
+      accountLabel: '138****8000',
       nickname: 'Test User',
       avatarUrl: 'https://example.com/avatar.png',
       profileCompleted: true,
       hasActiveTarget: true,
       hasActivePlan: false,
+    });
+  });
+
+  it('returns an email account label when the user has no phone', async () => {
+    const usersRepository = createUsersRepositoryMock();
+    usersRepository.getUserSnapshot = jest.fn().mockResolvedValue({
+      user: {
+        id: 'user-email',
+        phone: null,
+        email: 'student@example.com',
+        nickname: 'Email User',
+        avatarUrl: null,
+      },
+      profile: null,
+      hasActiveTarget: false,
+      hasActivePlan: false,
+    });
+
+    const service = new UsersService(usersRepository);
+    await expect(service.getMe('user-email')).resolves.toMatchObject({
+      userId: 'user-email',
+      phoneMasked: null,
+      emailMasked: 'st***@example.com',
+      accountLabel: 'st***@example.com',
     });
   });
 

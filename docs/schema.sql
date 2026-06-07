@@ -4,7 +4,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    phone VARCHAR(30) NOT NULL,
+    phone VARCHAR(30),
+    email VARCHAR(255),
     password_hash VARCHAR(255),
     nickname VARCHAR(100) NOT NULL,
     avatar_url TEXT,
@@ -13,6 +14,8 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_users_phone UNIQUE (phone),
+    CONSTRAINT uq_users_email UNIQUE (email),
+    CONSTRAINT chk_users_contact_present CHECK (phone IS NOT NULL OR email IS NOT NULL),
     CONSTRAINT chk_users_status CHECK (status IN ('active', 'disabled'))
 );
 

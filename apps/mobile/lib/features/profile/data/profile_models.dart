@@ -6,6 +6,8 @@ class UserProfileSnapshot {
   const UserProfileSnapshot({
     required this.userId,
     required this.phoneMasked,
+    required this.emailMasked,
+    required this.accountLabel,
     required this.nickname,
     required this.avatarUrl,
     required this.profileCompleted,
@@ -15,6 +17,8 @@ class UserProfileSnapshot {
 
   final String userId;
   final String? phoneMasked;
+  final String? emailMasked;
+  final String? accountLabel;
   final String? nickname;
   final String? avatarUrl;
   final bool profileCompleted;
@@ -25,6 +29,8 @@ class UserProfileSnapshot {
     return UserProfileSnapshot(
       userId: json['userId'] as String? ?? '',
       phoneMasked: json['phoneMasked'] as String?,
+      emailMasked: json['emailMasked'] as String?,
+      accountLabel: json['accountLabel'] as String?,
       nickname: json['nickname'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       profileCompleted: json['profileCompleted'] as bool? ?? false,

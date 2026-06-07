@@ -511,8 +511,9 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | id | uuid | 主键 |
-| phone | varchar(30) | 手机号 |
-| password_hash | varchar(255) | 若采用密码制，可为空 |
+| phone | varchar(30) | 手机号，可为空 |
+| email | varchar(255) | 邮箱，可为空 |
+| password_hash | varchar(255) | 密码哈希；账密注册用户使用 `scrypt` 哈希，不存明文 |
 | nickname | varchar(100) | 昵称 |
 | avatar_url | text | 头像 |
 | status | varchar(20) | active/disabled |
@@ -523,6 +524,8 @@ MVP 阶段不建议把年份数据直接堆在 `programs` 表中，应独立按�
 约束建议：
 
 1. `uq_users_phone`
+2. `uq_users_email`
+3. `ck_users_contact_present`：`phone` 或 `email` 至少一个非空
 
 ## 9.2 `user_profiles`
 

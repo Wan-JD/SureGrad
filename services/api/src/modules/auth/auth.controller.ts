@@ -1,7 +1,9 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginWithPasswordDto } from './dto/login-with-password.dto';
 import { LoginWithOtpDto } from './dto/login-with-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterWithPasswordDto } from './dto/register-with-password.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyCaptchaDto } from './dto/verify-captcha.dto';
 
@@ -31,6 +33,18 @@ export class AuthController {
   @HttpCode(200)
   loginWithCaptcha(@Body() dto: VerifyCaptchaDto & { phone: string }) {
     return this.authService.loginWithCaptcha(dto);
+  }
+
+  @Post('register')
+  @HttpCode(200)
+  registerWithPassword(@Body() dto: RegisterWithPasswordDto) {
+    return this.authService.registerWithPassword(dto);
+  }
+
+  @Post('login/password')
+  @HttpCode(200)
+  loginWithPassword(@Body() dto: LoginWithPasswordDto) {
+    return this.authService.loginWithPassword(dto);
   }
 
   @Post('refresh')

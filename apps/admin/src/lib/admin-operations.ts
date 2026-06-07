@@ -1357,7 +1357,7 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
         filters: [],
         columns: [
           { key: "nickname", label: "昵称" },
-          { key: "phone_masked", label: "手机号" },
+          { key: "account_label", label: "账号" },
           { key: "status", label: "状态" },
         ],
         fields: [
@@ -1368,10 +1368,22 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
             description: "用户展示名称",
           },
           {
+            key: "account_label",
+            label: "账号",
+            type: "text",
+            description: "脱敏手机号或邮箱",
+          },
+          {
             key: "phone_masked",
             label: "手机号",
             type: "text",
-            description: "脱敏手机号",
+            description: "手机号账号的脱敏值",
+          },
+          {
+            key: "email_masked",
+            label: "邮箱",
+            type: "text",
+            description: "邮箱账号的脱敏值",
           },
           {
             key: "status",
@@ -1390,7 +1402,7 @@ export const adminOperationsPages: Record<string, AdminOperationsPage> = {
           {
             title: "账号信息",
             description: "基础账号字段",
-            fields: ["nickname", "phone_masked", "status", "role"],
+            fields: ["nickname", "account_label", "phone_masked", "email_masked", "status", "role"],
           },
         ],
         records: [],

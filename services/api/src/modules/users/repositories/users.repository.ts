@@ -31,12 +31,36 @@ export class UsersRepository {
     });
   }
 
-  createUser(phone: string, nickname: string) {
+  findUserByEmail(email: string) {
+    return this.usersRepository.findOne({
+      where: { email },
+    });
+  }
+
+  async findUserByAccount(phone: string | null, email: string | null) {
+    if (phone) {
+      return this.findUserByPhone(phone);
+    }
+
+    if (email) {
+      return this.findUserByEmail(email);
+    }
+
+    return null;
+  }
+
+  createUser(payload: {
+    phone: string | null;
+    email?: string | null;
+    nickname: string;
+    passwordHash?: string | null;
+  }) {
     return this.usersRepository.create({
-      phone,
-      nickname,
+      phone: payload.phone,
+      email: payload.email ?? null,
+      nickname: payload.nickname,
       avatarUrl: null,
-      passwordHash: null,
+      passwordHash: payload.passwordHash ?? null,
       status: 'active',
       lastLoginAt: null,
     });

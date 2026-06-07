@@ -22,10 +22,12 @@ class PendingAuthAction {
 class AppSessionStore extends ChangeNotifier {
   bool _isLoggedIn = false;
   bool _hasSeenOnboarding = false;
+  String? _account;
   String? _phoneNumber;
   String? _userId;
   String? _nickname;
   String? _phoneMasked;
+  String? _accountLabel;
   String? _avatarUrl;
   String? _accessToken;
   String? _refreshToken;
@@ -34,10 +36,12 @@ class AppSessionStore extends ChangeNotifier {
 
   bool get isLoggedIn => _isLoggedIn;
   bool get hasSeenOnboarding => _hasSeenOnboarding;
+  String? get account => _account;
   String? get phoneNumber => _phoneNumber;
   String? get userId => _userId;
   String? get nickname => _nickname;
   String? get phoneMasked => _phoneMasked;
+  String? get accountLabel => _accountLabel ?? _phoneMasked;
   String? get avatarUrl => _avatarUrl;
   String? get accessToken => _accessToken;
   String? get refreshToken => _refreshToken;
@@ -47,13 +51,15 @@ class AppSessionStore extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    _phoneNumber = prefs.getString('phoneNumber');
-    _userId = prefs.getString('userId');
-    _nickname = prefs.getString('nickname');
-    _phoneMasked = prefs.getString('phoneMasked');
-    _avatarUrl = prefs.getString('avatarUrl');
-    _accessToken = prefs.getString('accessToken');
-    _refreshToken = prefs.getString('refreshToken');
+    _account = _readNullableString(prefs, 'account');
+    _phoneNumber = _readNullableString(prefs, 'phoneNumber');
+    _userId = _readNullableString(prefs, 'userId');
+    _nickname = _readNullableString(prefs, 'nickname');
+    _phoneMasked = _readNullableString(prefs, 'phoneMasked');
+    _accountLabel = _readNullableString(prefs, 'accountLabel');
+    _avatarUrl = _readNullableString(prefs, 'avatarUrl');
+    _accessToken = _readNullableString(prefs, 'accessToken');
+    _refreshToken = _readNullableString(prefs, 'refreshToken');
     _profileCompleted = prefs.getBool('profileCompleted') ?? false;
     notifyListeners();
   }
@@ -62,10 +68,12 @@ class AppSessionStore extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', _hasSeenOnboarding);
     await prefs.setBool('isLoggedIn', _isLoggedIn);
+    await prefs.setString('account', _account ?? '');
     await prefs.setString('phoneNumber', _phoneNumber ?? '');
     await prefs.setString('userId', _userId ?? '');
     await prefs.setString('nickname', _nickname ?? '');
     await prefs.setString('phoneMasked', _phoneMasked ?? '');
+    await prefs.setString('accountLabel', _accountLabel ?? '');
     await prefs.setString('avatarUrl', _avatarUrl ?? '');
     await prefs.setString('accessToken', _accessToken ?? '');
     await prefs.setString('refreshToken', _refreshToken ?? '');
@@ -73,6 +81,7 @@ class AppSessionStore extends ChangeNotifier {
   }
 
   void signIn({
+    String? account,
     required String phoneNumber,
     required String userId,
     required String accessToken,
@@ -80,13 +89,16 @@ class AppSessionStore extends ChangeNotifier {
     required bool profileCompleted,
     String? nickname,
     String? phoneMasked,
+    String? accountLabel,
     String? avatarUrl,
   }) {
     _isLoggedIn = true;
+    _account = account ?? phoneNumber;
     _phoneNumber = phoneNumber;
     _userId = userId;
     _nickname = nickname;
     _phoneMasked = phoneMasked;
+    _accountLabel = accountLabel ?? phoneMasked;
     _avatarUrl = avatarUrl;
     _accessToken = accessToken;
     _refreshToken = refreshToken;
@@ -116,10 +128,12 @@ class AppSessionStore extends ChangeNotifier {
   void signOut() {
     _isLoggedIn = false;
     _hasSeenOnboarding = false;
+    _account = null;
     _phoneNumber = null;
     _userId = null;
     _nickname = null;
     _phoneMasked = null;
+    _accountLabel = null;
     _avatarUrl = null;
     _accessToken = null;
     _refreshToken = null;
@@ -140,5 +154,13 @@ class AppSessionStore extends ChangeNotifier {
     }
     _pendingAuthAction = null;
     return action;
+  }
+
+  String? _readNullableString(SharedPreferences prefs, String key) {
+    final value = prefs.getString(key);
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    return value;
   }
 }

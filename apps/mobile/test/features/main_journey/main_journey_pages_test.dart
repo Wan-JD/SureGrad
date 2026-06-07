@@ -211,6 +211,8 @@ ProfileScreenData _profileData({
     me: UserProfileSnapshot(
       userId: 'user-1',
       phoneMasked: null,
+      emailMasked: null,
+      accountLabel: null,
       nickname: null,
       avatarUrl: null,
       profileCompleted: true,

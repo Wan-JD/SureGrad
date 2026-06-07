@@ -8,32 +8,80 @@ import '../../support/fake_api_client.dart';
 
 void main() {
   group('LoginController', () {
-    test('loadCaptcha reports success from the real API flow', () async {
+    test('login submits account and password to the password endpoint', () async {
       final controller = LoginController(
         repository: AuthRepository(
           api: AuthApi(
             client: FakeApiClient(
               onPost: (path, {body, queryParameters}) async {
-                expect(path, '/auth/captcha/issue');
-                return const ApiSuccess(<String, dynamic>{
-                  'captchaId': 'test-captcha-id',
-                  'image': '<svg>test</svg>',
+                expect(path, '/auth/login/password');
+                expect(body, {
+                  'account': 'student@example.com',
+                  'password': 'password123',
                 });
+                return ApiSuccess(_sessionJson(isNewUser: false));
               },
             ),
           ),
         ),
       );
 
-      final loaded = await controller.loadCaptcha();
+      final session = await controller.login(
+        account: 'student@example.com',
+        password: 'password123',
+      );
 
-      expect(loaded, isTrue);
+      expect(session, isNotNull);
+      expect(session!.user.accountLabel, 'st***@example.com');
       expect(controller.errorText, isNull);
-      expect(controller.captcha, isNotNull);
-      expect(controller.captcha!.captchaId, 'test-captcha-id');
     });
 
-    test('submit surfaces mapped captcha error text', () async {
+    test('register loads captcha and submits only to the register endpoint', () async {
+      final postedPaths = <String>[];
+      final controller = LoginController(
+        repository: AuthRepository(
+          api: AuthApi(
+            client: FakeApiClient(
+              onPost: (path, {body, queryParameters}) async {
+                postedPaths.add(path);
+                if (path == '/auth/captcha/issue') {
+                  return const ApiSuccess(<String, dynamic>{
+                    'captchaId': 'test-captcha-id',
+                    'image': '<svg>test</svg>',
+                  });
+                }
+
+                expect(path, '/auth/register');
+                expect(body, {
+                  'account': '13800138000',
+                  'password': 'password123',
+                  'nickname': '考研人',
+                  'captchaId': 'test-captcha-id',
+                  'code': 'ABCD',
+                });
+                return ApiSuccess(_sessionJson(isNewUser: true));
+              },
+            ),
+          ),
+        ),
+      );
+
+      controller.setMode(AuthMode.register);
+      final loaded = await controller.loadCaptcha();
+      final session = await controller.register(
+        account: '13800138000',
+        password: 'password123',
+        confirmPassword: 'password123',
+        nickname: '考研人',
+        code: 'ABCD',
+      );
+
+      expect(loaded, isTrue);
+      expect(session, isNotNull);
+      expect(postedPaths, ['/auth/captcha/issue', '/auth/register']);
+    });
+
+    test('register surfaces duplicate account errors', () async {
       final controller = LoginController(
         repository: AuthRepository(
           api: AuthApi(
@@ -45,22 +93,43 @@ void main() {
                     'image': '<svg>test</svg>',
                   });
                 }
-                return const ApiFailure('CAPTCHA_INVALID', statusCode: 400);
+                return const ApiFailure('ACCOUNT_EXISTS', statusCode: 409);
               },
             ),
           ),
         ),
       );
 
+      controller.setMode(AuthMode.register);
       await controller.loadCaptcha();
-
-      final session = await controller.submit(
-        phone: '13800138000',
-        code: '0000',
+      final session = await controller.register(
+        account: '13800138000',
+        password: 'password123',
+        confirmPassword: 'password123',
+        nickname: '',
+        code: 'ABCD',
       );
 
       expect(session, isNull);
-      expect(controller.errorText, '验证码错误，请重新输入。');
+      expect(controller.errorText, '这个账号已经注册，请直接登录。');
     });
   });
+}
+
+Map<String, dynamic> _sessionJson({required bool isNewUser}) {
+  return <String, dynamic>{
+    'accessToken': 'access-token',
+    'refreshToken': 'refresh-token',
+    'expiresIn': 604800,
+    'isNewUser': isNewUser,
+    'profileCompleted': !isNewUser,
+    'user': <String, dynamic>{
+      'userId': 'user-1',
+      'phoneMasked': null,
+      'emailMasked': 'st***@example.com',
+      'accountLabel': 'st***@example.com',
+      'nickname': '考研人',
+      'avatarUrl': null,
+    },
+  };
 }

@@ -8,7 +8,9 @@ import type { AdminRecord } from "@/lib/admin-operations";
 
 type AppUserItem = {
   userId: string;
-  phoneMasked: string;
+  phoneMasked: string | null;
+  emailMasked: string | null;
+  accountLabel: string | null;
   nickname: string;
   status: "active" | "disabled";
   lastLoginAt: string | null;
@@ -27,7 +29,9 @@ function mapUserToRecord(user: AppUserItem): AdminRecord {
   return {
     id: user.userId,
     nickname: user.nickname,
-    phone_masked: user.phoneMasked,
+    account_label: user.accountLabel ?? "—",
+    phone_masked: user.phoneMasked ?? "—",
+    email_masked: user.emailMasked ?? "—",
     status: user.status === "active" ? "启用" : "停用",
     role: "普通用户",
     last_login_at: user.lastLoginAt ?? "—",
@@ -159,7 +163,7 @@ export function UsersLiveWorkspace() {
         }}
         search={{
           value: keyword,
-          placeholder: "搜索手机号或昵称",
+          placeholder: "搜索手机号、邮箱或昵称",
           onChange: setKeyword,
           helpText: "搜索会命中 /admin/app-users 接口。",
         }}

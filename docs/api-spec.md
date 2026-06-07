@@ -108,6 +108,12 @@
 | `UNAUTHORIZED`            | 401  | 未登录或 token 无效    |
 | `FORBIDDEN`               | 403  | 无权限访问             |
 | `NOT_FOUND`               | 404  | 资源不存在             |
+| `INVALID_ACCOUNT`         | 400  | 账号不是手机号或邮箱   |
+| `INVALID_CREDENTIALS`     | 400  | 账号或密码错误         |
+| `ACCOUNT_EXISTS`          | 409  | 注册账号已存在         |
+| `CAPTCHA_INVALID`         | 400  | 图形验证码错误         |
+| `CAPTCHA_EXPIRED`         | 400  | 图形验证码已过期       |
+| `CAPTCHA_NOT_FOUND`       | 400  | 图形验证码不存在       |
 | `OTP_SEND_FAILED`         | 400  | 验证码发送失败         |
 | `OTP_INVALID`             | 400  | 验证码错误或已过期     |
 | `PROFILE_INCOMPLETE`      | 400  | 用户档案未补全         |
@@ -124,7 +130,7 @@
 
 | 模块               | 接口                                                                                                                                                 |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 登录与用户基础档案 | `POST /auth/otp/send`、`POST /auth/login/otp`、`GET /users/me`、`PUT /user-profiles/me`                                                              |
+| 登录与用户基础档案 | `POST /auth/captcha/issue`、`POST /auth/register`、`POST /auth/login/password`、`GET /users/me`、`PUT /user-profiles/me`                                |
 | 择校列表           | `GET /schools`                                                                                                                                       |
 | 院校详情           | `GET /schools/{schoolId}`、`GET /schools/{schoolId}/programs`                                                                                        |
 | 专业详情           | `GET /programs/{programId}`                                                                                                                          |
@@ -140,11 +146,98 @@
 
 ## 5. 登录与用户基础档案
 
-### 5.1 发送验证码
+### 5.1 获取注册图形验证码
+
+- Method：`POST`
+- Path：`/auth/captcha/issue`
+- 用途：注册前获取图形验证码；移动端登录不使用图形验证码
+- 是否需要登录：否
+
+响应结构：
+
+| 字段        | 类型   | 说明             |
+| ----------- | ------ | ---------------- |
+| `captchaId` | string | 本次验证码 ID    |
+| `image`     | string | SVG 图片字符串   |
+
+错误场景：
+
+1. 服务异常：`INVALID_PARAMS`
+
+### 5.2 账号密码注册
+
+- Method：`POST`
+- Path：`/auth/register`
+- 用途：使用手机号或邮箱注册账号；密码以 `scrypt` 哈希存储，不保存明文
+- 是否需要登录：否
+
+请求参数：
+
+| 字段        | 类型   | 必填 | 说明                         |
+| ----------- | ------ | ---- | ---------------------------- |
+| `account`   | string | 是   | 中国大陆手机号或邮箱         |
+| `password`  | string | 是   | 8-128 位密码                 |
+| `nickname`  | string | 否   | 昵称；为空时后端生成默认昵称 |
+| `captchaId` | string | 是   | 图形验证码 ID                |
+| `code`      | string | 是   | 图形验证码字符               |
+
+响应结构：
+
+| 字段               | 类型    | 说明           |
+| ------------------ | ------- | -------------- |
+| `accessToken`      | string  | 访问 token     |
+| `refreshToken`     | string  | 刷新 token     |
+| `expiresIn`        | number  | 有效秒数       |
+| `isNewUser`        | boolean | 是否新用户     |
+| `profileCompleted` | boolean | 是否已补全档案 |
+| `user`             | object  | 用户基础信息   |
+
+`user` 字段：
+
+| 字段           | 类型           | 说明                 |
+| -------------- | -------------- | -------------------- |
+| `userId`       | string         | 用户 ID              |
+| `phoneMasked`  | string \| null | 脱敏手机号           |
+| `emailMasked`  | string \| null | 脱敏邮箱             |
+| `accountLabel` | string \| null | 统一账号展示标签     |
+| `nickname`     | string         | 昵称                 |
+| `avatarUrl`    | string \| null | 头像                 |
+
+错误场景：
+
+1. 账号不是手机号或邮箱：`INVALID_ACCOUNT`
+2. 密码长度不合法：`INVALID_PARAMS`
+3. 图形验证码错误/过期/不存在：`CAPTCHA_INVALID` / `CAPTCHA_EXPIRED` / `CAPTCHA_NOT_FOUND`
+4. 注册账号已存在：`ACCOUNT_EXISTS`
+5. 用户状态被禁用：`FORBIDDEN`
+
+### 5.3 账号密码登录
+
+- Method：`POST`
+- Path：`/auth/login/password`
+- 用途：使用手机号或邮箱 + 密码登录
+- 是否需要登录：否
+
+请求参数：
+
+| 字段       | 类型   | 必填 | 说明                 |
+| ---------- | ------ | ---- | -------------------- |
+| `account`  | string | 是   | 中国大陆手机号或邮箱 |
+| `password` | string | 是   | 密码                 |
+
+响应结构：同 `POST /auth/register`。
+
+错误场景：
+
+1. 账号不是手机号或邮箱：`INVALID_ACCOUNT`
+2. 账号不存在、未设置密码或密码错误：`INVALID_CREDENTIALS`
+3. 用户状态被禁用：`FORBIDDEN`
+
+### 5.4 发送 OTP（兼容接口）
 
 - Method：`POST`
 - Path：`/auth/otp/send`
-- 用途：发送手机号登录验证码
+- 用途：发送手机号 OTP；当前移动端主登录流程不使用
 - 是否需要登录：否
 
 请求参数：
@@ -168,11 +261,11 @@
 2. 短时间重复发送：`INVALID_PARAMS`
 3. 短信服务不可用：`OTP_SEND_FAILED`
 
-### 5.2 验证码登录
+### 5.5 OTP 登录（兼容接口）
 
 - Method：`POST`
 - Path：`/auth/login/otp`
-- 用途：验证码登录；用户不存在时自动注册 `users`
+- 用途：OTP 登录；用户不存在时自动注册 `users`，当前移动端主登录流程不使用
 - 是否需要登录：否
 
 请求参数：
@@ -200,7 +293,7 @@
 2. 验证码错误或过期：`OTP_INVALID`
 3. 用户状态被禁用：`FORBIDDEN`
 
-### 5.3 获取当前用户信息
+### 5.6 获取当前用户信息
 
 - Method：`GET`
 - Path：`/users/me`
@@ -214,7 +307,9 @@
 | 字段               | 类型           | 说明             |
 | ------------------ | -------------- | ---------------- |
 | `userId`           | string         | 用户 ID          |
-| `phoneMasked`      | string         | 脱敏手机号       |
+| `phoneMasked`      | string \| null | 脱敏手机号       |
+| `emailMasked`      | string \| null | 脱敏邮箱         |
+| `accountLabel`     | string \| null | 统一账号展示标签 |
 | `nickname`         | string         | 昵称             |
 | `avatarUrl`        | string \| null | 头像             |
 | `profileCompleted` | boolean        | 是否已补全档案   |
@@ -226,7 +321,7 @@
 1. 未登录：`UNAUTHORIZED`
 2. 用户不存在：`NOT_FOUND`
 
-### 5.4 更新用户基础档案
+### 5.7 更新用户基础档案
 
 - Method：`PUT`
 - Path：`/user-profiles/me`
@@ -1556,8 +1651,9 @@
 
 ### P0
 
-1. `POST /auth/otp/send`
-2. `POST /auth/login/otp`
+1. `POST /auth/captcha/issue`
+2. `POST /auth/register`
+3. `POST /auth/login/password`
 3. `GET /users/me`
 4. `PUT /user-profiles/me`
 5. `GET /schools`

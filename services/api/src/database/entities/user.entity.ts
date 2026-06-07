@@ -4,8 +4,11 @@ import { UserProfileEntity } from './user-profile.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends TimestampedEntity {
-  @Column({ type: 'varchar', length: 30, unique: true })
-  phone!: string;
+  @Column({ type: 'varchar', length: 30, unique: true, nullable: true })
+  phone!: string | null;
+
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
+  email!: string | null;
 
   @Column({
     name: 'password_hash',

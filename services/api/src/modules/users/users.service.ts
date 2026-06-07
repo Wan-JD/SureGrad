@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { maskEmail } from '../../common/utils/account-identity.util';
 import { maskPhone } from '../../common/utils/mask-phone.util';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UsersRepository } from './repositories/users.repository';
@@ -19,7 +20,13 @@ export class UsersService {
 
     return {
       userId: snapshot.user.id,
-      phoneMasked: maskPhone(snapshot.user.phone),
+      phoneMasked: snapshot.user.phone ? maskPhone(snapshot.user.phone) : null,
+      emailMasked: snapshot.user.email ? maskEmail(snapshot.user.email) : null,
+      accountLabel: snapshot.user.phone
+        ? maskPhone(snapshot.user.phone)
+        : snapshot.user.email
+          ? maskEmail(snapshot.user.email)
+          : null,
       nickname: snapshot.user.nickname,
       avatarUrl: snapshot.user.avatarUrl,
       profileCompleted: Boolean(snapshot.profile?.onboardingCompleted),

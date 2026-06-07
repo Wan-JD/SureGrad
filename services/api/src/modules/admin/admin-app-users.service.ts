@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { maskEmail } from '../../common/utils/account-identity.util';
 import { maskPhone } from '../../common/utils/mask-phone.util';
 import { ListAppUsersQueryDto } from './dto/list-app-users-query.dto';
 import { UpdateAppUserDto } from './dto/update-app-user.dto';
@@ -46,7 +47,8 @@ export class AdminAppUsersService {
 
   private toAppUserSummary(user: {
     id: string;
-    phone: string;
+    phone: string | null;
+    email: string | null;
     nickname: string;
     avatarUrl: string | null;
     status: 'active' | 'disabled';
@@ -54,9 +56,13 @@ export class AdminAppUsersService {
     createdAt: Date;
     updatedAt: Date;
   }) {
+    const phoneMasked = user.phone ? maskPhone(user.phone) : null;
+    const emailMasked = user.email ? maskEmail(user.email) : null;
     return {
       userId: user.id,
-      phoneMasked: maskPhone(user.phone),
+      phoneMasked,
+      emailMasked,
+      accountLabel: phoneMasked ?? emailMasked,
       nickname: user.nickname,
       avatarUrl: user.avatarUrl,
       status: user.status,

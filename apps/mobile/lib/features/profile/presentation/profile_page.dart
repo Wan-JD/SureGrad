@@ -128,8 +128,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             title: '账号信息',
                             children: [
                               _ProfileRow(
-                                label: '手机号',
-                                value: snapshot.data!.me.phoneMasked ?? '-',
+                                label: '账号',
+                                value: snapshot.data!.me.accountLabel ??
+                                    snapshot.data!.me.phoneMasked ??
+                                    snapshot.data!.me.emailMasked ??
+                                    '-',
                               ),
                               _ProfileRow(
                                 label: '昵称',

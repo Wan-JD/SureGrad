@@ -188,6 +188,19 @@ run(
     "build",
     "web",
     "-t",
+    "lib/main_visual_qa_login.dart",
+    "-o",
+    "build/web-login",
+    ...apiDefine,
+  ],
+  mobileDir,
+);
+run(
+  "flutter",
+  [
+    "build",
+    "web",
+    "-t",
     "lib/main_visual_qa_home.dart",
     "-o",
     "build/web-home",
@@ -280,6 +293,13 @@ const targets = [
     port: 7358,
     path: "/",
     mustSeeAny: ["SureGrad", "浏览院校", "登录", "择校"],
+  },
+  {
+    name: "mobile-auth-login",
+    dir: path.join(mobileDir, "build", "web-login"),
+    port: 7365,
+    path: "/",
+    mustSeeAny: ["账号登录", "手机号或邮箱", "登录并继续", "注册", "游客"],
   },
   {
     name: "mobile-guest-home-tab",
