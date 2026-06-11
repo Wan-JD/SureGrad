@@ -29,6 +29,15 @@ export type CollectedBatchSummary = {
 };
 
 const collectedRoot = path.resolve(process.cwd(), "..", "..", "tools", "data-import", "collected");
+const importReadyBatchesPath = path.join(collectedRoot, "import-ready-batches.json");
+
+type ImportReadyManifest = {
+  version: number;
+  batches: Array<{
+    id: string;
+    importScript?: string;
+  }>;
+};
 
 const trackedTemplates = [
   "schools.csv",
@@ -83,6 +92,27 @@ async function readBatchReadme(batchPath: string): Promise<string> {
     return await fs.readFile(path.join(batchPath, "README.md"), "utf8");
   } catch {
     return "";
+  }
+}
+
+function readImportReadyBatchIdsFromManifest(rawManifest: string): string[] {
+  const manifest = JSON.parse(rawManifest) as Partial<ImportReadyManifest>;
+
+  if (!Array.isArray(manifest.batches)) {
+    return [];
+  }
+
+  return manifest.batches
+    .map((batch) => (typeof batch?.id === "string" ? batch.id.trim() : ""))
+    .filter((id, index, ids) => id.length > 0 && ids.indexOf(id) === index);
+}
+
+async function readImportReadyBatchIds(): Promise<string[]> {
+  try {
+    const manifest = await fs.readFile(importReadyBatchesPath, "utf8");
+    return readImportReadyBatchIdsFromManifest(manifest);
+  } catch {
+    return [];
   }
 }
 
@@ -184,8 +214,12 @@ async function readBatchSummary(batchDirectoryName: string): Promise<CollectedBa
 
 export async function getCollectedImportBatches(): Promise<CollectedBatchSummary[]> {
   try {
-    const entries = await fs.readdir(collectedRoot, { withFileTypes: true });
-    const directories = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+    const [entries, importReadyBatchIds] = await Promise.all([
+      fs.readdir(collectedRoot, { withFileTypes: true }),
+      readImportReadyBatchIds(),
+    ]);
+    const directoryNames = new Set(entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name));
+    const directories = importReadyBatchIds.filter((id) => directoryNames.has(id));
     const summaries = await Promise.all(directories.map((directory) => readBatchSummary(directory)));
 
     return summaries.sort((left, right) => {

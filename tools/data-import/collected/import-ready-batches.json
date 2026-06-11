@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Batches that are validated and wired into pnpm db:seed:collected. Candidate or raw-material batches stay out of this list until validate_csv.py and an import config pass.",
+  "batches": [
+    {
+      "id": "moe-universities-2025",
+      "importScript": "db:import:moe-universities"
+    },
+    {
+      "id": "official-school-websites-2026-06-08",
+      "importScript": "db:import:official-school-websites"
+    },
+    {
+      "id": "ecust-cs-2024",
+      "importScript": "db:import:ecust"
+    },
+    {
+      "id": "sufe-finance-2024",
+      "importScript": "db:import:sufe"
+    },
+    {
+      "id": "zju-cs-2024",
+      "importScript": "db:import:zju"
+    },
+    {
+      "id": "fudan-finance-2024",
+      "importScript": "db:import:fudan"
+    },
+    {
+      "id": "nju-se-2024",
+      "importScript": "db:import:nju"
+    }
+  ]
+}

@@ -122,6 +122,8 @@
 
 2026-06-08 本地原始材料中，学校官网字段已拆入 `official-school-websites-2026-06-08`；专业来源、分数线、考试科目等 CSV 仍缺完整 `departments.csv` / `programs.csv` 关联，且含 `estimated` 分数线，当前不得接入 `pnpm db:seed:collected`。
 
+`tools/data-import/collected/import-ready-batches.json` 是当前已验收、已接入入库链路的批次清单。Admin 采集批次、来源链接和年份数据统计只读取该清单内目录；`official-school-materials-2026-06-08-batch-1` 这类候选材料清洗通过前不得加入该清单。
+
 **入库**：`pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 2026-06-08 官网补全批次和 5 校精采批次覆盖已逐校核验的官网、研究生院链接和学校类型；`pnpm db:seed:demo` 另含备考资料与管理员。验证：`GET /api/v1/schools` 总数应为 **2919**，官网/研究生入口已核验学校数当前应为 **34**。
 
 **备考资料演示（2026-05-22）**：不扩大院校 CSV 采集时，可用 `pnpm db:seed:resources` 幂等写入 4 门 `subjects`（政治/英语/数学/专业课）与 6 条 `study_resources`（固定 UUID，`is_public_legal=true`、`status=active`）。与 ecust 一并演示可跑 `pnpm db:seed:demo`。本机验证：`GET /api/v1/study-resources` 应返回 ≥6 条公开合法资料。
@@ -136,9 +138,9 @@
 
 `apps/admin` 当前已经不是纯静态骨架，至少有以下状态需要新线程知道：
 
-1. 首页 `/` 会直接读取 `tools/data-import/collected`，显示真实采集批次概览。
-2. `/source-links` 会优先展示已采集真实批次中的来源链接。
-3. `/yearly-data` 会优先展示已采集真实批次中的年份数据；当前真实接入最明确的是分数线页签。
+1. 首页 `/` 会读取 `tools/data-import/collected/import-ready-batches.json`，只显示已验收、已接入入库链路的真实采集批次概览。
+2. `/source-links` 会优先展示已验收真实批次中的来源链接。
+3. `/yearly-data` 会优先展示已验收真实批次中的年份数据；当前真实接入最明确的是分数线页签。
 4. `/schools` 和 `/programs` 已经走真实 API 工作台思路，默认请求 `NEXT_PUBLIC_ADMIN_API_BASE_URL`，默认值是 `http://localhost:3000/api/v1`。
 5. `/schools` 筛选项已接入 `GET /api/v1/admin/schools/facets`，省份、城市、层级、类型、状态选项来自全库聚合，不再只取前 50 条学校记录。
 6. 首页已接入 `GET /api/v1/admin/data-coverage`，展示数据库覆盖缺口；本机核验口径：学校总量 2919，已补官网/研究生入口 34，缺官网 2885，缺研究生院 2885，无专业 2914。
@@ -212,6 +214,7 @@
 1. 官网/研究生入口下一批建议继续按官方站点补重点高校；当前 coverage 显示 2919 所中仍有 2885 所缺官网/研究生入口。
 2. 每个真实批次都必须带批次 README、来源链接和可复核时间。
 3. 采集完成后至少跑一遍 `validate_csv.py`，并把结果能否通过写回文档。
+4. 新批次只有在 CSV 校验通过、导入配置跑通、且写入 `import-ready-batches.json` 后，才算进入 Admin 运营统计口径。
 
 ## 12. 新线程提示词最低要求
 

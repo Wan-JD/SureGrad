@@ -12,6 +12,7 @@
 3. `powershell -ExecutionPolicy Bypass -File tools/data-import/run_import.ps1 -ConfigPath tools/data-import/config.import-official-school-websites-2026-06-08.yaml` 通过，`schools.csv rows=31 status=imported`。
 4. 本机库内核验：`schools.total=2919`，`with_official=34`，`with_graduate=34`。
 5. 本轮不导入本地原始材料中的专业来源、考试科目或分数线；含 `estimated` 的分数线继续保留为待清洗材料，不进入 `pnpm db:seed:collected`。
+6. 新增 `tools/data-import/collected/import-ready-batches.json` 作为已验收批次清单；Admin 采集批次统计只读取清单内目录，避免 `official-school-materials-2026-06-08-batch-1` 这类未通过校验的候选材料污染看板。
 
 ## 2026-06-07 本轮补充核验
 

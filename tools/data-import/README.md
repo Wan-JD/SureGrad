@@ -12,6 +12,8 @@
 
 数据库写入已支持 `schools` → `departments` → `programs` 及多个年度/来源模板；当前真实数据可通过 `pnpm db:seed:collected` 一次导入。
 
+`tools/data-import/collected/import-ready-batches.json` 是已验收、已接入 `pnpm db:seed:collected` 的批次清单。后台首页、来源链接和年份数据页只读取这个清单内的目录；候选材料或待清洗目录即使放在 `collected/` 下，也不会自动计入运营看板。
+
 在继续改这一条线之前，先读：
 
 1. `docs/start-here.md`
@@ -55,6 +57,7 @@
 3. ecust 批次已包含 `program_admissions`、`program_interview_stats`、`subjects`、`program_exam_subjects`；仍缺 `program_application_stats`、`program_reference_books`、`books` 等模板内容。
 4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 2026-06-08 官网补全批次和 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
 5. 2026-06-08 本地原始材料中，学校官网字段已拆出为标准官网补全批次；专业来源、分数线和考试科目仍缺 `departments.csv`/`programs.csv` 闭环，且含 `estimated` 分数线，暂不接入入库链路。
+6. `official-school-materials-2026-06-08-batch-1` 属于候选原始材料：`validate_csv.py` 当前会报错，原因包括空 `departments.csv` / `programs.csv`、中文 `source_type` 未映射到标准枚举、`last_verified_at` 日期时间格式不符合模板、部分分数线为 `estimated` 且缺少单科线、跨文件 program 关联缺失等。清洗通过前不要加入 `import-ready-batches.json`。
 
 因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 
@@ -315,3 +318,4 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 3. 每个批次都要保留来源链接、核验时间和批次 README。
 4. 采集完成后至少跑一次 `validate_csv.py`；需要沉淀报告时再跑 `run_import.ps1`。
 5. 继续保持 `schema.sql` 作为字段与约束的事实来源。
+6. 新批次只有在 `validate_csv.py` 通过、导入配置可跑通、并写入 `import-ready-batches.json` 后，才会进入 Admin 运营统计。

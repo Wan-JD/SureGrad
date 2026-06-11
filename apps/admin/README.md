@@ -57,7 +57,7 @@ apps/admin
 ## 当前联调状态
 
 - `/`
-  首页已经会直接读取 `tools/data-import/collected`，展示真实采集批次数、学校数、专业数、来源链接数、分数线记录数和覆盖年份。
+  首页读取 `tools/data-import/collected/import-ready-batches.json` 中列出的已验收批次，展示真实采集批次数、学校数、专业数、来源链接数、分数线记录数和覆盖年份。
 - `/schools`
   学校管理页已按真实 API 工作台思路搭建，默认请求 `NEXT_PUBLIC_ADMIN_API_BASE_URL`。
 - `/departments`
@@ -65,16 +65,17 @@ apps/admin
 - `/programs`
   专业管理页已按真实 API 工作台思路搭建，默认请求 `NEXT_PUBLIC_ADMIN_API_BASE_URL`。
 - `/yearly-data`
-  年份数据页会优先展示 `tools/data-import/collected` 里已采集的真实年度表；当前真实接入最明确的是分数线页签。
+  年份数据页会优先展示已验收批次里的真实年度表；当前真实接入最明确的是分数线页签。
 - `/resources`
   资料推荐页仍以运营结构、列表与详情布局为主，后续继续接真实数据。
 - `/source-links`
-  来源链接页会优先展示已采集真实批次里的来源链接，便于运营核对批次覆盖、年份和复核时间。
+  来源链接页会优先展示已验收真实批次里的来源链接，便于运营核对批次覆盖、年份和复核时间。
 
 补充说明：
 
 1. 后台文案已经在向运营表达收口，后续不要把原始 `id`、表名、工程枚举重新当成主信息展示。
-2. 如果本地 API 没有把 `/api/v1/schools` 等接口跑通，学校页和专业页可能展示空态或错误态，这属于联调缺口，不代表后台结构未完成。
+2. `tools/data-import/collected` 下可能保留候选材料或历史目录；后台统计口径以 `import-ready-batches.json` 为准，避免未清洗 CSV 污染运营看板。
+3. 如果本地 API 没有把 `/api/v1/schools` 等接口跑通，学校页和专业页可能展示空态或错误态，这属于联调缺口，不代表后台结构未完成。
 
 ## 与文档的对应关系
 
