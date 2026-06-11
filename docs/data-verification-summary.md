@@ -3,6 +3,16 @@
 **核验日期**：2026-06-07
 **核验状态**：✅ 国家线已核验；教育部 2025 全国普通高校名单 2919 所基础条目已完成 CSV 校验；5 校批次已完成 CSV 校验与入库核验，未核实数字已移除或留空
 
+## 2026-06-11 本轮补充核验
+
+本轮从 2026-06-08 本地原始材料中筛出可标准入库的官网补全数据，只处理学校基础字段：
+
+1. 新增 `official-school-websites-2026-06-08` 批次，共 31 所重点高校官网与研究生入口。
+2. `python tools/data-import/validate_csv.py tools/data-import/collected/official-school-websites-2026-06-08` 通过：`schools.csv rows=31 errors=0 warnings=0`。
+3. `powershell -ExecutionPolicy Bypass -File tools/data-import/run_import.ps1 -ConfigPath tools/data-import/config.import-official-school-websites-2026-06-08.yaml` 通过，`schools.csv rows=31 status=imported`。
+4. 本机库内核验：`schools.total=2919`，`with_official=34`，`with_graduate=34`。
+5. 本轮不导入本地原始材料中的专业来源、考试科目或分数线；含 `estimated` 的分数线继续保留为待清洗材料，不进入 `pnpm db:seed:collected`。
+
 ## 2026-06-07 本轮补充核验
 
 本轮按“宁缺毋假”原则处理学校数据：

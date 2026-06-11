@@ -25,11 +25,12 @@
 
 1. `tools/data-import/collected/moe-universities-2025`：教育部 2025 全国普通高等学校名单，2919 所学校基础条目。
 2. `tools/data-import/collected/official-school-websites-2026-06-07`：8 所高校官方主页与研究生招生/研究生院入口补全批次。
-3. `tools/data-import/collected/ecust-cs-2024`：华东理工大学 081200 计算机科学与技术。
-4. `tools/data-import/collected/sufe-finance-2024`：上海财经大学金融方向骨架批次。
-5. `tools/data-import/collected/zju-cs-2024`：浙江大学 081200 计算机科学与技术。
-6. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
-7. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
+3. `tools/data-import/collected/official-school-websites-2026-06-08`：从 2026-06-08 本地原始材料中筛出的 31 所重点高校官网与研究生入口补全批次，当前接入 `pnpm db:seed:collected`。
+4. `tools/data-import/collected/ecust-cs-2024`：华东理工大学 081200 计算机科学与技术。
+5. `tools/data-import/collected/sufe-finance-2024`：上海财经大学金融方向骨架批次。
+6. `tools/data-import/collected/zju-cs-2024`：浙江大学 081200 计算机科学与技术。
+7. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
+8. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
 
 `moe-universities-2025` 只使用教育部附件中的学校名称、学校标识码、所在地、办学层次、主管部门和备注；不包含分数线、招生计划、报录比、专业目录、官网或研究生院链接。
 
@@ -52,7 +53,8 @@
 1. 已附带批次级 `README.md`，记录官方来源与人工假设。
 2. 这一轮优先保证真源、来源追溯和模板链路跑通，不先猜测缺失数字。
 3. ecust 批次已包含 `program_admissions`、`program_interview_stats`、`subjects`、`program_exam_subjects`；仍缺 `program_application_stats`、`program_reference_books`、`books` 等模板内容。
-4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入官网补全批次和 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
+4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 2026-06-08 官网补全批次和 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
+5. 2026-06-08 本地原始材料中，学校官网字段已拆出为标准官网补全批次；专业来源、分数线和考试科目仍缺 `departments.csv`/`programs.csv` 闭环，且含 `estimated` 分数线，暂不接入入库链路。
 
 因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 
@@ -308,7 +310,7 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 
 推荐按以下顺序继续：
 
-1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单，并导入 5 校精采批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
+1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单、2026-06-08 官网补全批次和 5 校精采批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
 2. 当前只保留可用官方来源核实的分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350；复旦/南大未核实分数线保持缺口。
 3. 每个批次都要保留来源链接、核验时间和批次 README。
 4. 采集完成后至少跑一次 `validate_csv.py`；需要沉淀报告时再跑 `run_import.ps1`。

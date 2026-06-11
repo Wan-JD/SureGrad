@@ -117,8 +117,8 @@ if ($config.validation.require_all_templates) {
 
 $normalizeEnabled = [bool]$config.execution.normalize_before_validate
 $totalSteps = if ($normalizeEnabled) { 4 } else { 2 }
-$configuredFiles = if ($config.PSObject.Properties.Name -contains "files") { @($config.files) } else { @() }
-$configuredInputTargets = Resolve-ConfigFileTargets -BaseDirectory $inputDir -Files $configuredFiles
+$configuredFiles = @(if ($config.PSObject.Properties.Name -contains "files") { @($config.files) } else { @() })
+$configuredInputTargets = @(Resolve-ConfigFileTargets -BaseDirectory $inputDir -Files $configuredFiles)
 
 if ($configuredInputTargets.Count -gt 0) {
     $validateArgs += $configuredInputTargets
