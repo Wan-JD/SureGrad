@@ -81,7 +81,6 @@ DATASET_SPECS = {
             "program_code",
             "degree_type",
             "discipline_category",
-            "duration_years",
             "tuition_per_year",
         },
         "enum_fields": {

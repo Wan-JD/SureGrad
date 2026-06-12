@@ -70,9 +70,10 @@ export class ProgramEntity extends SoftDeletableEntity {
     type: 'numeric',
     precision: 3,
     scale: 1,
+    nullable: true,
     transformer: numericTransformer,
   })
-  durationYears!: number;
+  durationYears!: number | null;
 
   @Column({
     name: 'tuition_per_year',

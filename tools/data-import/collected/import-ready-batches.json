@@ -11,6 +11,10 @@
       "importScript": "db:import:official-school-websites"
     },
     {
+      "id": "tsinghua-sem-finance-2026",
+      "importScript": "db:import:tsinghua-sem-finance"
+    },
+    {
       "id": "ecust-cs-2024",
       "importScript": "db:import:ecust"
     },

@@ -1,0 +1,5 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,sequence_no,subject_role,subject_code_text,subject_name_text,subject_code,notes
+清华大学,经济管理学院,025100,金融,01（全日制）金融硕士,2026,1,politics,101,思想政治理论,101,官方招生目录初试科目
+清华大学,经济管理学院,025100,金融,01（全日制）金融硕士,2026,2,english,204,英语（二）,204,官方招生目录初试科目
+清华大学,经济管理学院,025100,金融,01（全日制）金融硕士,2026,3,math,303,数学（三）,303,官方招生目录初试科目
+清华大学,经济管理学院,025100,金融,01（全日制）金融硕士,2026,4,major_1,431,金融学综合,431,官方招生目录初试科目

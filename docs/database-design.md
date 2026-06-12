@@ -189,7 +189,7 @@ MVP 建议优先建设以下表：
 | discipline_category | varchar(100) | 学科门类 |
 | research_direction | varchar(255) | 研究方向，可为空 |
 | exam_math_required | boolean | 是否考数学 |
-| duration_years | numeric(3,1) | 学制 |
+| duration_years | numeric(3,1) | 学制，可为空；不要用缴费年限反推单一学制 |
 | tuition_per_year | numeric(10,2) | 年学费 |
 | notes | text | 备注 |
 | status | varchar(20) | active/inactive |

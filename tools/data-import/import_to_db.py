@@ -389,7 +389,7 @@ def upsert_program(conn: Any, lookup: LookupTables, row: dict[str, str]) -> str:
         "discipline_category": row["discipline_category"].strip(),
         "research_direction": research_direction,
         "exam_math_required": parse_bool(row.get("exam_math_required")),
-        "duration_years": float(row["duration_years"]),
+        "duration_years": parse_optional_decimal(row.get("duration_years")),
         "tuition_per_year": float(row["tuition_per_year"]),
         "notes": empty_to_none(row.get("notes")),
         "status": row.get("status", "active").strip() or "active",
@@ -455,6 +455,13 @@ def parse_optional_int(value: str | None) -> int | None:
     if text is None:
         return None
     return int(text)
+
+
+def parse_optional_decimal(value: str | None) -> float | None:
+    text = empty_to_none(value)
+    if text is None:
+        return None
+    return float(text)
 
 
 def parse_decimal(value: str | None) -> float:

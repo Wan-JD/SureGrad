@@ -33,6 +33,7 @@
 6. `tools/data-import/collected/zju-cs-2024`：浙江大学 081200 计算机科学与技术。
 7. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
 8. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
+9. `tools/data-import/collected/tsinghua-sem-finance-2026`：清华大学经济管理学院 025100 金融 2026 年最小清洗闭环批次。
 
 `moe-universities-2025` 只使用教育部附件中的学校名称、学校标识码、所在地、办学层次、主管部门和备注；不包含分数线、招生计划、报录比、专业目录、官网或研究生院链接。
 
@@ -58,6 +59,7 @@
 4. `pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 2026-06-08 官网补全批次和 5 校精采批次，避免基础名单的占位字段覆盖已逐校核验字段。
 5. 2026-06-08 本地原始材料中，学校官网字段已拆出为标准官网补全批次；专业来源、分数线和考试科目仍缺 `departments.csv`/`programs.csv` 闭环，且含 `estimated` 分数线，暂不接入入库链路。
 6. `official-school-materials-2026-06-08-batch-1` 属于候选原始材料：`validate_csv.py` 当前会报错，原因包括空 `departments.csv` / `programs.csv`、中文 `source_type` 未映射到标准枚举、`last_verified_at` 日期时间格式不符合模板、部分分数线为 `estimated` 且缺少单科线、跨文件 program 关联缺失等。清洗通过前不要加入 `import-ready-batches.json`。
+7. `tsinghua-sem-finance-2026` 是从上述候选原始材料中抽出的最小可验收子集：已补齐院系、专业、科目、招生计划、复试分数线与来源链接；只使用清华官方来源，移除了未核实的 `estimated` 分数线，且已接入 `pnpm db:seed:collected`。
 
 因此，当前数据导入线并不是“还没开始采”，而是已经进入“继续扩批次、补模板、接入后台与后端”的阶段。
 
@@ -313,8 +315,8 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 
 推荐按以下顺序继续：
 
-1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单、2026-06-08 官网补全批次和 5 校精采批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
-2. 当前只保留可用官方来源核实的分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350；复旦/南大未核实分数线保持缺口。
+1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单、2026-06-08 官网补全批次、`tsinghua-sem-finance-2026` 和 5 校精采批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
+2. 当前只保留可用官方来源核实的分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350、清华经管 025100=385；复旦/南大未核实分数线保持缺口。
 3. 每个批次都要保留来源链接、核验时间和批次 README。
 4. 采集完成后至少跑一次 `validate_csv.py`；需要沉淀报告时再跑 `run_import.ps1`。
 5. 继续保持 `schema.sql` 作为字段与约束的事实来源。

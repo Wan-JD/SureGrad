@@ -104,7 +104,7 @@ CREATE TABLE programs (
     discipline_category VARCHAR(100) NOT NULL,
     research_direction VARCHAR(255),
     exam_math_required BOOLEAN NOT NULL DEFAULT FALSE,
-    duration_years NUMERIC(3,1) NOT NULL,
+    duration_years NUMERIC(3,1),
     tuition_per_year NUMERIC(10,2) NOT NULL,
     notes TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'active',
