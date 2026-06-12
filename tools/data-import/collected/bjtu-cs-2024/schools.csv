@@ -1,0 +1,2 @@
+name,short_name,code,province,city,school_type,school_level,has_graduate_school,official_website,graduate_website,description,sort_order,status
+北京交通大学,北交大,10004,北京市,北京市,理工类,211/双一流,true,https://www.bjtu.edu.cn,https://gs.bjtu.edu.cn,教育部直属全国重点大学，国家"双一流"建设高校，"211工程"重点建设高校。,10,active

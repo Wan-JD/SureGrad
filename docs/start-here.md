@@ -1,6 +1,6 @@
 # SureGrad Start Here
 
-更新日期：`2026-06-12`
+更新日期：`2026-06-12`（211 计算机采集批次补充）
 
 这份文档是 SureGrad 当前仓库的统一接班入口。
 
@@ -112,6 +112,9 @@
 - `tools/data-import/collected/fudan-finance-2024`（复旦 · 020204，骨架批次）
 - `tools/data-import/collected/nju-se-2024`（南大 · 083500，骨架批次）
 - `tools/data-import/collected/tsinghua-sem-finance-2026`（清华经管 · 025100 金融，2026 年最小清洗闭环批次）
+- `tools/data-import/collected/njust-cs-2024`（南理工 · 081200/083500/085404/085405/085410/085411，211 计算机多专业批次）
+- `tools/data-import/collected/hnu-cs-2024`（湖大 · 081200/085404/085405/085410/085411/085412，985 计算机多专业批次）
+- `tools/data-import/collected/bjtu-cs-2024`（北交大 · 081200/083500/085404/085410，211 计算机多专业批次）
 
 **ecust-cs-2024** 已含：学校/院系/专业、分数线、招生、复试、初试科目、来源链接等；仍缺报录比、参考书等（见批次 README）。
 
@@ -127,7 +130,15 @@
 
 **2026-06-12 数据小闭环补充**：已从 `official-school-materials-2026-06-08-batch-1` 中抽出清华大学经济管理学院 `025100 金融` 2026 年线索，重新核验为独立清洗批次 `tsinghua-sem-finance-2026`。该批次只保留官方来源确认的数据：招生目录、学院复试录取实施细则、招生简章附件 PDF；包含 1 所学校、1 个院系、1 个专业、1 条招生计划、1 条 official 复试分数线、4 条初试科目、3 条来源链接。原候选材料中的清华金融 `369/60/60/85/85` 未能由官方页面确认，未纳入；学制未核到单一数字，`duration_years` 留空。`validate_csv.py`、`run_import.ps1` 和 `pnpm db:seed:collected` 均已通过。
 
-**入库**：`pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再导入 2026-06-08 官网补全批次、`tsinghua-sem-finance-2026` 和 5 校精采批次覆盖已逐校核验的官网、研究生院链接和学校类型；`pnpm db:seed:demo` 另含备考资料与管理员。验证：`GET /api/v1/schools` 总数应为 **2919**，官网/研究生入口已核验学校数当前应为 **34**。
+**2026-06-12 211 计算机采集批次补充**：本轮新增 3 个 211/985 计算机相关清洗批次，全部通过 `validate_csv.py`、`run_import.ps1` 和 `pnpm db:seed:collected`：
+
+1. **njust-cs-2024**（南京理工大学）：6 个专业（081200/083500/085404/085405/085410/085411），含招生计划、复试分数线（学院级）、进入复试人数/拟录取人数（报录比口径）、13 条来源链接。数据来源：计算机科学与工程学院复试录取工作实施细则（cs.njust.edu.cn）与研究生院统一分数线公告。
+2. **hnu-cs-2024**（湖南大学）：6 个专业（081200/085404/085405/085410/085411/085412），含学校统一复试分数线（含单科线）、初试科目（408 统考）、学制学费、12 条来源链接。数据来源：研究生院复试分数线公告（gra.hnu.edu.cn）与招生简章。
+3. **bjtu-cs-2024**（北京交通大学）：4 个专业（081200/083500/085404/085410），含招生计划（含推免）、初试科目（408 统考）、4 条来源链接。数据来源：2025 年入学招生专业目录 PDF（yzb.bjtu.edu.cn）。
+
+三个批次均缺报录比（官方未公开报考人数）、参考书；BJTU 和 HNU 暂缺学院级复试线（BJTU 官网不可访问、HNU 学院页面为图片格式）。
+
+**入库**：`pnpm db:seed:collected` 会先导入教育部 2919 所基础名单，再依次导入官网补全批次、`tsinghua-sem-finance-2026`、5 校精采批次、`njust-cs-2024`、`hnu-cs-2024`、`bjtu-cs-2024`；`pnpm db:seed:demo` 另含备考资料与管理员。验证：`GET /api/v1/schools` 总数应为 **2919**。
 
 **备考资料演示（2026-05-22）**：不扩大院校 CSV 采集时，可用 `pnpm db:seed:resources` 幂等写入 4 门 `subjects`（政治/英语/数学/专业课）与 6 条 `study_resources`（固定 UUID，`is_public_legal=true`、`status=active`）。与 ecust 一并演示可跑 `pnpm db:seed:demo`。本机验证：`GET /api/v1/study-resources` 应返回 ≥6 条公开合法资料。
 

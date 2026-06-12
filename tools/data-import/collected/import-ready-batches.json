@@ -33,6 +33,18 @@
     {
       "id": "nju-se-2024",
       "importScript": "db:import:nju"
+    },
+    {
+      "id": "njust-cs-2024",
+      "importScript": "db:import:njust"
+    },
+    {
+      "id": "hnu-cs-2024",
+      "importScript": "db:import:hnu"
+    },
+    {
+      "id": "bjtu-cs-2024",
+      "importScript": "db:import:bjtu"
     }
   ]
 }

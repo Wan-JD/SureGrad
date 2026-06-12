@@ -34,6 +34,9 @@
 7. `tools/data-import/collected/fudan-finance-2024`：复旦大学金融学骨架批次。
 8. `tools/data-import/collected/nju-se-2024`：南京大学软件工程骨架批次。
 9. `tools/data-import/collected/tsinghua-sem-finance-2026`：清华大学经济管理学院 025100 金融 2026 年最小清洗闭环批次。
+10. `tools/data-import/collected/njust-cs-2024`：南京理工大学 081200/083500/085404/085405/085410/085411 计算机多专业批次，含招生计划与复试录取比。
+11. `tools/data-import/collected/hnu-cs-2024`：湖南大学 081200/085404/085405/085410/085411/085412 计算机多专业批次，含学校分数线与初试科目。
+12. `tools/data-import/collected/bjtu-cs-2024`：北京交通大学 081200/083500/085404/085410 计算机多专业批次，含招生计划与初试科目。
 
 `moe-universities-2025` 只使用教育部附件中的学校名称、学校标识码、所在地、办学层次、主管部门和备注；不包含分数线、招生计划、报录比、专业目录、官网或研究生院链接。
 
@@ -315,8 +318,8 @@ python tools/data-import/validate_csv.py tools/data-import/samples/invalid-batch
 
 推荐按以下顺序继续：
 
-1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单、2026-06-08 官网补全批次、`tsinghua-sem-finance-2026` 和 5 校精采批次：`ecust-cs-2024`、`sufe-finance-2024`、`zju-cs-2024`、`fudan-finance-2024`、`nju-se-2024`。
-2. 当前只保留可用官方来源核实的分数线：华东理工 081200=340、上财 025100=389、浙大 081200=350、清华经管 025100=385；复旦/南大未核实分数线保持缺口。
+1. `pnpm db:seed:collected` 已导入教育部 2919 所基础名单、2026-06-08 官网补全批次、`tsinghua-sem-finance-2026`、5 校精采批次和 3 个 211/985 计算机批次：`njust-cs-2024`（南理工）、`hnu-cs-2024`（湖大）、`bjtu-cs-2024`（北交大）。
+2. 当前已核实分数线批次：华东理工 081200=340、上财 025100=389、浙大 081200=350、清华经管 025100=385、南理工 081200=310/085404=298、湖大 081200=290/085404=280；复旦/南大/北交大未核实分数线保持缺口。
 3. 每个批次都要保留来源链接、核验时间和批次 README。
 4. 采集完成后至少跑一次 `validate_csv.py`；需要沉淀报告时再跑 `run_import.ps1`。
 5. 继续保持 `schema.sql` 作为字段与约束的事实来源。

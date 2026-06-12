@@ -1,0 +1,5 @@
+school_name,department_name,program_name,program_code,degree_type,discipline_category,research_direction,exam_math_required,duration_years,tuition_per_year,notes,status
+北京交通大学,计算机与信息技术学院,计算机科学与技术,081200,academic,工学,,true,,8000.00,按 2025 年入学招生专业目录整理；学制待确认；学费按学术学位标准 8000 元/年。,active
+北京交通大学,计算机与信息技术学院,软件工程,083500,academic,工学,,true,,8000.00,按 2025 年入学招生专业目录整理；学制待确认；学费按学术学位标准 8000 元/年。,active
+北京交通大学,计算机与信息技术学院,计算机技术,085404,professional,工学,,true,,10000.00,专业学位；按 2025 年入学招生专业目录整理；学制待确认；学费按工程类专业学位标准，待招生简章确认。,active
+北京交通大学,计算机与信息技术学院,人工智能,085410,professional,工学,,true,,10000.00,专业学位；按 2025 年入学招生专业目录整理；学制待确认；学费按工程类专业学位标准，待招生简章确认。,active
