@@ -45,6 +45,14 @@
     {
       "id": "bjtu-cs-2024",
       "importScript": "db:import:bjtu"
+    },
+    {
+      "id": "hfut-cs-2025",
+      "importScript": "db:import:hfut"
+    },
+    {
+      "id": "xidian-cs-2024",
+      "importScript": "db:import:xidian"
     }
   ]
 }

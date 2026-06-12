@@ -1,0 +1,2 @@
+school_name,department_name,program_code,program_name,research_direction,exam_year,applicant_count,actual_exam_count,admitted_count,application_ratio,notes,source_confidence
+西安电子科技大学,计算机科学与技术学院,081200,计算机科学与技术,,2024,339,,14,24.21,进入复试 339 人，统考计划 14 人；由官方进入复试人数/统考计划计算。实际录取可能多于计划。,official

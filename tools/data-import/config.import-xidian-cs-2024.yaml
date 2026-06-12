@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "input_dir": "./collected/xidian-cs-2024",
+  "normalized_dir": "./.out/collected-xidian-cs-2024-normalized",
+  "report_dir": "./.out/reports/xidian-cs-2024",
+  "validation": {
+    "strict_header_order": true,
+    "require_all_templates": false,
+    "allow_utf8_bom": true
+  },
+  "execution": {
+    "dry_run": false,
+    "stop_on_error": true,
+    "normalize_before_validate": true
+  },
+  "database": {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "name": "suregrad",
+    "user": "postgres",
+    "password": "postgres",
+    "schema": "public"
+  },
+  "files": [
+    "schools.csv",
+    "departments.csv",
+    "programs.csv",
+    "subjects.csv",
+    "program_admissions.csv",
+    "program_score_lines.csv",
+    "program_application_stats.csv",
+    "program_exam_subjects.csv",
+    "program_source_links.csv"
+  ]
+}
