@@ -53,6 +53,10 @@
     {
       "id": "xidian-cs-2024",
       "importScript": "db:import:xidian"
+    },
+    {
+      "id": "jnu-cs-2024",
+      "importScript": "db:import:jnu"
     }
   ]
 }

@@ -34,8 +34,9 @@
     "db:import:bjtu": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-bjtu-cs-2024.yaml --report-dir tools/data-import/.out/reports/bjtu-cs-2024",
     "db:import:hfut": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-hfut-cs-2025.yaml --report-dir tools/data-import/.out/reports/hfut-cs-2025",
     "db:import:xidian": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-xidian-cs-2024.yaml --report-dir tools/data-import/.out/reports/xidian-cs-2024",
+    "db:import:jnu": "python tools/data-import/import_to_db.py --config tools/data-import/config.import-jnu-cs-2024.yaml --report-dir tools/data-import/.out/reports/jnu-cs-2024",
     "db:seed:ecust": "pnpm db:migrate && pnpm db:import:ecust",
-    "db:seed:collected": "pnpm db:migrate && pnpm db:import:moe-universities && pnpm db:import:official-school-websites && pnpm db:import:tsinghua-sem-finance && pnpm db:import:ecust && pnpm db:import:sufe && pnpm db:import:zju && pnpm db:import:fudan && pnpm db:import:nju && pnpm db:import:njust && pnpm db:import:hnu && pnpm db:import:bjtu && pnpm db:import:hfut && pnpm db:import:xidian",
+    "db:seed:collected": "pnpm db:migrate && pnpm db:import:moe-universities && pnpm db:import:official-school-websites && pnpm db:import:tsinghua-sem-finance && pnpm db:import:ecust && pnpm db:import:sufe && pnpm db:import:zju && pnpm db:import:fudan && pnpm db:import:nju && pnpm db:import:njust && pnpm db:import:hnu && pnpm db:import:bjtu && pnpm db:import:hfut && pnpm db:import:xidian && pnpm db:import:jnu",
     "db:seed:resources": "python tools/data-import/seed_study_resources.py",
     "db:seed:admin": "python tools/data-import/seed_admin_users.py",
     "db:seed:demo": "pnpm db:seed:collected && pnpm db:seed:resources && pnpm db:seed:admin"
