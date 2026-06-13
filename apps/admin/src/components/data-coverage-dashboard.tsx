@@ -19,6 +19,9 @@ type Metric = {
   tone?: "default" | "warn" | "ok";
 };
 
+type ProgramYearlyGap =
+  AdminDataCoverageSummary["priorityGaps"]["programYearlyGaps"][number];
+
 function formatPercent(value: number, total: number) {
   if (total <= 0) {
     return "0%";
@@ -41,6 +44,19 @@ function MetricCard({ metric }: { metric: Metric }) {
       {percent ? <small>{percent}</small> : null}
     </article>
   );
+}
+
+function formatProgramGapLabels(gap: ProgramYearlyGap) {
+  const labels = [
+    gap.missingAdmissions ? "招生" : null,
+    gap.missingScoreLines ? "分数线" : null,
+    gap.missingApplicationStats ? "报录比" : null,
+    gap.missingInterviewStats ? "复试" : null,
+    gap.missingExamSubjects ? "初试科目" : null,
+    gap.missingReferenceBooks ? "参考书" : null,
+  ].filter(Boolean);
+
+  return labels.length ? labels.join("、") : "年度数据已齐";
 }
 
 export function DataCoverageDashboard() {
@@ -170,6 +186,7 @@ export function DataCoverageDashboard() {
 
   const yearlyRecords = state.data?.yearlyRecords;
   const sourceLinks = state.data?.sourceLinks;
+  const priorityGaps = state.data?.priorityGaps;
 
   return (
     <section className="section-card coverage-dashboard">
@@ -199,6 +216,101 @@ export function DataCoverageDashboard() {
               <MetricCard key={metric.label} metric={metric} />
             ))}
           </div>
+          {priorityGaps ? (
+            <div className="coverage-priority-grid">
+              <article className="coverage-priority-panel">
+                <div className="coverage-priority-head">
+                  <span>官网缺口省份</span>
+                  <strong>{priorityGaps.provinceWebsiteGaps.length}</strong>
+                </div>
+                {priorityGaps.provinceWebsiteGaps.length ? (
+                  <ul className="coverage-priority-list">
+                    {priorityGaps.provinceWebsiteGaps.map((item) => (
+                      <li key={item.province}>
+                        <div>
+                          <strong>{item.province}</strong>
+                          <small>{item.total} 所学校</small>
+                        </div>
+                        <span>
+                          双缺 {item.missingBothWebsites} / 官网{" "}
+                          {item.missingOfficialWebsite} / 研招{" "}
+                          {item.missingGraduateWebsite}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="coverage-empty-copy">暂无省份级官网缺口。</p>
+                )}
+              </article>
+
+              <article className="coverage-priority-panel">
+                <div className="coverage-priority-head">
+                  <span>学校入口队列</span>
+                  <strong>{priorityGaps.schoolWebsiteGaps.length}</strong>
+                </div>
+                {priorityGaps.schoolWebsiteGaps.length ? (
+                  <ul className="coverage-priority-list">
+                    {priorityGaps.schoolWebsiteGaps.map((item) => {
+                      const missing = [
+                        item.missingOfficialWebsite ? "官网" : null,
+                        item.missingGraduateWebsite ? "研招入口" : null,
+                      ]
+                        .filter(Boolean)
+                        .join("、");
+
+                      return (
+                        <li key={item.schoolId}>
+                          <div>
+                            <strong>{item.schoolName}</strong>
+                            <small>
+                              {item.province} · {item.city} ·{" "}
+                              {item.schoolLevel}
+                            </small>
+                          </div>
+                          <span>
+                            缺 {missing || "无"} · 已接专业{" "}
+                            {item.programCount}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="coverage-empty-copy">暂无学校入口缺口。</p>
+                )}
+              </article>
+
+              <article className="coverage-priority-panel wide">
+                <div className="coverage-priority-head">
+                  <span>专业年度缺口</span>
+                  <strong>{priorityGaps.programYearlyGaps.length}</strong>
+                </div>
+                {priorityGaps.programYearlyGaps.length ? (
+                  <ul className="coverage-priority-list compact">
+                    {priorityGaps.programYearlyGaps.map((item) => (
+                      <li key={item.programId}>
+                        <div>
+                          <strong>
+                            {item.schoolName} · {item.programName}
+                          </strong>
+                          <small>
+                            {item.departmentName} · {item.programCode} ·{" "}
+                            {item.latestExamYear ?? "年份待补"}
+                          </small>
+                        </div>
+                        <span>
+                          缺 {item.missingCount} 项：{formatProgramGapLabels(item)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="coverage-empty-copy">暂无专业年度缺口。</p>
+                )}
+              </article>
+            </div>
+          ) : null}
           <div className="coverage-footer">
             <span>
               来源链接 {sourceLinks?.total ?? 0} 条，其中 official{" "}

@@ -5,12 +5,35 @@ type QueryPrimitive = string | number | boolean | null | undefined;
 type RequestOptions = {
   signal?: AbortSignal;
   auth?: boolean;
+  retryUntilSuccess?: boolean;
+  retryDelayMs?: number;
 };
 
 const DEFAULT_API_BASE_URL =
   process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL?.trim() ||
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
   "http://localhost:3000/api/v1";
+
+const DEFAULT_RETRY_DELAY_MS = 3000;
+
+function wait(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+
+    const timer = globalThis.setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        globalThis.clearTimeout(timer);
+        reject(signal.reason);
+      },
+      { once: true },
+    );
+  });
+}
 
 function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
@@ -78,7 +101,7 @@ function buildHeaders(options?: RequestOptions): HeadersInit {
   return headers;
 }
 
-async function requestAdminJson<T>(
+async function requestAdminJsonOnce<T>(
   method: string,
   pathname: string,
   body?: unknown,
@@ -104,6 +127,34 @@ async function requestAdminJson<T>(
   }
 
   return (await response.json()) as T;
+}
+
+async function requestAdminJson<T>(
+  method: string,
+  pathname: string,
+  body?: unknown,
+  query?: Record<string, QueryPrimitive>,
+  options?: RequestOptions,
+): Promise<T> {
+  if (!options?.retryUntilSuccess) {
+    return requestAdminJsonOnce<T>(method, pathname, body, query, options);
+  }
+
+  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+
+  while (!options.signal?.aborted) {
+    try {
+      return await requestAdminJsonOnce<T>(method, pathname, body, query, options);
+    } catch (error) {
+      if (options.signal?.aborted) {
+        throw error;
+      }
+
+      await wait(retryDelayMs, options.signal);
+    }
+  }
+
+  throw new Error("Request aborted");
 }
 
 export async function getAdminJson<T>(

@@ -1732,6 +1732,9 @@
   - `programs`：来源链接、招生计划、分数线、报录比、复试统计、初试科目、参考书覆盖缺口
   - `sourceLinks`：来源链接总量、official 数量、pending/invalid 数量
   - `yearlyRecords`：年度子表记录数
+  - `priorityGaps.provinceWebsiteGaps`：按省份聚合的官网/研究生入口缺口 Top 8
+  - `priorityGaps.schoolWebsiteGaps`：按已接专业数和运营权重排序的学校入口补全队列 Top 10
+  - `priorityGaps.programYearlyGaps`：按缺失年度表项数量排序的专业补数队列 Top 10
 
 该接口只做库内事实统计，不推断未采字段。
 

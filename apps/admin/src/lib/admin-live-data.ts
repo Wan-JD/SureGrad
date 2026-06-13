@@ -630,6 +630,44 @@ export type AdminDataCoverageSummary = {
     examSubjects: number;
     referenceBooks: number;
   };
+  priorityGaps: {
+    provinceWebsiteGaps: Array<{
+      province: string;
+      total: number;
+      missingOfficialWebsite: number;
+      missingGraduateWebsite: number;
+      missingBothWebsites: number;
+      withoutPrograms: number;
+    }>;
+    schoolWebsiteGaps: Array<{
+      schoolId: string;
+      schoolName: string;
+      province: string;
+      city: string;
+      schoolLevel: string;
+      missingOfficialWebsite: boolean;
+      missingGraduateWebsite: boolean;
+      programCount: number;
+      updatedAt: string;
+    }>;
+    programYearlyGaps: Array<{
+      programId: string;
+      programName: string;
+      programCode: string;
+      schoolId: string;
+      schoolName: string;
+      departmentName: string;
+      degreeType: string;
+      latestExamYear: number | null;
+      missingAdmissions: boolean;
+      missingScoreLines: boolean;
+      missingApplicationStats: boolean;
+      missingInterviewStats: boolean;
+      missingExamSubjects: boolean;
+      missingReferenceBooks: boolean;
+      missingCount: number;
+    }>;
+  };
 };
 
 export async function listAdminSchools(
@@ -651,7 +689,7 @@ export async function getAdminDataCoverageSummary(signal?: AbortSignal) {
   return getAdminJson<AdminDataCoverageSummary>(
     "/admin/data-coverage",
     undefined,
-    { signal },
+    { signal, retryUntilSuccess: true },
   );
 }
 
